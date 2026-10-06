@@ -53,6 +53,11 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
+        .dashboard-hero {
+            background-image: linear-gradient(rgba(255, 255, 255, .84), rgba(255, 255, 255, .84)), url('{{ asset('2205_w026_n002_1930b_p1_1930.jpg') }}');
+            background-position: center;
+            background-size: cover;
+        }
     </style>
 </head>
 <body class="h-full font-sans antialiased text-slate-800">
@@ -217,9 +222,13 @@
                         <!-- User Profile Menu -->
                         <div class="relative" x-data="{ open: false }">
                             <button @click="open = !open" @click.outside="open = false" class="flex items-center gap-2 p-1.5 rounded-xl hover:bg-slate-100 transition focus:outline-none">
-                                <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-semibold text-sm flex items-center justify-center shadow-xs">
-                                    {{ substr(auth()->user()->name, 0, 1) }}
-                                </div>
+                                @if(auth()->user()->avatar)
+                                    <img src="{{ asset('storage/' . auth()->user()->avatar) }}" alt="Profile picture" class="w-9 h-9 rounded-full object-cover shadow-xs">
+                                @else
+                                    <div class="w-9 h-9 rounded-full bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-semibold text-sm flex items-center justify-center shadow-xs">
+                                        {{ substr(auth()->user()->name, 0, 1) }}
+                                    </div>
+                                @endif
                                 <div class="hidden sm:block text-left text-xs">
                                     <p class="font-semibold text-slate-900 leading-tight">{{ auth()->user()->name }}</p>
                                     <p class="text-slate-500 capitalize">{{ str_replace('_', ' ', auth()->user()->role) }}</p>

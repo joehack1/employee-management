@@ -45,7 +45,7 @@
             </div>
 
             <!-- Position & Department Grid -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Job Title / Position <span class="text-rose-500">*</span></label>
                     <input type="text" name="job_title" required value="{{ old('job_title') }}" placeholder="e.g. Software Engineer" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
@@ -56,15 +56,6 @@
                         <option value="">-- Select Department --</option>
                         @foreach($departments as $dept)
                             <option value="{{ $dept->id }}" {{ old('department_id') == $dept->id ? 'selected' : '' }}>{{ $dept->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Team</label>
-                    <select name="team_id" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
-                        <option value="">-- Select Team --</option>
-                        @foreach($teams as $team)
-                            <option value="{{ $team->id }}" {{ old('team_id') == $team->id ? 'selected' : '' }}>{{ $team->name }}</option>
                         @endforeach
                     </select>
                 </div>

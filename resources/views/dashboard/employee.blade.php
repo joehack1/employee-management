@@ -5,11 +5,15 @@
 @section('content')
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     <!-- Employee Header & Status Card -->
-    <div class="bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-6">
+    <div class="dashboard-hero bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="flex items-start sm:items-center gap-4">
-            <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
-                {{ substr($user->name, 0, 1) }}
-            </div>
+            @if($user->avatar)
+                <img src="{{ asset('storage/' . $user->avatar) }}" alt="{{ $user->name }} profile picture" class="w-16 h-16 rounded-2xl object-cover shadow-lg flex-shrink-0">
+            @else
+                <div class="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white font-bold text-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 flex-shrink-0">
+                    {{ substr($user->name, 0, 1) }}
+                </div>
+            @endif
             <div>
                 <div class="flex flex-wrap items-center gap-2">
                     <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ $employee ? $employee->full_name : $user->name }}</h1>

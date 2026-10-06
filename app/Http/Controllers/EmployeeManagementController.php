@@ -8,7 +8,6 @@ use App\Models\Employee;
 use App\Models\LeaveBalance;
 use App\Models\LeavePolicy;
 use App\Models\LeaveType;
-use App\Models\Team;
 use App\Models\User;
 use App\Services\LeaveLedgerService;
 use Carbon\Carbon;
@@ -56,11 +55,10 @@ class EmployeeManagementController extends Controller
     public function create()
     {
         $departments = Department::where('is_active', true)->get();
-        $teams = Team::all();
         $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'manager'])->get();
         $policies = LeavePolicy::all();
 
-        return view('employees.create', compact('departments', 'teams', 'teamLeads', 'policies'));
+        return view('employees.create', compact('departments', 'teamLeads', 'policies'));
     }
 
     public function store(Request $request)
@@ -102,7 +100,7 @@ class EmployeeManagementController extends Controller
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
                 'department_id' => $validated['department_id'],
-                'team_id' => $validated['team_id'],
+                'team_id' => $validated['team_id'] ?? null,
                 'job_title' => $validated['job_title'],
                 'team_lead_id' => $validated['team_lead_id'],
                 'manager_id' => $validated['manager_id'],
@@ -141,11 +139,10 @@ class EmployeeManagementController extends Controller
     {
         $employee = Employee::with('user')->findOrFail($id);
         $departments = Department::where('is_active', true)->get();
-        $teams = Team::all();
         $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'manager'])->get();
         $policies = LeavePolicy::all();
 
-        return view('employees.edit', compact('employee', 'departments', 'teams', 'teamLeads', 'policies'));
+        return view('employees.edit', compact('employee', 'departments', 'teamLeads', 'policies'));
     }
 
     public function update(Request $request, $id)

@@ -6,6 +6,7 @@ use App\Models\AuditLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileController extends Controller
 {
@@ -24,10 +25,21 @@ class ProfileController extends Controller
 
         $request->validate([
             'phone' => ['nullable', 'string', 'max:50'],
+            'avatar' => ['nullable', 'image', 'max:2048'],
         ]);
 
         $user->phone = $request->phone;
+        $oldAvatar = $user->avatar;
+
+        if ($request->hasFile('avatar')) {
+            $user->avatar = $request->file('avatar')->store('profile-photos', 'public');
+        }
+
         $user->save();
+
+        if ($request->hasFile('avatar') && $oldAvatar) {
+            Storage::disk('public')->delete($oldAvatar);
+        }
 
         if ($employee) {
             $employee->phone = $request->phone;
