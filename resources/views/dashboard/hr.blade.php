@@ -54,11 +54,11 @@
             <span class="text-[10px] text-emerald-600 mt-1 inline-block">resuming work</span>
         </div>
 
-        <!-- Metric 4: Pending Approvals -->
+        <!-- Metric 4: HR actions -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending HR Review</p>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Manager Leave / Cancellations</p>
             <p class="text-2xl font-extrabold text-amber-500 mt-1">{{ $pendingApprovals->count() }}</p>
-            <a href="{{ route('approvals.pending') }}" class="text-[10px] text-amber-600 font-bold hover:underline mt-1 inline-block">Review now &rarr;</a>
+            <a href="{{ route('approvals.pending') }}" class="text-[10px] text-amber-600 font-bold hover:underline mt-1 inline-block">Review actions &rarr;</a>
         </div>
 
         <!-- Metric 5: Annual Leave Used -->
@@ -82,25 +82,25 @@
             <div class="flex items-center gap-3">
                 <span class="text-2xl">🚨</span>
                 <div>
-                    <h3 class="text-sm font-bold text-amber-900">Urgent: {{ $emergencyRequests->count() }} Emergency Leave Request(s)</h3>
-                    <p class="text-xs text-amber-700">These applications bypassed standard 3-day notice requirements due to urgent personal emergencies.</p>
+                    <h3 class="text-sm font-bold text-amber-900">Urgent: {{ $emergencyRequests->count() }} Manager Leave Request(s)</h3>
+                    <p class="text-xs text-amber-700">A manager has submitted an emergency leave request for HR review.</p>
                 </div>
             </div>
-            <a href="{{ route('approvals.pending') }}" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition">
-                Process Emergencies &rarr;
+                    <a href="{{ route('approvals.pending') }}" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition">
+                Review Request &rarr;
             </a>
         </div>
     @endif
 
-    <!-- Main Grid: Pending HR Review Queue & Monthly Analytics Chart -->
+    <!-- Main Grid: HR actions & monthly analytics -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Left 2 Cols: Pending Queue -->
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                     <div>
-                        <h2 class="text-base font-bold text-slate-900">Pending HR Action Queue</h2>
-                        <p class="text-xs text-slate-500">Requires final administrative approval or cancellation confirmation</p>
+                        <h2 class="text-base font-bold text-slate-900">HR Actions</h2>
+                        <p class="text-xs text-slate-500">Manager leave requests and cancellation confirmations need HR action</p>
                     </div>
                     <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
                         {{ $pendingApprovals->count() }} Requests

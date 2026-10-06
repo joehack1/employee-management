@@ -22,18 +22,24 @@ class LeaveApprovalController extends Controller
         $user = Auth::user();
         $employee = $user->employee;
 
-        if ($user->isHr()) {
-            // HR sees pending_hr and cancellation_requested
+        if ($user->isManager()) {
+            $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
+                ->where('status', 'pending_manager')
+                ->orderBy('is_emergency', 'desc')
+                ->orderBy('created_at', 'asc')
+                ->paginate(15);
+            $viewTitle = 'Manager Approvals Queue';
+            $approvalLevel = 'manager';
+            $isHrView = false;
+        } elseif ($user->isHr()) {
+            // HR only approves manager leave and cancellation requests.
             $query = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
                 ->whereIn('status', ['pending_hr', 'cancellation_requested']);
-
-            if ($request->boolean('include_team_lead')) {
-                $query->orWhere('status', 'pending_team_lead');
-            }
 
             $applications = $query->orderBy('is_emergency', 'desc')->orderBy('created_at', 'asc')->paginate(15);
             $viewTitle = 'HR Approvals Queue';
             $isHrView = true;
+            $approvalLevel = 'hr';
         } elseif ($user->role === 'team_lead') {
             // Team lead sees supervisees with pending_team_lead
             $teamMemberIds = Employee::where('team_lead_id', $user->id)
@@ -53,26 +59,27 @@ class LeaveApprovalController extends Controller
 
             $viewTitle = 'Team Lead Approvals Queue';
             $isHrView = false;
+            $approvalLevel = 'team_lead';
         } else {
             abort(403, 'Unauthorized');
         }
 
-        return view('approvals.pending', compact('applications', 'viewTitle', 'isHrView'));
+        return view('approvals.pending', compact('applications', 'viewTitle', 'isHrView', 'approvalLevel'));
     }
 
     public function teamLeadApprove(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role !== 'team_lead' && !$user->isHr()) {
+        if ($user->role !== 'team_lead') {
             abort(403);
         }
 
-        $application = LeaveApplication::findOrFail($id);
+        $application = LeaveApplication::where('status', 'pending_team_lead')->findOrFail($id);
         $comment = $request->input('comment');
 
         try {
             $this->workflowService->approveByTeamLead($application, $user->id, $comment);
-            return back()->with('success', "Application {$application->application_number} approved and forwarded to HR.");
+            return back()->with('success', "Application {$application->application_number} approved. HR has been notified.");
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
@@ -81,7 +88,7 @@ class LeaveApprovalController extends Controller
     public function teamLeadReject(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role !== 'team_lead' && !$user->isHr()) {
+        if ($user->role !== 'team_lead') {
             abort(403);
         }
 
@@ -89,10 +96,41 @@ class LeaveApprovalController extends Controller
             'rejection_reason' => ['required', 'string', 'min:5', 'max:500'],
         ]);
 
-        $application = LeaveApplication::findOrFail($id);
+        $application = LeaveApplication::where('status', 'pending_team_lead')->findOrFail($id);
 
         try {
             $this->workflowService->rejectByTeamLead($application, $user->id, $request->rejection_reason);
+            return back()->with('success', "Application {$application->application_number} rejected.");
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function managerApprove(Request $request, $id)
+    {
+        if (!Auth::user()->isManager()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $application = LeaveApplication::where('status', 'pending_manager')->findOrFail($id);
+        try {
+            $this->workflowService->approveByManager($application, Auth::id(), $request->input('comment'));
+            return back()->with('success', "Application {$application->application_number} approved.");
+        } catch (Exception $e) {
+            return back()->with('error', $e->getMessage());
+        }
+    }
+
+    public function managerReject(Request $request, $id)
+    {
+        if (!Auth::user()->isManager()) {
+            abort(403, 'Unauthorized');
+        }
+
+        $request->validate(['rejection_reason' => ['required', 'string', 'min:5', 'max:500']]);
+        $application = LeaveApplication::where('status', 'pending_manager')->findOrFail($id);
+        try {
+            $this->workflowService->rejectByManager($application, Auth::id(), $request->rejection_reason);
             return back()->with('success', "Application {$application->application_number} rejected.");
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -106,7 +144,7 @@ class LeaveApprovalController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $application = LeaveApplication::findOrFail($id);
+        $application = LeaveApplication::where('status', 'pending_hr')->findOrFail($id);
         $comment = $request->input('comment');
 
         try {
@@ -128,7 +166,7 @@ class LeaveApprovalController extends Controller
             'rejection_reason' => ['required', 'string', 'min:5', 'max:500'],
         ]);
 
-        $application = LeaveApplication::findOrFail($id);
+        $application = LeaveApplication::where('status', 'pending_hr')->findOrFail($id);
 
         try {
             $this->workflowService->rejectByHr($application, $user->id, $request->rejection_reason);
@@ -145,7 +183,7 @@ class LeaveApprovalController extends Controller
             abort(403);
         }
 
-        $application = LeaveApplication::findOrFail($id);
+        $application = LeaveApplication::where('status', 'cancellation_requested')->findOrFail($id);
 
         try {
             $this->workflowService->approveCancellation($application, $user->id, $request->input('comment'));

@@ -42,7 +42,7 @@
             @endif
 
             <!-- HR Actions -->
-            @if($isHr && in_array($application->status, ['pending_hr', 'pending_team_lead']))
+            @if($isHr && $application->status === 'pending_hr')
                 <button @click="openHrApprove = true" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs">
                     Final Approve (HR)
                 </button>

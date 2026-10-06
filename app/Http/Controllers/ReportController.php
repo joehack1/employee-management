@@ -89,11 +89,11 @@ class ReportController extends Controller
     public function exportCsv(Request $request): StreamedResponse
     {
         $year = $request->input('year', Carbon::now()->year);
-        $type = $request->input('report_type', 'applications');
+        $type = $request->input('report_type', 'annual');
 
         $headers = [
             'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"leave_report_{$type}_{$year}.csv\"",
+            'Content-Disposition' => "attachment; filename=\"" . ($type === 'balances' ? 'annual_leave_balances' : 'annual_leave') . "_{$year}.csv\"",
         ];
 
         return response()->stream(function () use ($year, $type, $request) {
@@ -102,7 +102,9 @@ class ReportController extends Controller
             if ($type === 'balances') {
                 fputcsv($handle, ['Employee Number', 'Employee Name', 'Department', 'Leave Type', 'Year', 'Entitled', 'Carried Forward', 'Adjustments', 'Used', 'Pending', 'Available Balance']);
 
-                $query = LeaveBalance::with(['employee.department', 'leaveType'])->where('year', $year);
+                $query = LeaveBalance::with(['employee.department', 'leaveType'])
+                    ->where('year', $year)
+                    ->whereHas('leaveType', fn($q) => $q->where('code', 'annual'));
                 if ($request->filled('department_id')) {
                     $query->whereHas('employee', fn($q) => $q->where('department_id', $request->department_id));
                 }
@@ -126,7 +128,9 @@ class ReportController extends Controller
                 // Applications export
                 fputcsv($handle, ['Application #', 'Employee', 'Department', 'Leave Type', 'Start Date', 'End Date', 'Days', 'Half Day', 'Emergency', 'Status', 'Submitted At', 'Reason']);
 
-                $query = LeaveApplication::with(['employee.department', 'leaveType'])->whereYear('start_date', $year);
+                $query = LeaveApplication::with(['employee.department', 'leaveType'])
+                    ->whereYear('start_date', $year)
+                    ->whereHas('leaveType', fn($q) => $q->where('code', 'annual'));
                 if ($request->filled('department_id')) {
                     $query->whereHas('employee', fn($q) => $q->where('department_id', $request->department_id));
                 }

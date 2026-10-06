@@ -30,7 +30,7 @@
         <div class="flex items-center justify-between border-b border-slate-100 pb-4">
             <div>
                 <h2 class="text-base font-bold text-slate-900">Pending Team Leave Requests</h2>
-                <p class="text-xs text-slate-500">Requires your review and approval before proceeding to HR</p>
+                <p class="text-xs text-slate-500">Your approval finalizes the request. HR is notified with the leave dates and duration.</p>
             </div>
             <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
                 {{ $pendingRequests->count() }} Pending

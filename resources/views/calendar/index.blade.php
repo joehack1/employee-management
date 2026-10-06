@@ -25,7 +25,7 @@
     <!-- Filters Bar -->
     <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-xs flex flex-wrap items-center justify-between gap-4">
         <div class="flex flex-wrap items-center gap-3">
-            @if(auth()->user()->isHr())
+            @if(auth()->user()->isHr() || auth()->user()->isManager())
                 <select x-model="selectedDepartment" @change="fetchEvents()" class="text-xs px-3 py-2 border border-slate-300 rounded-xl">
                     <option value="">All Departments</option>
                     @foreach($departments as $dept)

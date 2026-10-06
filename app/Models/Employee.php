@@ -103,7 +103,7 @@ class Employee extends Model
         }
 
         $pendingLeave = $this->leaveApplications()
-            ->whereIn('status', ['pending_team_lead', 'pending_hr'])
+            ->whereIn('status', ['pending_team_lead', 'pending_manager', 'pending_hr'])
             ->where('start_date', '<=', $today)
             ->where('end_date', '>=', $today)
             ->first();

@@ -82,11 +82,11 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">HR Manager</label>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Reporting Manager</label>
                     <select name="manager_id" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
-                        <option value="">-- Select HR Manager --</option>
-                        @foreach($teamLeads->where('role', 'hr') as $hr)
-                            <option value="{{ $hr->id }}" {{ old('manager_id') == $hr->id ? 'selected' : '' }}>{{ $hr->name }}</option>
+                        <option value="">-- Select Manager --</option>
+                        @foreach($teamLeads->where('role', 'manager') as $manager)
+                            <option value="{{ $manager->id }}" {{ old('manager_id') == $manager->id ? 'selected' : '' }}>{{ $manager->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -121,6 +121,7 @@
                         <option value="team_lead">Team Lead</option>
                         <option value="hr">HR Manager</option>
                         <option value="admin">Administrator</option>
+                        <option value="manager">Manager</option>
                     </select>
                 </div>
                 <div>

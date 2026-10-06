@@ -49,7 +49,10 @@ class LeaveCalculationService
         $maxTeamOnLeave = $policy ? $policy->max_team_on_leave : 2;
 
         // Fetch working days (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
-        $workingDayNumbers = WorkingDay::where('is_working_day', true)
+        // Saturday (6) and Sunday (0) are never counted as leave days.
+        // The calendar settings may disable weekdays, but cannot make weekends workdays.
+        $workingDayNumbers = WorkingDay::whereBetween('day_of_week', [1, 5])
+            ->where('is_working_day', true)
             ->pluck('day_of_week')
             ->toArray();
 
@@ -106,17 +109,20 @@ class LeaveCalculationService
         if ($isHalfDay) {
             if ($start->equalTo($end)) {
                 $totalDays = $workingDaysCount > 0 ? 0.5 : 0.0;
-                if (!empty($daysBreakdown)) {
-                    $daysBreakdown[0]['weight'] = $totalDays;
+                if ($totalDays > 0 && !empty($daysBreakdown)) {
+                    $daysBreakdown[0]['weight'] = 0.5;
                     $daysBreakdown[0]['day_type'] = $halfDayType ?? 'half_day';
                 }
             } else {
-                // Multi-day with half-day at end
-                $totalDays = max(0.5, (float) ($workingDaysCount - 0.5));
-                if (!empty($daysBreakdown)) {
-                    $lastIdx = count($daysBreakdown) - 1;
-                    $daysBreakdown[$lastIdx]['weight'] = 0.5;
-                    $daysBreakdown[$lastIdx]['day_type'] = $halfDayType ?? 'half_day';
+                // Apply the half day to the last working day, even when the selected
+                // end date is a weekend or holiday.
+                $totalDays = $workingDaysCount > 0 ? (float) ($workingDaysCount - 0.5) : 0.0;
+                for ($i = count($daysBreakdown) - 1; $i >= 0; $i--) {
+                    if ($daysBreakdown[$i]['is_working_day']) {
+                        $daysBreakdown[$i]['weight'] = 0.5;
+                        $daysBreakdown[$i]['day_type'] = $halfDayType ?? 'half_day';
+                        break;
+                    }
                 }
             }
         } else {
@@ -168,7 +174,7 @@ class LeaveCalculationService
         $query = LeaveApplication::query()
             ->with(['employee'])
             ->where('employee_id', '!=', $employee->id)
-            ->whereIn('status', ['approved', 'pending_team_lead', 'pending_hr'])
+            ->whereIn('status', ['approved', 'pending_team_lead', 'pending_manager', 'pending_hr'])
             ->where(function ($q) use ($startDate, $endDate) {
                 $q->whereBetween('start_date', [$startDate, $endDate])
                   ->orWhereBetween('end_date', [$startDate, $endDate])

@@ -466,16 +466,16 @@ class DatabaseSeeder extends Seeder
 
         // 8. Specific prompt scenario for Joel Loter (requirement 5, 6, 8, 10):
         // Joel Loter has:
-        // Entitled: 21, Used: 7 (3-day annual leave in Aug + 4-day annual leave in Sep), HR adjustment: +2 days, Pending: 3 days, Available: 13 days
+        // Entitled: 21, Used: 10, HR adjustment: +2 days, Pending: 0 days, Available: 13 days
         $annualLt = $typeModels['annual'];
         $sickLt = $typeModels['sick'];
         $emergencyLt = $typeModels['emergency'];
 
         $joelBal = LeaveBalance::where('employee_id', $empJoel->id)->where('leave_type_id', $annualLt->id)->first();
         if ($joelBal) {
-            $joelBal->used_days = 7.0;
+            $joelBal->used_days = 10.0;
             $joelBal->manual_adjustment_days = 2.0;
-            $joelBal->pending_days = 3.0;
+            $joelBal->pending_days = 0.0;
             $joelBal->save();
 
             // Record transaction for HR adjustment
@@ -633,7 +633,7 @@ class DatabaseSeeder extends Seeder
             'submitted_at' => '2026-10-05 14:00:00',
         ]);
 
-        // App 5: Pending HR review for Joel Loter (Annual Leave Oct 21-23, approved by James Vance!)
+        // App 5: Team lead approved Joel Loter's Annual Leave (Oct 21-23).
         $app5 = LeaveApplication::create([
             'application_number' => 'LA-2026-0005',
             'employee_id' => $empJoel->id,
@@ -644,8 +644,8 @@ class DatabaseSeeder extends Seeder
             'is_half_day' => false,
             'is_emergency' => false,
             'reason' => 'Family travel and wedding attendance',
-            'status' => 'pending_hr',
-            'current_approval_level' => 'hr',
+            'status' => 'approved',
+            'current_approval_level' => 'completed',
             'team_conflict_count' => 0,
             'submitted_at' => '2026-10-05 11:30:00',
         ]);
@@ -656,6 +656,18 @@ class DatabaseSeeder extends Seeder
             'level' => 'team_lead',
             'action' => 'approved',
             'comment' => 'Approved by James Vance. Work and test coverage handed over to team.',
+            'created_at' => '2026-10-05 15:10:00',
+        ]);
+
+        LeaveTransaction::create([
+            'employee_id' => $empJoel->id,
+            'leave_type_id' => $annualLt->id,
+            'leave_application_id' => $app5->id,
+            'type' => 'approved_deduction',
+            'amount' => -3.0,
+            'running_balance' => 13.0,
+            'reason' => 'Team lead approved Annual Leave for LA-2026-0005 (21-23 Oct 2026)',
+            'created_by' => $userLead->id,
             'created_at' => '2026-10-05 15:10:00',
         ]);
 
@@ -704,7 +716,7 @@ class DatabaseSeeder extends Seeder
                 'code' => 'lead_approved',
                 'name' => 'Team Lead Approved',
                 'subject' => 'Team Lead Approved Your Leave Application',
-                'body_template' => "Hello {employee_name},\n\nYour {leave_type} application has been approved by your Team Lead and has now progressed to HR for final sign-off.\n\nApprover Comment: {comment}",
+                'body_template' => "Hello {employee_name},\n\nYour {leave_type} application has been approved by your Team Lead.\n\nApprover Comment: {comment}",
             ],
             [
                 'code' => 'hr_approved',
@@ -749,5 +761,7 @@ class DatabaseSeeder extends Seeder
             'ip_address' => '127.0.0.1',
             'created_at' => Carbon::now()->subMonths(1),
         ]);
+
+        $this->call(ManagerUserSeeder::class);
     }
 }

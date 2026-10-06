@@ -59,6 +59,7 @@ class AuthController extends Controller
     {
         $user = match($roleOrEmail) {
             'hr' => User::where('role', 'hr')->first(),
+            'manager' => User::where('role', 'manager')->first(),
             'lead' => User::where('role', 'team_lead')->first(),
             'employee' => User::where('email', 'joel@company.com')->first() ?? User::where('role', 'employee')->first(),
             'mary' => User::where('email', 'mary@company.com')->first(),

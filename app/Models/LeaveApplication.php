@@ -91,6 +91,7 @@ class LeaveApplication extends Model
         return match($this->status) {
             'draft' => ['label' => 'Draft', 'class' => 'bg-gray-100 text-gray-800 border-gray-300'],
             'pending_team_lead' => ['label' => 'Pending Team Lead', 'class' => 'bg-amber-100 text-amber-800 border-amber-300'],
+            'pending_manager' => ['label' => 'Pending Manager', 'class' => 'bg-teal-100 text-teal-800 border-teal-300'],
             'pending_hr' => ['label' => 'Pending HR', 'class' => 'bg-blue-100 text-blue-800 border-blue-300'],
             'approved' => ['label' => 'Approved', 'class' => 'bg-emerald-100 text-emerald-800 border-emerald-300'],
             'rejected' => ['label' => 'Rejected', 'class' => 'bg-rose-100 text-rose-800 border-rose-300'],

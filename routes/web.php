@@ -63,6 +63,8 @@ Route::middleware('auth')->group(function () {
     Route::post('/approvals/{id}/lead-reject', [LeaveApprovalController::class, 'teamLeadReject'])->name('approvals.leadReject');
     Route::post('/approvals/{id}/hr-approve', [LeaveApprovalController::class, 'hrApprove'])->name('approvals.hrApprove');
     Route::post('/approvals/{id}/hr-reject', [LeaveApprovalController::class, 'hrReject'])->name('approvals.hrReject');
+    Route::post('/approvals/{id}/manager-approve', [LeaveApprovalController::class, 'managerApprove'])->name('approvals.managerApprove');
+    Route::post('/approvals/{id}/manager-reject', [LeaveApprovalController::class, 'managerReject'])->name('approvals.managerReject');
     Route::post('/approvals/{id}/approve-cancellation', [LeaveApprovalController::class, 'approveCancellation'])->name('approvals.approveCancellation');
 
     // Calendar
@@ -93,9 +95,11 @@ Route::middleware('auth')->group(function () {
 
         // Leave Types
         Route::get('/leave-types', [LeaveTypeController::class, 'index'])->name('leave_types.index');
+        Route::get('/leave-types/{id}/edit', [LeaveTypeController::class, 'edit'])->name('leave_types.edit');
         Route::post('/leave-types', [LeaveTypeController::class, 'store'])->name('leave_types.store');
         Route::put('/leave-types/{id}', [LeaveTypeController::class, 'update'])->name('leave_types.update');
         Route::post('/leave-types/{id}/toggle', [LeaveTypeController::class, 'toggle'])->name('leave_types.toggle');
+        Route::delete('/leave-types/{id}', [LeaveTypeController::class, 'destroy'])->name('leave_types.destroy');
 
         // Leave Policies
         Route::get('/policies', [LeavePolicyController::class, 'index'])->name('policies.index');
@@ -108,10 +112,6 @@ Route::middleware('auth')->group(function () {
         Route::delete('/holidays/{id}', [PublicHolidayController::class, 'destroy'])->name('holidays.destroy');
         Route::post('/working-days', [PublicHolidayController::class, 'updateWorkingDays'])->name('working_days.update');
 
-        // Reports
-        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
-        Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
-
         // Audit Trail
         Route::get('/audit-logs', [AuditLogController::class, 'index'])->name('audit.index');
 
@@ -120,5 +120,10 @@ Route::middleware('auth')->group(function () {
             Artisan::call('leave:reminders');
             return back()->with('success', 'Leave reminder scan executed successfully!');
         })->name('admin.reminders.run');
+    });
+
+    Route::middleware('can:manage-analytics')->group(function () {
+        Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
+        Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
     });
 });

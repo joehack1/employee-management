@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en" class="h-full bg-white">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,18 +8,41 @@
     <!-- Tailwind CSS CDN for instant rendering -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
+        const tealBrand = {
+            50: '#edf8f7', 100: '#d9efed', 200: '#b8e1de', 300: '#8bcbc7',
+            400: '#58b1ac', 500: '#35a29e', 600: '#1d9692', 700: '#187f7c',
+            800: '#175553', 900: '#164745', 950: '#0b2928'
+        };
+        const redBrand = {
+            50: '#fbf1f1', 100: '#f6e2e2', 200: '#edcaca', 300: '#dfa4a5',
+            400: '#cb7476', 500: '#b54c4f', 600: '#a01e22', 700: '#861a1d',
+            800: '#70191b', 900: '#5d191b', 950: '#330b0c'
+        };
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
+                        blue: tealBrand,
+                        teal: tealBrand,
+                        emerald: tealBrand,
+                        indigo: tealBrand,
+                        cyan: tealBrand,
+                        green: tealBrand,
+                        purple: tealBrand,
+                        violet: tealBrand,
+                        rose: redBrand,
+                        red: redBrand,
+                        amber: redBrand,
+                        orange: redBrand,
+                        yellow: redBrand,
                         brand: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
+                            50: tealBrand[50],
+                            100: tealBrand[100],
+                            500: tealBrand[500],
+                            600: tealBrand[600],
+                            700: tealBrand[700],
+                            800: tealBrand[800],
+                            900: tealBrand[900],
                         }
                     }
                 }
@@ -68,10 +91,16 @@
                             <a href="{{ route('calendar.index') }}" class="{{ request()->routeIs('calendar.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
                                 Calendar
                             </a>
+                            @if(auth()->user()->isManager())
+                                <a href="{{ route('reports.index') }}" class="{{ request()->routeIs('reports.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">Analytics</a>
+                            @endif
 
-                            @if(auth()->user()->isTeamLead() || auth()->user()->isHr())
+                            @if(auth()->user()->isTeamLead() || auth()->user()->isHr() || auth()->user()->isManager())
                                 @php
-                                    $pendingCount = \App\Models\LeaveApplication::whereIn('status', auth()->user()->isHr() ? ['pending_hr', 'cancellation_requested'] : ['pending_team_lead'])->count();
+                                    $approvalStatuses = auth()->user()->isManager()
+                                        ? ['pending_manager']
+                                        : (auth()->user()->isHr() ? ['pending_hr', 'cancellation_requested'] : ['pending_team_lead']);
+                                    $pendingCount = \App\Models\LeaveApplication::whereIn('status', $approvalStatuses)->count();
                                 @endphp
                                 <a href="{{ route('approvals.pending') }}" class="{{ request()->routeIs('approvals.pending') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5">
                                     Approvals
@@ -113,6 +142,7 @@
                         <div class="hidden lg:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
                             <span class="text-slate-500 font-medium px-2">Switch:</span>
                             <a href="{{ route('fast.login', 'hr') }}" title="Sarah Jenkins (HR Manager)" class="px-2 py-1 rounded-lg {{ auth()->user()->isHr() ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">HR</a>
+                            <a href="{{ route('fast.login', 'manager') }}" title="Alex Morgan (Manager)" class="px-2 py-1 rounded-lg {{ auth()->user()->isManager() ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Manager</a>
                             <a href="{{ route('fast.login', 'lead') }}" title="James Vance (Team Lead)" class="px-2 py-1 rounded-lg {{ auth()->user()->role === 'team_lead' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Team Lead</a>
                             <a href="{{ route('fast.login', 'employee') }}" title="Joel Loter (Senior Dev)" class="px-2 py-1 rounded-lg {{ auth()->user()->email === 'joel@company.com' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Joel (Dev)</a>
                             <a href="{{ route('fast.login', 'mary') }}" title="Mary Wanjiku (Engineer)" class="px-2 py-1 rounded-lg {{ auth()->user()->email === 'mary@company.com' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Mary</a>

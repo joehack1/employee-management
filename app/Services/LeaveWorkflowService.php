@@ -75,17 +75,23 @@ class LeaveWorkflowService
                 ));
             }
 
-            // Determine initial workflow status
+            // Team leads and HR staff have their own leave requests reviewed by the manager.
             $policy = $employee->leavePolicy;
             $workflow = $policy ? $policy->approval_workflow : 'team_lead_then_hr';
+            $applicantRole = $employee->user?->role;
 
             $initialStatus = 'pending_team_lead';
             $approvalLevel = 'team_lead';
 
-            // If workflow is direct_hr or employee has no team lead, route directly to HR
-            if ($workflow === 'direct_hr' || !$employee->team_lead_id || $employee->team_lead_id === $authUserId) {
+            if ($applicantRole === 'manager') {
                 $initialStatus = 'pending_hr';
                 $approvalLevel = 'hr';
+            } elseif (in_array($applicantRole, ['team_lead', 'hr', 'admin'], true)
+                || $workflow === 'direct_hr'
+                || !$employee->team_lead_id
+                || $employee->team_lead_id === $authUserId) {
+                $initialStatus = 'pending_manager';
+                $approvalLevel = 'manager';
             }
 
             // Generate application number
@@ -174,20 +180,31 @@ class LeaveWorkflowService
      */
     public function approveByTeamLead(LeaveApplication $application, int $approverUserId, ?string $comment = null): void
     {
-        DB::transaction(function () use ($application, $approverUserId, $comment) {
-            $application->status = 'pending_hr';
-            $application->current_approval_level = 'hr';
+        $this->finalizeApproval($application, $approverUserId, 'team_lead', $comment);
+    }
+
+    /** Manager approves leave requested by a team lead or HR user. */
+    public function approveByManager(LeaveApplication $application, int $approverUserId, ?string $comment = null): void
+    {
+        $this->finalizeApproval($application, $approverUserId, 'manager', $comment);
+    }
+
+    private function finalizeApproval(LeaveApplication $application, int $approverUserId, string $level, ?string $comment): void
+    {
+        DB::transaction(function () use ($application, $approverUserId, $level, $comment) {
+            $application->status = 'approved';
+            $application->current_approval_level = 'completed';
             $application->save();
 
             LeaveApproval::create([
                 'leave_application_id' => $application->id,
                 'approver_id' => $approverUserId,
-                'level' => 'team_lead',
+                'level' => $level,
                 'action' => 'approved',
                 'comment' => $comment,
             ]);
 
-            if (!empty($comment)) {
+            if ($comment) {
                 LeaveComment::create([
                     'leave_application_id' => $application->id,
                     'user_id' => $approverUserId,
@@ -195,26 +212,52 @@ class LeaveWorkflowService
                 ]);
             }
 
+            $this->ledgerService->deductApprovedDays($application, $approverUserId);
+
+            $approverLabel = $level === 'manager' ? 'Manager' : 'Team Lead';
             AuditLog::log(
-                action: 'team_lead_approved_leave',
+                action: $level . '_approved_leave',
                 entityType: 'LeaveApplication',
                 entityId: $application->id,
-                description: "Team Lead approved leave application {$application->application_number}. Comment: {$comment}"
+                description: "{$approverLabel} approved leave application {$application->application_number} ({$application->total_days} days). Comment: {$comment}"
             );
 
-            // Notify employee
             if ($application->employee->user) {
                 $application->employee->user->notify(new LeaveStatusNotification(
                     application: $application,
-                    title: 'Team Lead Approved Your Leave',
-                    message: "Your {$application->leaveType->name} request has been approved by your Team Lead and forwarded to HR for final review.",
-                    type: 'info'
+                    title: 'Leave Request Approved',
+                    message: sprintf(
+                        'Your %s request from %s to %s (%.1f working days) has been approved by your %s.%s',
+                        $application->leaveType->name,
+                        $application->start_date->format('d M'),
+                        $application->end_date->format('d M Y'),
+                        $application->total_days,
+                        strtolower($approverLabel),
+                        $comment ? " Note: {$comment}" : ''
+                    ),
+                    type: 'success'
                 ));
             }
 
-            // Notify HR
-            $this->notifyHrApprovers($application);
+            $this->notifyHrOfApprovedLeave($application, $approverLabel);
         });
+    }
+
+    private function notifyHrOfApprovedLeave(LeaveApplication $application, string $approvedBy): void
+    {
+        $hrUsers = User::whereIn('role', ['hr', 'admin'])->get();
+        Notification::send($hrUsers, new LeaveStatusNotification(
+            application: $application,
+            title: 'Leave approved by ' . $approvedBy,
+            message: sprintf(
+                '%s is approved for leave from %s to %s (%s working days).',
+                $application->employee->full_name,
+                $application->start_date->format('d M Y'),
+                $application->end_date->format('d M Y'),
+                rtrim(rtrim(number_format((float) $application->total_days, 1), '0'), '.')
+            ),
+            type: 'info'
+        ));
     }
 
     /**
@@ -258,6 +301,48 @@ class LeaveWorkflowService
                     application: $application,
                     title: 'Leave Request Rejected',
                     message: "Your leave request was rejected by your Team Lead. Reason: {$reason}",
+                    type: 'danger'
+                ));
+            }
+        });
+    }
+
+    public function rejectByManager(LeaveApplication $application, int $approverUserId, string $reason): void
+    {
+        DB::transaction(function () use ($application, $approverUserId, $reason) {
+            $application->status = 'rejected';
+            $application->rejection_reason = $reason;
+            $application->rejected_by = $approverUserId;
+            $application->current_approval_level = 'completed';
+            $application->save();
+
+            LeaveApproval::create([
+                'leave_application_id' => $application->id,
+                'approver_id' => $approverUserId,
+                'level' => 'manager',
+                'action' => 'rejected',
+                'comment' => $reason,
+            ]);
+
+            LeaveComment::create([
+                'leave_application_id' => $application->id,
+                'user_id' => $approverUserId,
+                'comment' => 'Rejected: ' . $reason,
+            ]);
+
+            $this->ledgerService->releasePendingDays($application);
+            AuditLog::log(
+                action: 'manager_rejected_leave',
+                entityType: 'LeaveApplication',
+                entityId: $application->id,
+                description: "Manager rejected leave application {$application->application_number}. Reason: {$reason}"
+            );
+
+            if ($application->employee->user) {
+                $application->employee->user->notify(new LeaveStatusNotification(
+                    application: $application,
+                    title: 'Leave Request Rejected',
+                    message: "Your leave request was rejected by the Manager. Reason: {$reason}",
                     type: 'danger'
                 ));
             }
@@ -455,6 +540,18 @@ class LeaveWorkflowService
                 ));
             } else {
                 $this->notifyHrApprovers($application);
+            }
+        } elseif ($application->status === 'pending_manager') {
+            $manager = User::whereKey($application->employee->manager_id)
+                ->where('role', 'manager')
+                ->first() ?? User::where('role', 'manager')->first();
+            if ($manager) {
+                $manager->notify(new LeaveStatusNotification(
+                    application: $application,
+                    title: "{$prefix} - Manager Review Required",
+                    message: "{$application->employee->full_name} submitted a {$application->leaveType->name} request ({$application->total_days} working days) from {$application->start_date->format('d M')} to {$application->end_date->format('d M Y')}.",
+                    type: 'warning'
+                ));
             }
         } elseif (in_array($application->status, ['pending_hr', 'cancellation_requested'])) {
             $this->notifyHrApprovers($application);

@@ -7,7 +7,7 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ $viewTitle }}</h1>
-            <p class="text-xs text-slate-500">Review leave applications, enforce team coverage, and provide mandatory feedback</p>
+            <p class="text-xs text-slate-500">Review leave applications and record your decision</p>
         </div>
     </div>
 
@@ -37,6 +37,9 @@
                                         {{ $app->employee->full_name }}
                                     </a>
                                     <p class="text-[11px] text-slate-400">{{ $app->employee->department->name ?? 'General' }} • {{ $app->employee->employee_number }}</p>
+                                    @if($approvalLevel === 'manager')
+                                        <p class="text-[10px] font-semibold uppercase tracking-wide text-teal-700">{{ str_replace('_', ' ', $app->employee->user->role ?? 'staff') }}</p>
+                                    @endif
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -84,7 +87,7 @@
                                 <div x-show="openApprove" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
                                     <div @click.outside="openApprove = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-slate-900">Approve Request</h3>
-                                        <form action="{{ $isHrView ? route('approvals.hrApprove', $app->id) : route('approvals.leadApprove', $app->id) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ $approvalLevel === 'manager' ? route('approvals.managerApprove', $app->id) : ($isHrView ? route('approvals.hrApprove', $app->id) : route('approvals.leadApprove', $app->id)) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-700">Comment (Optional)</label>
@@ -102,7 +105,7 @@
                                 <div x-show="openReject" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
                                     <div @click.outside="openReject = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-rose-600">Reject Application</h3>
-                                        <form action="{{ $isHrView ? route('approvals.hrReject', $app->id) : route('approvals.leadReject', $app->id) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ $approvalLevel === 'manager' ? route('approvals.managerReject', $app->id) : ($isHrView ? route('approvals.hrReject', $app->id) : route('approvals.leadReject', $app->id)) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-700">Reason for Rejection <span class="text-rose-500">*</span></label>

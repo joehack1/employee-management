@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\AuditLog;
+use App\Models\LeaveBalance;
+use App\Models\LeaveTransaction;
 use App\Models\LeaveType;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -13,6 +15,13 @@ class LeaveTypeController extends Controller
     {
         $leaveTypes = LeaveType::withCount('applications')->get();
         return view('leave_types.index', compact('leaveTypes'));
+    }
+
+    public function edit($id)
+    {
+        $leaveType = LeaveType::findOrFail($id);
+
+        return view('leave_types.edit', compact('leaveType'));
     }
 
     public function store(Request $request)
@@ -66,5 +75,24 @@ class LeaveTypeController extends Controller
         AuditLog::log('leave_type_toggled', 'LeaveType', $leaveType->id, "Toggled status for {$leaveType->name}");
 
         return back()->with('success', "Status for {$leaveType->name} updated.");
+    }
+
+    public function destroy($id)
+    {
+        $leaveType = LeaveType::findOrFail($id);
+
+        $hasHistory = $leaveType->applications()->exists()
+            || LeaveBalance::where('leave_type_id', $leaveType->id)->exists()
+            || LeaveTransaction::where('leave_type_id', $leaveType->id)->exists();
+
+        if ($hasHistory) {
+            return back()->with('error', 'This leave type has leave history or balances and cannot be deleted. Disable it instead to keep those records.');
+        }
+
+        $name = $leaveType->name;
+        $leaveType->delete();
+        AuditLog::log('leave_type_deleted', 'LeaveType', $id, "Deleted leave type {$name}");
+
+        return back()->with('success', "Leave type {$name} deleted.");
     }
 }

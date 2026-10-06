@@ -26,7 +26,11 @@ class AppServiceProvider extends ServiceProvider
         });
 
         Gate::define('manage-team', function (User $user) {
-            return in_array($user->role, ['team_lead', 'hr', 'admin']);
+            return in_array($user->role, ['team_lead', 'hr', 'admin', 'manager']);
+        });
+
+        Gate::define('manage-analytics', function (User $user) {
+            return in_array($user->role, ['hr', 'admin', 'manager']);
         });
     }
 }

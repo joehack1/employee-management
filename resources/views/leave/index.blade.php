@@ -22,6 +22,7 @@
                 <select name="status" class="w-full text-xs px-3 py-2 border border-slate-300 rounded-xl" onchange="this.form.submit()">
                     <option value="">All Statuses</option>
                     <option value="pending_team_lead" {{ request('status') === 'pending_team_lead' ? 'selected' : '' }}>Pending Team Lead</option>
+                    <option value="pending_manager" {{ request('status') === 'pending_manager' ? 'selected' : '' }}>Pending Manager</option>
                     <option value="pending_hr" {{ request('status') === 'pending_hr' ? 'selected' : '' }}>Pending HR</option>
                     <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
                     <option value="rejected" {{ request('status') === 'rejected' ? 'selected' : '' }}>Rejected</option>

@@ -19,16 +19,16 @@
         <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200 space-y-4">
             <div>
                 <h2 class="text-base font-bold text-slate-900">Organizational Working Days</h2>
-                <p class="text-xs text-slate-500">Unchecked days are treated as weekends (0 working days counted)</p>
+                <p class="text-xs text-slate-500">Saturdays and Sundays are always excluded from leave counts.</p>
             </div>
 
             <form action="{{ route('working_days.update') }}" method="POST" class="space-y-3">
                 @csrf
                 <div class="divide-y divide-slate-100">
                     @foreach($workingDays as $wd)
-                        <label class="py-2.5 flex items-center justify-between text-xs cursor-pointer hover:bg-slate-50 px-2 rounded-lg transition">
-                            <span class="font-semibold text-slate-800">{{ $wd->name }}</span>
-                            <input type="checkbox" name="working_days[]" value="{{ $wd->day_of_week }}" {{ $wd->is_working_day ? 'checked' : '' }} class="h-4 w-4 text-blue-600 focus:ring-blue-500 rounded border-slate-300">
+                        <label class="py-2.5 flex items-center justify-between text-xs px-2 rounded-lg transition {{ $wd->day_of_week === 0 || $wd->day_of_week === 6 ? 'opacity-60' : 'cursor-pointer hover:bg-slate-50' }}">
+                            <span class="font-semibold text-slate-800">{{ $wd->name }}{{ in_array($wd->day_of_week, [0, 6], true) ? ' (non-working)' : '' }}</span>
+                            <input type="checkbox" name="working_days[]" value="{{ $wd->day_of_week }}" {{ $wd->is_working_day ? 'checked' : '' }} {{ in_array($wd->day_of_week, [0, 6], true) ? 'disabled' : '' }} class="h-4 w-4 text-blue-600 focus:ring-blue-500 rounded border-slate-300">
                         </label>
                     @endforeach
                 </div>

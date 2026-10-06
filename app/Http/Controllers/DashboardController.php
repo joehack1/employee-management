@@ -18,6 +18,10 @@ class DashboardController extends Controller
         $user = Auth::user();
         $employee = $user->employee;
 
+        if ($user->isManager()) {
+            return $this->managerDashboard();
+        }
+
         if ($user->isHr()) {
             return $this->hrDashboard();
         }
@@ -27,6 +31,46 @@ class DashboardController extends Controller
         }
 
         return $this->employeeDashboard($user, $employee);
+    }
+
+    protected function managerDashboard()
+    {
+        $today = Carbon::today()->toDateString();
+        $year = Carbon::now()->year;
+        $totalEmployees = Employee::where('employment_status', 'active')->count();
+
+        $onLeaveToday = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType'])
+            ->where('status', 'approved')
+            ->where('start_date', '<=', $today)
+            ->where('end_date', '>=', $today)
+            ->orderBy('start_date')
+            ->get();
+
+        $pendingRequests = LeaveApplication::with(['employee.department', 'employee.user', 'leaveType'])
+            ->where('status', 'pending_manager')
+            ->orderBy('is_emergency', 'desc')
+            ->orderBy('created_at')
+            ->get();
+
+        $upcomingLeave = LeaveApplication::with(['employee.department', 'leaveType'])
+            ->where('status', 'approved')
+            ->where('start_date', '>', $today)
+            ->orderBy('start_date')
+            ->take(12)
+            ->get();
+
+        $annualLeaveType = LeaveType::where('code', 'annual')->first();
+        $annualDaysUsed = LeaveApplication::where('status', 'approved')
+            ->where('leave_type_id', $annualLeaveType?->id)
+            ->whereYear('start_date', $year)
+            ->sum('total_days');
+
+        $departments = Department::withCount('employees')->get();
+
+        return view('dashboard.manager', compact(
+            'totalEmployees', 'onLeaveToday', 'pendingRequests', 'upcomingLeave',
+            'annualDaysUsed', 'departments', 'year'
+        ));
     }
 
     protected function employeeDashboard($user, $employee)
@@ -49,7 +93,7 @@ class DashboardController extends Controller
                 ->take(10)
                 ->get();
 
-            $pendingApplications = $applications->whereIn('status', ['pending_team_lead', 'pending_hr']);
+            $pendingApplications = $applications->whereIn('status', ['pending_team_lead', 'pending_manager', 'pending_hr']);
             $approvedApplications = $applications->where('status', 'approved');
             $rejectedApplications = $applications->where('status', 'rejected');
 
@@ -163,7 +207,7 @@ class DashboardController extends Controller
 
         $emergencyRequests = LeaveApplication::with(['employee.department', 'leaveType'])
             ->where('is_emergency', true)
-            ->whereIn('status', ['pending_team_lead', 'pending_hr'])
+            ->where('status', 'pending_hr')
             ->get();
 
         // Leave days used

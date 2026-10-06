@@ -59,7 +59,7 @@ class LeaveCalendarController extends Controller
                 })
                 ->pluck('id');
             $query->whereIn('employee_id', $teamMemberIds);
-        } elseif (!$user->isHr() && !$user->isAdmin()) {
+        } elseif (!$user->isHr() && !$user->isAdmin() && !$user->isManager()) {
             // Standard employee sees own team or own leaves
             if ($employee && $employee->team_id) {
                 $teamMemberIds = Employee::where('team_id', $employee->team_id)->pluck('id');
@@ -90,7 +90,7 @@ class LeaveCalendarController extends Controller
                 'start' => $h->date->toDateString(),
                 'end' => $h->date->toDateString(),
                 'type' => 'holiday',
-                'color' => '#8b5cf6',
+                'color' => '#1d9692',
                 'allDay' => true,
             ];
         }
@@ -109,12 +109,9 @@ class LeaveCalendarController extends Controller
                 'half_day_type' => $app->half_day_type,
                 'url' => route('leave.show', $app->id),
                 'color' => match($app->leaveType->color) {
-                    'blue' => '#3b82f6',
-                    'emerald' => '#10b981',
-                    'amber' => '#f59e0b',
-                    'rose' => '#f43f5e',
-                    'purple' => '#8b5cf6',
-                    default => '#6b7280',
+                    'blue', 'emerald', 'purple', 'cyan', 'indigo' => '#1d9692',
+                    'amber', 'rose' => '#a01e22',
+                    default => '#1d9692',
                 },
             ];
         }

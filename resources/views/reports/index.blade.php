@@ -10,12 +10,12 @@
             <p class="text-xs text-slate-500">Comprehensive departmental summaries, individual employee balances, and audit exports</p>
         </div>
         <div class="flex items-center gap-2">
-            <a href="{{ route('reports.export') }}?year={{ $year }}&report_type=applications&department_id={{ $departmentId }}" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition">
+            <a href="{{ route('reports.export') }}?year={{ $year }}&report_type=annual&department_id={{ $departmentId }}" class="px-4 py-2 rounded-xl bg-teal-600 hover:bg-teal-700 text-white text-xs font-semibold shadow-xs flex items-center gap-1.5 transition">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Export CSV (Applications)
+                Export Annual Leave CSV
             </a>
             <a href="{{ route('reports.export') }}?year={{ $year }}&report_type=balances&department_id={{ $departmentId }}" class="px-4 py-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold shadow-xs transition">
-                Export CSV (Balances)
+                Export Annual Leave Balances CSV
             </a>
         </div>
     </div>

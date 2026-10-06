@@ -186,12 +186,13 @@ class LeaveApplicationController extends Controller
         $isOwner = $employee && $application->employee_id === $employee->id;
         $isTeamLead = $user->role === 'team_lead' && ($application->employee->team_lead_id === $user->id || $application->employee->team_id === $employee?->team_id);
         $isHr = $user->isHr();
+        $isManager = $user->isManager();
 
-        if (!$isOwner && !$isTeamLead && !$isHr) {
+        if (!$isOwner && !$isTeamLead && !$isHr && !$isManager) {
             abort(403, 'Unauthorized access to leave application.');
         }
 
-        return view('leave.show', compact('application', 'isOwner', 'isTeamLead', 'isHr'));
+        return view('leave.show', compact('application', 'isOwner', 'isTeamLead', 'isHr', 'isManager'));
     }
 
     public function requestCancellation(Request $request, $id)

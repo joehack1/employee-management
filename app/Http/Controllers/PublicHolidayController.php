@@ -51,7 +51,8 @@ class PublicHolidayController extends Controller
 
         for ($i = 0; $i <= 6; $i++) {
             WorkingDay::where('day_of_week', $i)->update([
-                'is_working_day' => in_array((string)$i, $activeDays),
+                'is_working_day' => in_array($i, [1, 2, 3, 4, 5], true)
+                    && in_array((string) $i, $activeDays, true),
             ]);
         }
 

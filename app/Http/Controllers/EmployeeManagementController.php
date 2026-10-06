@@ -57,7 +57,7 @@ class EmployeeManagementController extends Controller
     {
         $departments = Department::where('is_active', true)->get();
         $teams = Team::all();
-        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin'])->get();
+        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'manager'])->get();
         $policies = LeavePolicy::all();
 
         return view('employees.create', compact('departments', 'teams', 'teamLeads', 'policies'));
@@ -79,7 +79,7 @@ class EmployeeManagementController extends Controller
             'date_employed' => ['required', 'date'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
             'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
-            'role' => ['required', 'in:employee,team_lead,hr,admin'],
+            'role' => ['required', 'in:employee,team_lead,hr,admin,manager'],
             'password' => ['required', 'string', 'min:6'],
         ]);
 
@@ -142,7 +142,7 @@ class EmployeeManagementController extends Controller
         $employee = Employee::with('user')->findOrFail($id);
         $departments = Department::where('is_active', true)->get();
         $teams = Team::all();
-        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin'])->get();
+        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'manager'])->get();
         $policies = LeavePolicy::all();
 
         return view('employees.edit', compact('employee', 'departments', 'teams', 'teamLeads', 'policies'));
@@ -167,7 +167,7 @@ class EmployeeManagementController extends Controller
             'date_employed' => ['required', 'date'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
             'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
-            'role' => ['required', 'in:employee,team_lead,hr,admin'],
+            'role' => ['required', 'in:employee,team_lead,hr,admin,manager'],
             'employment_status' => ['required', 'in:active,probation,deactivated'],
         ]);
 

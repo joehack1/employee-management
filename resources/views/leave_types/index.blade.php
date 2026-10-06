@@ -70,11 +70,17 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right">
+                                <a href="{{ route('leave_types.edit', $lt->id) }}" class="font-bold text-xs text-teal-700 hover:text-teal-900 mr-3">Edit</a>
                                 <form action="{{ route('leave_types.toggle', $lt->id) }}" method="POST" class="inline">
                                     @csrf
                                     <button type="submit" class="font-bold text-xs {{ $lt->is_active ? 'text-rose-600 hover:text-rose-800' : 'text-emerald-600 hover:text-emerald-800' }}">
                                         {{ $lt->is_active ? 'Disable' : 'Enable' }}
                                     </button>
+                                </form>
+                                <form action="{{ route('leave_types.destroy', $lt->id) }}" method="POST" class="inline ml-3" onsubmit="return confirm('Delete {{ addslashes($lt->name) }}? Leave types with history cannot be deleted.');">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="font-bold text-xs text-rose-700 hover:text-rose-900">Delete</button>
                                 </form>
                             </td>
                         </tr>
