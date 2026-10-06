@@ -116,7 +116,7 @@ class EmployeeManagementController extends Controller
             $year = Carbon::now()->year;
             $leaveTypes = LeaveType::where('is_active', true)->get();
             foreach ($leaveTypes as $lt) {
-                $days = $lt->code === 'annual' ? $validated['annual_entitlement'] : $lt->days_allowed;
+                $days = $lt->code === 'annual' ? 0 : $lt->days_allowed;
                 $balance = $this->ledgerService->getOrCreateBalance($employee, $lt, $year);
                 $balance->entitled_days = $days;
                 $balance->save();

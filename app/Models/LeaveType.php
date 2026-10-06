@@ -32,6 +32,28 @@ class LeaveType extends Model
         ];
     }
 
+    public function getDisplayColorAttribute(): string
+    {
+        $legacyColors = [
+            'blue' => '#1d9692',
+            'emerald' => '#1d9692',
+            'teal' => '#1d9692',
+            'amber' => '#a01e22',
+            'rose' => '#a01e22',
+            'red' => '#a01e22',
+            'purple' => '#7c3aed',
+            'indigo' => '#4f46e5',
+            'cyan' => '#06b6d4',
+            'slate' => '#64748b',
+        ];
+
+        if (is_string($this->color) && preg_match('/^#[0-9a-fA-F]{6}$/', $this->color)) {
+            return $this->color;
+        }
+
+        return $legacyColors[$this->color] ?? '#1d9692';
+    }
+
     public function balances(): HasMany
     {
         return $this->hasMany(LeaveBalance::class);

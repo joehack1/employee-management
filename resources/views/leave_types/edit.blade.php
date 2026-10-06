@@ -23,11 +23,7 @@
                     <input type="number" name="days_allowed" required min="0" max="365" step="0.5" value="{{ old('days_allowed', $leaveType->days_allowed) }}" class="mt-1 block w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm">
                 </label>
                 <label class="text-xs font-semibold text-slate-700">Display color
-                    <select name="color" class="mt-1 block w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm">
-                        @foreach(['blue' => 'Teal', 'emerald' => 'Green', 'amber' => 'Amber', 'rose' => 'Red', 'purple' => 'Purple', 'indigo' => 'Indigo', 'cyan' => 'Cyan', 'slate' => 'Slate'] as $value => $label)
-                            <option value="{{ $value }}" {{ old('color', $leaveType->color) === $value ? 'selected' : '' }}>{{ $label }}</option>
-                        @endforeach
-                    </select>
+                    <input type="color" name="color" required value="{{ old('color', $leaveType->display_color) }}" class="mt-1 block h-11 w-full cursor-pointer rounded-xl border border-slate-300 bg-white p-1">
                 </label>
                 <label class="text-xs font-semibold text-slate-700">Paid leave?
                     <select name="is_paid" required class="mt-1 block w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm">

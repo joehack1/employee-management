@@ -27,7 +27,7 @@ class LeaveLedgerService
                 'year' => $year,
             ],
             [
-                'entitled_days' => $leaveType->days_allowed ?? 0,
+                'entitled_days' => $leaveType->code === 'annual' ? 0 : ($leaveType->days_allowed ?? 0),
                 'carried_forward_days' => 0,
                 'manual_adjustment_days' => 0,
                 'used_days' => 0,

@@ -32,7 +32,7 @@
                     @foreach($leaveTypes as $lt)
                         <tr class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4 flex items-center gap-3">
-                                <span class="w-3 h-3 rounded-full bg-{{ $lt->color }}-500"></span>
+                                <span class="w-3 h-3 rounded-full ring-1 ring-black/10" style="background-color: {{ $lt->display_color }}"></span>
                                 <div>
                                     <p class="font-bold text-slate-900 text-sm">{{ $lt->name }}</p>
                                     <p class="text-[11px] text-slate-400">{{ $lt->code }} • {{ $lt->description }}</p>
@@ -114,15 +114,7 @@
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-700">Color Tag</label>
-                        <select name="color" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
-                            <option value="blue">Blue</option>
-                            <option value="emerald">Emerald</option>
-                            <option value="amber">Amber</option>
-                            <option value="rose">Rose</option>
-                            <option value="purple">Purple</option>
-                            <option value="indigo">Indigo</option>
-                            <option value="cyan">Cyan</option>
-                        </select>
+                        <input type="color" name="color" value="{{ old('color', '#1d9692') }}" required class="mt-1 block h-10 w-full cursor-pointer rounded-xl border border-slate-300 bg-white p-1">
                     </div>
                 </div>
 

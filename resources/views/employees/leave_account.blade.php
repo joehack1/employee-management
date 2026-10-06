@@ -51,7 +51,7 @@
                     @forelse($balances as $bal)
                         <tr class="hover:bg-slate-50 transition text-xs">
                             <td class="px-4 py-3.5 flex items-center gap-2">
-                                <span class="w-2.5 h-2.5 rounded-full bg-{{ $bal->leaveType->color }}-500"></span>
+                                <span class="w-2.5 h-2.5 rounded-full ring-1 ring-black/10" style="background-color: {{ $bal->leaveType->display_color }}"></span>
                                 <span class="font-bold text-slate-900">{{ $bal->leaveType->name }}</span>
                             </td>
                             <td class="px-4 py-3.5 text-center font-semibold">{{ $bal->entitled_days }}</td>

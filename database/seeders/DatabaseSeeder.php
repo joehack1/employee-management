@@ -157,7 +157,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Standard Corporate Policy'],
             [
                 'annual_days' => 21.0,
-                'accrual_type' => 'upfront',
+                'accrual_type' => 'monthly',
                 'monthly_accrual_rate' => 1.75,
                 'max_carry_forward' => 5.0,
                 'leave_year_type' => 'calendar',
@@ -172,7 +172,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Executive Direct HR Policy'],
             [
                 'annual_days' => 25.0,
-                'accrual_type' => 'upfront',
+                'accrual_type' => 'monthly',
                 'monthly_accrual_rate' => 2.08,
                 'max_carry_forward' => 8.0,
                 'leave_year_type' => 'calendar',
@@ -430,7 +430,7 @@ class DatabaseSeeder extends Seeder
         // 7. Seed Balances & Ledger Transactions for all employees
         foreach ($allEmps as $emp) {
             foreach ($typeModels as $code => $lt) {
-                $days = $lt->days_allowed;
+                $days = $lt->code === 'annual' ? 0 : $lt->days_allowed;
 
                 $bal = LeaveBalance::updateOrCreate(
                     [

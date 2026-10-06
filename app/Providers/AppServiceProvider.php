@@ -32,5 +32,9 @@ class AppServiceProvider extends ServiceProvider
         Gate::define('manage-analytics', function (User $user) {
             return in_array($user->role, ['hr', 'admin', 'manager']);
         });
+
+        Gate::define('apply-leave', function (User $user) {
+            return $user->role !== 'manager' && $user->employee()->exists();
+        });
     }
 }

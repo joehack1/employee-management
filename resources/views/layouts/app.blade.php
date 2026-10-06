@@ -81,10 +81,12 @@
                             <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
                                 Dashboard
                             </a>
+                            @can('apply-leave')
                             <a href="{{ route('leave.create') }}" class="{{ request()->routeIs('leave.create') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5 font-medium text-blue-600">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                 Apply Leave
                             </a>
+                            @endcan
                             <a href="{{ route('leave.index') }}" class="{{ request()->routeIs('leave.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
                                 My Requests
                             </a>

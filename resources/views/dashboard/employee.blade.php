@@ -45,10 +45,11 @@
             <a href="{{ route('leave.history') }}" class="px-4 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold transition">
                 Leave History & Ledger
             </a>
-            <a href="{{ route('leave.create') }}" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition flex items-center gap-1.5">
+            @can('apply-leave')<a href="{{ route('leave.create') }}" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition flex items-center gap-1.5">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                 Apply for Leave
             </a>
+            @endcan
         </div>
     </div>
 
@@ -81,7 +82,7 @@
                         @forelse($balances as $bal)
                             <tr class="hover:bg-slate-50/60 transition">
                                 <td class="px-6 py-4 flex items-center gap-3">
-                                    <span class="w-3 h-3 rounded-full bg-{{ $bal->leaveType->color }}-500"></span>
+                                    <span class="w-3 h-3 rounded-full ring-1 ring-black/10" style="background-color: {{ $bal->leaveType->display_color }}"></span>
                                     <div>
                                         <p class="font-bold text-slate-900">{{ $bal->leaveType->name }}</p>
                                         <p class="text-[11px] text-slate-400">{{ $bal->leaveType->description }}</p>
@@ -111,9 +112,10 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 text-right">
-                                    <a href="{{ route('leave.create') }}?leave_type_id={{ $bal->leave_type_id }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
+                                    @can('apply-leave')<a href="{{ route('leave.create') }}?leave_type_id={{ $bal->leave_type_id }}" class="text-xs font-semibold text-blue-600 hover:text-blue-800">
                                         Apply &rarr;
                                     </a>
+                                    @endcan
                                 </td>
                             </tr>
                         @empty

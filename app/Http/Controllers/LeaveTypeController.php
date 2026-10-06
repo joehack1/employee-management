@@ -35,7 +35,7 @@ class LeaveTypeController extends Controller
             'requires_attachment' => 'required|boolean',
             'attachment_required_after_days' => 'nullable|integer|min:0',
             'is_emergency_type' => 'required|boolean',
-            'color' => 'required|string|max:20',
+            'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
         $lt = LeaveType::create($validated);
@@ -57,7 +57,7 @@ class LeaveTypeController extends Controller
             'requires_attachment' => 'required|boolean',
             'attachment_required_after_days' => 'nullable|integer|min:0',
             'is_emergency_type' => 'required|boolean',
-            'color' => 'required|string|max:20',
+            'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
         $leaveType->update($validated);

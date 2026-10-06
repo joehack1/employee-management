@@ -108,11 +108,7 @@ class LeaveCalendarController extends Controller
                 'is_half_day' => $app->is_half_day,
                 'half_day_type' => $app->half_day_type,
                 'url' => route('leave.show', $app->id),
-                'color' => match($app->leaveType->color) {
-                    'blue', 'emerald', 'purple', 'cyan', 'indigo' => '#1d9692',
-                    'amber', 'rose' => '#a01e22',
-                    default => '#1d9692',
-                },
+                'color' => $app->leaveType->display_color,
             ];
         }
 

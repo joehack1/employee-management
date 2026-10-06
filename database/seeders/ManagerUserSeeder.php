@@ -65,7 +65,7 @@ class ManagerUserSeeder extends Seeder
                         'year' => Carbon::now()->year,
                     ],
                     [
-                        'entitled_days' => $leaveType->code === 'annual' ? 21 : $leaveType->days_allowed,
+                        'entitled_days' => $leaveType->code === 'annual' ? 0 : $leaveType->days_allowed,
                         'carried_forward_days' => 0,
                         'manual_adjustment_days' => 0,
                         'used_days' => 0,

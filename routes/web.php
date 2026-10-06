@@ -49,9 +49,11 @@ Route::middleware('auth')->group(function () {
 
     // Leave Applications (Employee Side)
     Route::get('/leave', [LeaveApplicationController::class, 'index'])->name('leave.index');
-    Route::get('/leave/apply', [LeaveApplicationController::class, 'create'])->name('leave.create');
-    Route::post('/leave/apply', [LeaveApplicationController::class, 'store'])->name('leave.store');
-    Route::post('/leave/calculate-ajax', [LeaveApplicationController::class, 'calculateAjax'])->name('leave.calculate');
+    Route::middleware('can:apply-leave')->group(function () {
+        Route::get('/leave/apply', [LeaveApplicationController::class, 'create'])->name('leave.create');
+        Route::post('/leave/apply', [LeaveApplicationController::class, 'store'])->name('leave.store');
+        Route::post('/leave/calculate-ajax', [LeaveApplicationController::class, 'calculateAjax'])->name('leave.calculate');
+    });
     Route::get('/leave/history', [LeaveApplicationController::class, 'history'])->name('leave.history');
     Route::get('/leave/{id}', [LeaveApplicationController::class, 'show'])->name('leave.show');
     Route::post('/leave/{id}/cancel', [LeaveApplicationController::class, 'requestCancellation'])->name('leave.cancel');

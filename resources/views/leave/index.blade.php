@@ -9,10 +9,11 @@
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight">My Leave Requests</h1>
             <p class="text-xs text-slate-500">Track all your submitted applications and approval statuses</p>
         </div>
-        <a href="{{ route('leave.create') }}" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition flex items-center gap-1.5 self-start sm:self-auto">
+        @can('apply-leave')<a href="{{ route('leave.create') }}" class="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition flex items-center gap-1.5 self-start sm:self-auto">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
             Apply for Leave
         </a>
+        @endcan
     </div>
 
     <!-- Filter Bar -->
