@@ -131,19 +131,27 @@ class LeaveApplicationController extends Controller
             'half_day_type' => ['nullable', 'in:morning,afternoon'],
             'is_emergency' => ['nullable'],
             'reason' => ['required', 'string', 'min:5'],
-            'doctor_hospital_info' => ['nullable', 'string', 'max:255'],
-            'medical_reason' => ['nullable', 'string'],
+            'manual_attachment_expected' => ['nullable', 'boolean'],
             'attachment' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx'],
         ]);
 
         $leaveType = LeaveType::findOrFail($validated['leave_type_id']);
+        $medicalDocumentRequired = $leaveType->isMedicalLeave();
+        $manualAttachmentExpected = $medicalDocumentRequired
+            && filter_var($request->input('manual_attachment_expected'), FILTER_VALIDATE_BOOLEAN);
 
-        // Check if attachment is required
-        if ($leaveType->requires_attachment && !$request->hasFile('attachment')) {
+        if ($medicalDocumentRequired && !$request->hasFile('attachment') && !$manualAttachmentExpected) {
+            return back()->withInput()->withErrors([
+                'attachment' => 'A medical supporting document is required. Attach it here or confirm that you will deliver it manually to HR.',
+            ]);
+        }
+
+        // Keep configurable attachment rules for non-medical leave types.
+        if (!$medicalDocumentRequired && $leaveType->requires_attachment && !$request->hasFile('attachment')) {
             $daysDiff = Carbon::parse($validated['start_date'])->diffInDays(Carbon::parse($validated['end_date'])) + 1;
             if ($daysDiff > $leaveType->attachment_required_after_days) {
                 return back()->withInput()->withErrors([
-                    'attachment' => "A supporting document/medical certificate is required for {$leaveType->name} requests longer than {$leaveType->attachment_required_after_days} days.",
+                    'attachment' => "A supporting document is required for {$leaveType->name} requests longer than {$leaveType->attachment_required_after_days} days.",
                 ]);
             }
         }

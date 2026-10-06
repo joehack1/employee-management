@@ -56,9 +56,13 @@
                     @forelse($employees as $emp)
                         <tr class="hover:bg-slate-50 transition">
                             <td class="px-6 py-4 flex items-center gap-3">
-                                <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-800 font-bold flex items-center justify-center">
-                                    {{ substr($emp->first_name, 0, 1) }}
-                                </div>
+                                @if($emp->user?->avatar)
+                                    <img src="{{ asset('storage/' . $emp->user->avatar) }}" alt="{{ $emp->full_name }} profile picture" class="w-9 h-9 rounded-full object-cover">
+                                @else
+                                    <div class="w-9 h-9 rounded-full bg-slate-100 text-slate-800 font-bold flex items-center justify-center">
+                                        {{ substr($emp->first_name, 0, 1) }}
+                                    </div>
+                                @endif
                                 <div>
                                     <p class="font-bold text-slate-900 text-sm">{{ $emp->full_name }}</p>
                                     <p class="text-[11px] text-slate-400">{{ $emp->employee_number }} • {{ $emp->email }}</p>

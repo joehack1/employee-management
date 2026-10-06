@@ -30,6 +30,7 @@
                         <option value="{{ $lt->id }}"
                                 data-code="{{ $lt->code }}"
                                 data-requires-attachment="{{ $lt->requires_attachment ? '1' : '0' }}"
+                                data-is-medical="{{ $lt->isMedicalLeave() ? '1' : '0' }}"
                                 data-is-emergency="{{ $lt->is_emergency_type ? '1' : '0' }}"
                                 {{ old('leave_type_id', request('leave_type_id')) == $lt->id ? 'selected' : '' }}>
                             {{ $lt->name }} (Available: {{ $avail }} days)
@@ -148,33 +149,21 @@
                 <textarea id="reason" name="reason" rows="3" required placeholder="Please provide clear details regarding your leave request..." class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('reason') }}</textarea>
             </div>
 
-            <!-- Sick Leave Specific Fields (Req 2) -->
-            <div x-show="isSickLeave" class="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-200 space-y-4">
-                <h3 class="text-xs font-bold text-emerald-900 uppercase tracking-wider flex items-center gap-1.5">
-                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                    Medical Information (Sick Leave)
-                </h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700">Doctor / Hospital Name</label>
-                        <input type="text" name="doctor_hospital_info" value="{{ old('doctor_hospital_info') }}" placeholder="e.g. Dr. John Kimani / Nairobi Hospital" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700">Medical Reason / Diagnosis Summary</label>
-                        <input type="text" name="medical_reason" value="{{ old('medical_reason') }}" placeholder="e.g. Severe respiratory infection" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
-                    </div>
-                </div>
-            </div>
-
-            <!-- Attachment Field (Req 2 & 28) -->
+            <!-- Supporting Document Field -->
             <div>
                 <label for="attachment" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Supporting Attachment <span x-show="isSickLeave" class="text-slate-400 font-normal">(Medical certificate, doctor's note, or letter)</span>
+                    Supporting Attachment <span x-show="isSickLeave" class="text-rose-600 font-semibold">(Required for medical leave)</span>
                 </label>
                 <div class="mt-1.5 flex items-center gap-3">
                     <input type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl p-1">
                 </div>
-                <p class="text-[11px] text-slate-400 mt-1">Accepted formats: PDF, JPG, PNG, DOCX (Max 10MB). Stored in secure private storage.</p>
+                <p class="text-[11px] text-slate-500 mt-1" x-show="isSickLeave">Attach the medical document here, or confirm below that you will deliver it manually to HR.</p>
+                <p class="text-[11px] text-slate-400 mt-1">Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB). Uploaded files are stored securely.</p>
+                <label x-show="isSickLeave" class="mt-3 flex items-start gap-2 text-xs text-slate-700">
+                    <input type="checkbox" name="manual_attachment_expected" value="1" {{ old('manual_attachment_expected') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-blue-600">
+                    <span>I will deliver the supporting medical document to HR manually.</span>
+                </label>
+                @error('attachment')<p class="mt-2 text-xs text-rose-600">{{ $message }}</p>@enderror
             </div>
 
             <!-- Submit Button -->
@@ -221,8 +210,7 @@ function leaveApplicationForm() {
             const select = document.getElementById('leave_type_id');
             const opt = select.options[select.selectedIndex];
             if (opt) {
-                const code = opt.getAttribute('data-code');
-                this.isSickLeave = (code === 'sick');
+                this.isSickLeave = opt.getAttribute('data-is-medical') === '1';
                 if (opt.getAttribute('data-is-emergency') === '1') {
                     this.isEmergency = true;
                 }

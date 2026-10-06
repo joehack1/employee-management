@@ -54,6 +54,13 @@ class LeaveType extends Model
         return $legacyColors[$this->color] ?? '#1d9692';
     }
 
+    public function isMedicalLeave(): bool
+    {
+        $identifier = strtolower($this->code . ' ' . $this->name);
+
+        return str_contains($identifier, 'sick') || str_contains($identifier, 'medical');
+    }
+
     public function balances(): HasMany
     {
         return $this->hasMany(LeaveBalance::class);

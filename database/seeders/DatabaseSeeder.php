@@ -74,11 +74,11 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Sick Leave',
                 'code' => 'sick',
-                'description' => 'Medical leave for health recovery. Requires medical certificate for leave beyond 2 days.',
+                'description' => 'Medical leave for health recovery. A supporting medical document is required for every request.',
                 'days_allowed' => 14.0,
                 'is_paid' => true,
                 'requires_attachment' => true,
-                'attachment_required_after_days' => 2,
+                'attachment_required_after_days' => 0,
                 'is_emergency_type' => false,
                 'color' => 'emerald',
             ],

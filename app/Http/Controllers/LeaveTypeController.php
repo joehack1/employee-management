@@ -38,6 +38,11 @@ class LeaveTypeController extends Controller
             'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
 
+        if ($this->isMedicalLeaveType($validated['code'], $validated['name'])) {
+            $validated['requires_attachment'] = true;
+            $validated['attachment_required_after_days'] = 0;
+        }
+
         $lt = LeaveType::create($validated);
         AuditLog::log('leave_type_created', 'LeaveType', $lt->id, "Created leave type {$lt->name}");
 
@@ -59,6 +64,11 @@ class LeaveTypeController extends Controller
             'is_emergency_type' => 'required|boolean',
             'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
+
+        if ($this->isMedicalLeaveType($validated['code'], $validated['name'])) {
+            $validated['requires_attachment'] = true;
+            $validated['attachment_required_after_days'] = 0;
+        }
 
         $leaveType->update($validated);
         AuditLog::log('leave_type_updated', 'LeaveType', $leaveType->id, "Updated leave type {$leaveType->name}");
@@ -94,5 +104,12 @@ class LeaveTypeController extends Controller
         AuditLog::log('leave_type_deleted', 'LeaveType', $id, "Deleted leave type {$name}");
 
         return back()->with('success', "Leave type {$name} deleted.");
+    }
+
+    private function isMedicalLeaveType(string $code, string $name): bool
+    {
+        $identifier = strtolower($code . ' ' . $name);
+
+        return str_contains($identifier, 'sick') || str_contains($identifier, 'medical');
     }
 }

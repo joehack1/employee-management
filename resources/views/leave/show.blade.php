@@ -136,9 +136,12 @@
                 @endif
 
                 <!-- Attachments (Req 28) -->
-                @if($application->attachments->count() > 0)
+                @if($application->attachments->count() > 0 || $application->manual_attachment_expected)
                     <div>
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Supporting Documents</h3>
+                        @if($application->manual_attachment_expected)
+                            <p class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">Employee will deliver the supporting medical document manually to HR.</p>
+                        @endif
                         <div class="mt-2 space-y-2">
                             @foreach($application->attachments as $att)
                                 <div class="p-3 rounded-2xl border border-slate-200 flex items-center justify-between bg-slate-50/50">
