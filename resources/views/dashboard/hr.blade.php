@@ -312,7 +312,7 @@
                                 <p class="text-[10px] text-slate-400">{{ $away->employee->department->name ?? '' }} • {{ $away->leaveType->name }}</p>
                             </div>
                             <span class="text-[10px] font-semibold text-slate-500">
-                                Returns {{ Carbon::parse($away->end_date)->addDay()->format('d M') }}
+                                Returns {{ \Carbon\Carbon::parse($away->end_date)->addDay()->format('d M') }}
                             </span>
                         </div>
                     @empty
