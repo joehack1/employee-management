@@ -34,6 +34,7 @@ class LeaveTypeController extends Controller
             'is_paid' => 'required|boolean',
             'requires_attachment' => 'required|boolean',
             'attachment_required_after_days' => 'nullable|integer|min:0',
+            'requires_reason' => 'required|boolean',
             'is_emergency_type' => 'required|boolean',
             'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);
@@ -61,6 +62,7 @@ class LeaveTypeController extends Controller
             'is_paid' => 'required|boolean',
             'requires_attachment' => 'required|boolean',
             'attachment_required_after_days' => 'nullable|integer|min:0',
+            'requires_reason' => 'required|boolean',
             'is_emergency_type' => 'required|boolean',
             'color' => ['required', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
         ]);

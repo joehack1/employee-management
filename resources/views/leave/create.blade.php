@@ -20,7 +20,7 @@
             <!-- Leave Type Selector -->
             <div>
                 <label for="leave_type_id" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Leave Type <span class="text-rose-500">*</span></label>
-                <select id="leave_type_id" name="leave_type_id" required x-model="leaveTypeId" @change="recalculate()" class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">
+                <select id="leave_type_id" name="leave_type_id" required x-model="leaveTypeId" @change="onLeaveTypeChange()" class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="">-- Select Leave Type --</option>
                     @foreach($leaveTypes as $lt)
                         @php
@@ -30,7 +30,8 @@
                         <option value="{{ $lt->id }}"
                                 data-code="{{ $lt->code }}"
                                 data-requires-attachment="{{ $lt->requires_attachment ? '1' : '0' }}"
-                                data-is-medical="{{ $lt->isMedicalLeave() ? '1' : '0' }}"
+                                data-has-document-rule="{{ ($lt->isMedicalLeave() || $lt->isMaternityLeave() || $lt->requires_attachment) ? '1' : '0' }}"
+                                data-requires-reason="{{ $lt->requires_reason ? '1' : '0' }}"
                                 data-is-emergency="{{ $lt->is_emergency_type ? '1' : '0' }}"
                                 {{ old('leave_type_id', request('leave_type_id')) == $lt->id ? 'selected' : '' }}>
                             {{ $lt->name }} (Available: {{ $avail }} days)
@@ -145,23 +146,27 @@
 
             <!-- Reason / Comment Field -->
             <div>
-                <label for="reason" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Reason for Leave <span class="text-rose-500">*</span></label>
-                <textarea id="reason" name="reason" rows="3" required placeholder="Please provide clear details regarding your leave request..." class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('reason') }}</textarea>
+                <label for="reason" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
+                    Reason for Leave <span x-show="isEmergency || leaveTypeRequiresReason" class="text-rose-500">*</span>
+                    <span x-show="!isEmergency && !leaveTypeRequiresReason" class="normal-case font-normal text-slate-400">(Optional)</span>
+                </label>
+                <textarea id="reason" name="reason" rows="3" :required="isEmergency || leaveTypeRequiresReason" maxlength="2000" placeholder="Add details if you wish..." class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('reason') }}</textarea>
+                <p class="mt-1 text-[11px] text-slate-500" x-show="isEmergency || leaveTypeRequiresReason">A reason is required for this request.</p>
             </div>
 
             <!-- Supporting Document Field -->
             <div>
                 <label for="attachment" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Supporting Attachment <span x-show="isSickLeave" class="text-rose-600 font-semibold">(Required for medical leave)</span>
+                    Supporting Attachment <span x-show="leaveTypeHasDocumentRule" class="text-rose-600 font-semibold">(Document rules apply; hand delivery is allowed)</span>
                 </label>
                 <div class="mt-1.5 flex items-center gap-3">
                     <input type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl p-1">
                 </div>
-                <p class="text-[11px] text-slate-500 mt-1" x-show="isSickLeave">Attach the medical document here, or confirm below that you will deliver it manually to HR.</p>
+                <p class="text-[11px] text-slate-500 mt-1">Attach a supporting document here, or check below if you will deliver one to HR personally.</p>
                 <p class="text-[11px] text-slate-400 mt-1">Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB). Uploaded files are stored securely.</p>
-                <label x-show="isSickLeave" class="mt-3 flex items-start gap-2 text-xs text-slate-700">
+                <label class="mt-3 flex items-start gap-2 text-xs text-slate-700">
                     <input type="checkbox" name="manual_attachment_expected" value="1" {{ old('manual_attachment_expected') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-blue-600">
-                    <span>I will deliver the supporting medical document to HR manually.</span>
+                    <span>I will deliver the supporting document to HR personally.</span>
                 </label>
                 @error('attachment')<p class="mt-2 text-xs text-rose-600">{{ $message }}</p>@enderror
             </div>
@@ -190,12 +195,18 @@ function leaveApplicationForm() {
         endDate: "{{ old('end_date', date('Y-m-d', strtotime('+3 days'))) }}",
         isHalfDay: false,
         halfDayType: 'morning',
-        isEmergency: false,
-        isSickLeave: false,
+        isEmergency: {{ old('is_emergency') ? 'true' : 'false' }},
+        leaveTypeHasDocumentRule: false,
+        leaveTypeRequiresReason: false,
         calcResult: null,
 
         init() {
             this.updateTypeFlags();
+            const select = document.getElementById('leave_type_id');
+            const selectedOption = select.options[select.selectedIndex];
+            if (selectedOption?.getAttribute('data-is-emergency') === '1') {
+                this.isEmergency = true;
+            }
             this.recalculate();
         },
 
@@ -206,14 +217,19 @@ function leaveApplicationForm() {
             this.recalculate();
         },
 
+        onLeaveTypeChange() {
+            const select = document.getElementById('leave_type_id');
+            const opt = select.options[select.selectedIndex];
+            this.isEmergency = opt?.getAttribute('data-is-emergency') === '1';
+            this.recalculate();
+        },
+
         updateTypeFlags() {
             const select = document.getElementById('leave_type_id');
             const opt = select.options[select.selectedIndex];
             if (opt) {
-                this.isSickLeave = opt.getAttribute('data-is-medical') === '1';
-                if (opt.getAttribute('data-is-emergency') === '1') {
-                    this.isEmergency = true;
-                }
+                this.leaveTypeHasDocumentRule = opt.getAttribute('data-has-document-rule') === '1';
+                this.leaveTypeRequiresReason = opt.getAttribute('data-requires-reason') === '1';
             }
         },
 

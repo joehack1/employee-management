@@ -116,7 +116,7 @@
                 <div>
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Reason for Request</h3>
                     <div class="mt-2 p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-700 leading-relaxed">
-                        {{ $application->reason }}
+                        {{ $application->reason ?: 'No reason provided.' }}
                     </div>
                 </div>
 
@@ -140,7 +140,7 @@
                     <div>
                         <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Supporting Documents</h3>
                         @if($application->manual_attachment_expected)
-                            <p class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">Employee will deliver the supporting medical document manually to HR.</p>
+                            <p class="mt-2 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-semibold text-amber-800">Employee will deliver the supporting document manually to HR.</p>
                         @endif
                         <div class="mt-2 space-y-2">
                             @foreach($application->attachments as $att)

@@ -23,6 +23,7 @@
                         <th class="px-6 py-4 text-center">Standard Days</th>
                         <th class="px-6 py-4 text-center">Paid Status</th>
                         <th class="px-6 py-4 text-center">Document Rule</th>
+                        <th class="px-6 py-4 text-center">Reason Rule</th>
                         <th class="px-6 py-4 text-center">Emergency Type</th>
                         <th class="px-6 py-4 text-center">Status</th>
                         <th class="px-6 py-4 text-right">Actions</th>
@@ -51,6 +52,13 @@
                                     <span class="text-slate-700 font-medium">
                                         Mandatory @if($lt->attachment_required_after_days > 0) (>{{ $lt->attachment_required_after_days }}d) @endif
                                     </span>
+                                @else
+                                    <span class="text-slate-400">Optional</span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 text-center">
+                                @if($lt->requires_reason)
+                                    <span class="text-slate-700 font-medium">Mandatory</span>
                                 @else
                                     <span class="text-slate-400">Optional</span>
                                 @endif
@@ -147,6 +155,15 @@
                         <label class="block text-xs font-semibold text-slate-700">Required After (Days)</label>
                         <input type="number" name="attachment_required_after_days" value="0" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
                     </div>
+                </div>
+
+                <div>
+                    <input type="hidden" name="requires_reason" value="0">
+                    <label class="flex items-start gap-2 text-xs font-semibold text-slate-700">
+                        <input type="checkbox" name="requires_reason" value="1" class="mt-0.5 rounded border-slate-300 text-blue-600">
+                        <span>Require employees to provide a reason for this leave type</span>
+                    </label>
+                    <p class="mt-1 ml-6 text-[11px] text-slate-500">A reason is always required when an employee checks Emergency Leave Exception.</p>
                 </div>
 
                 <div>

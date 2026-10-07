@@ -15,6 +15,7 @@ class LeaveType extends Model
         'is_paid',
         'requires_attachment',
         'attachment_required_after_days',
+        'requires_reason',
         'is_emergency_type',
         'color',
         'is_active',
@@ -27,6 +28,7 @@ class LeaveType extends Model
             'is_paid' => 'boolean',
             'requires_attachment' => 'boolean',
             'attachment_required_after_days' => 'integer',
+            'requires_reason' => 'boolean',
             'is_emergency_type' => 'boolean',
             'is_active' => 'boolean',
         ];
@@ -59,6 +61,11 @@ class LeaveType extends Model
         $identifier = strtolower($this->code . ' ' . $this->name);
 
         return str_contains($identifier, 'sick') || str_contains($identifier, 'medical');
+    }
+
+    public function isMaternityLeave(): bool
+    {
+        return str_contains(strtolower($this->code . ' ' . $this->name), 'maternity');
     }
 
     public function balances(): HasMany

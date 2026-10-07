@@ -130,30 +130,42 @@ class LeaveApplicationController extends Controller
             'is_half_day' => ['nullable'],
             'half_day_type' => ['nullable', 'in:morning,afternoon'],
             'is_emergency' => ['nullable'],
-            'reason' => ['required', 'string', 'min:5'],
+            'reason' => ['nullable', 'string', 'max:2000'],
             'manual_attachment_expected' => ['nullable', 'boolean'],
             'attachment' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx'],
         ]);
 
         $leaveType = LeaveType::findOrFail($validated['leave_type_id']);
-        $medicalDocumentRequired = $leaveType->isMedicalLeave();
-        $manualAttachmentExpected = $medicalDocumentRequired
-            && filter_var($request->input('manual_attachment_expected'), FILTER_VALIDATE_BOOLEAN);
+        $reasonIsRequired = $request->boolean('is_emergency')
+            || $leaveType->requires_reason
+            || $leaveType->is_emergency_type;
 
-        if ($medicalDocumentRequired && !$request->hasFile('attachment') && !$manualAttachmentExpected) {
-            return back()->withInput()->withErrors([
-                'attachment' => 'A medical supporting document is required. Attach it here or confirm that you will deliver it manually to HR.',
-            ]);
+        if ($reasonIsRequired) {
+            $validated['reason'] = $request->validate([
+                'reason' => ['required', 'string', 'min:5', 'max:2000'],
+            ])['reason'];
+        } else {
+            $validated['reason'] = $request->input('reason') ?: null;
         }
 
-        // Keep configurable attachment rules for non-medical leave types.
-        if (!$medicalDocumentRequired && $leaveType->requires_attachment && !$request->hasFile('attachment')) {
-            $daysDiff = Carbon::parse($validated['start_date'])->diffInDays(Carbon::parse($validated['end_date'])) + 1;
-            if ($daysDiff > $leaveType->attachment_required_after_days) {
-                return back()->withInput()->withErrors([
-                    'attachment' => "A supporting document is required for {$leaveType->name} requests longer than {$leaveType->attachment_required_after_days} days.",
-                ]);
-            }
+        $medicalDocumentRequired = $leaveType->isMedicalLeave();
+        $maternityDocumentRequired = $leaveType->isMaternityLeave();
+        $manualAttachmentExpected = !$request->hasFile('attachment')
+            && filter_var($request->input('manual_attachment_expected'), FILTER_VALIDATE_BOOLEAN);
+        $validated['manual_attachment_expected'] = $manualAttachmentExpected;
+        $daysDiff = Carbon::parse($validated['start_date'])->diffInDays(Carbon::parse($validated['end_date'])) + 1;
+        $attachmentRequired = $medicalDocumentRequired
+            || $maternityDocumentRequired
+            || ($leaveType->requires_attachment && $daysDiff > $leaveType->attachment_required_after_days);
+
+        if ($attachmentRequired && !$request->hasFile('attachment') && !$manualAttachmentExpected) {
+            $documentDescription = $maternityDocumentRequired
+                ? 'A maternity supporting document'
+                : ($medicalDocumentRequired ? 'A medical supporting document' : 'A supporting document');
+
+            return back()->withInput()->withErrors([
+                'attachment' => "{$documentDescription} is required. Attach it here or check that you will deliver it manually to HR.",
+            ]);
         }
 
         try {

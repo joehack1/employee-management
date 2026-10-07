@@ -47,6 +47,14 @@
                     </select>
                 </label>
             </div>
+            <div>
+                <input type="hidden" name="requires_reason" value="0">
+                <label class="flex items-start gap-2 text-xs font-semibold text-slate-700">
+                    <input type="checkbox" name="requires_reason" value="1" {{ old('requires_reason', $leaveType->requires_reason) ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-teal-600">
+                    <span>Require employees to provide a reason for this leave type</span>
+                </label>
+                <p class="mt-1 ml-6 text-[11px] text-slate-500">A reason is always required when an employee checks Emergency Leave Exception.</p>
+            </div>
             <label class="block text-xs font-semibold text-slate-700">Description
                 <textarea name="description" rows="4" class="mt-1 block w-full rounded-xl border border-slate-300 px-3 py-2.5 text-sm">{{ old('description', $leaveType->description) }}</textarea>
             </label>
