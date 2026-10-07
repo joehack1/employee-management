@@ -416,6 +416,8 @@ class LeaveWorkflowService
                     type: 'success'
                 ));
             }
+
+            $this->notifyHrOfApprovedLeave($application, 'HR');
         });
     }
 
