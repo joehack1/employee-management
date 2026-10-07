@@ -16,21 +16,14 @@
         @keyframes rise   { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
         @keyframes slide-in { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
         @keyframes pop    { from { opacity: 0; transform: scale(.55); } to { opacity: 1; transform: scale(1); } }
-        @keyframes drift-a { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(40px, 30px) scale(1.12); } }
-        @keyframes drift-b { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-36px, -26px) scale(1.08); } }
-        @keyframes pending-pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, .55); } 50% { box-shadow: 0 0 0 7px rgba(245, 158, 11, 0); } }
         @keyframes shake  { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-6px); } 40% { transform: translateX(5px); } 60% { transform: translateX(-3px); } 80% { transform: translateX(2px); } }
         @keyframes spin   { to { transform: rotate(360deg); } }
-        @keyframes sheen  { from { transform: translateX(-120%) skewX(-20deg); } to { transform: translateX(320%) skewX(-20deg); } }
 
         .rise { opacity: 0; animation: rise .75s var(--ease-out) forwards; animation-delay: calc(var(--d, 0) * 90ms + 80ms); }
         .slide-in { opacity: 0; animation: slide-in .8s var(--ease-out) forwards; animation-delay: calc(var(--d, 0) * 110ms + 100ms); }
 
-        .blob-a { animation: drift-a 14s ease-in-out infinite; }
-        .blob-b { animation: drift-b 17s ease-in-out infinite; }
-
         .cal-cell { opacity: 0; animation: pop .5s var(--ease-spring) forwards; animation-delay: calc(var(--i) * 26ms + 700ms); }
-        .cal-pending { animation: pop .5s var(--ease-spring) forwards, pending-pulse 2.4s ease-in-out 2.2s infinite; animation-delay: calc(var(--i) * 26ms + 700ms), 2.2s; }
+        .cal-pending { animation: pop .5s var(--ease-spring) forwards; animation-delay: calc(var(--i) * 26ms + 700ms); }
 
         .alert-error { animation: rise .45s var(--ease-out) both, shake .5s .3s both; }
         .alert-info  { animation: rise .45s var(--ease-out) both; }
@@ -43,11 +36,9 @@
         .group:focus-within .field-icon { color: rgb(37 99 235); transform: scale(1.1); }
 
         /* Primary button */
-        .btn-primary { position: relative; overflow: hidden; transition: transform .25s var(--ease-out), box-shadow .25s ease, background-color .25s ease; }
-        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(37, 99, 235, .55); }
+        .btn-primary { transition: transform .25s var(--ease-out), background-color .25s ease; }
+        .btn-primary:hover { transform: translateY(-2px); }
         .btn-primary:active { transform: translateY(0) scale(.985); }
-        .btn-primary::after { content: ""; position: absolute; top: 0; bottom: 0; left: 0; width: 30%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.28), transparent); transform: translateX(-120%) skewX(-20deg); }
-        .btn-primary:hover::after { animation: sheen .9s var(--ease-out); }
         .btn-primary .btn-label, .btn-primary .btn-spinner { transition: opacity .25s ease, transform .3s var(--ease-out); }
         .btn-primary .btn-spinner { position: absolute; opacity: 0; transform: scale(.6); }
         .btn-primary.is-loading { pointer-events: none; }
@@ -56,8 +47,8 @@
         .btn-spinner > svg { animation: spin .8s linear infinite; }
 
         /* Demo cards */
-        .demo-card { transition: transform .3s var(--ease-out), box-shadow .3s ease, border-color .25s ease, background-color .25s ease; }
-        .demo-card:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -12px rgba(15, 23, 42, .25); }
+        .demo-card { transition: transform .3s var(--ease-out), border-color .25s ease, background-color .25s ease; }
+        .demo-card:hover { transform: translateY(-2px); }
         .demo-card:active { transform: translateY(0) scale(.98); }
         .demo-card .avatar { transition: transform .35s var(--ease-spring); }
         .demo-card:hover .avatar { transform: rotate(-6deg) scale(1.1); }
@@ -69,7 +60,39 @@
         .link-underline:hover { background-size: 100% 1px; }
         .theme-toggle { transition: transform .4s var(--ease-spring), background-color .2s ease, color .2s ease; }
         .theme-toggle:hover { transform: rotate(18deg) scale(1.08); }
-        .card-wrap { transition: box-shadow .4s ease; }
+        .card-wrap { transition: border-color .4s ease, background-color .4s ease; }
+
+        html:not(.dark) .login-glass-panel {
+            color: #f8fafc;
+            background: rgba(255, 255, 255, .1);
+            border-color: rgba(255, 255, 255, .34);
+            -webkit-backdrop-filter: blur(18px);
+            backdrop-filter: blur(18px);
+        }
+        html:not(.dark) .login-glass-panel .text-slate-900,
+        html:not(.dark) .login-glass-panel .text-slate-800,
+        html:not(.dark) .login-glass-panel .text-slate-700 { color: #f8fafc; }
+        html:not(.dark) .login-glass-panel .text-slate-600,
+        html:not(.dark) .login-glass-panel .text-slate-500,
+        html:not(.dark) .login-glass-panel .text-slate-400 { color: rgba(248, 250, 252, .76); }
+        html:not(.dark) .login-glass-field {
+            background: rgba(255, 255, 255, .62);
+            border-color: rgba(255, 255, 255, .9);
+            color: #0f172a;
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+        }
+        html:not(.dark) .login-glass-field::placeholder { color: #64748b; }
+        html:not(.dark) .login-glass-panel .field-icon { color: #64748b; }
+        html:not(.dark) .login-glass-demo {
+            background: rgba(255, 255, 255, .12);
+            border-color: rgba(255, 255, 255, .34);
+            -webkit-backdrop-filter: blur(12px);
+            backdrop-filter: blur(12px);
+        }
+        html:not(.dark) .login-glass-demo:hover {
+            background: rgba(255, 255, 255, .22);
+        }
 
         @media (prefers-reduced-motion: reduce) {
             *, *::before, *::after { animation-duration: .001ms !important; animation-delay: 0ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
@@ -77,7 +100,7 @@
         }
     </style>
 </head>
-<body class="h-full min-h-screen flex">
+<body class="h-full min-h-screen flex" style="background-image: linear-gradient(rgba(9, 24, 29, .78), rgba(9, 24, 29, .78)), url('{{ asset('bg.jpeg') }}'); background-size: cover; background-position: center; background-attachment: fixed;">
 
     {{-- Theme toggle --}}
     <button type="button" onclick="toggleTheme()"
@@ -92,11 +115,7 @@
     </button>
 
     {{-- ============ Left brand panel (desktop) ============ --}}
-    <aside class="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden bg-blue-600 text-white flex-col justify-between p-12 xl:p-16">
-        {{-- drifting light --}}
-        <div class="blob-a absolute -top-24 -left-24 w-96 h-96 rounded-full bg-blue-400/40 blur-3xl"></div>
-        <div class="blob-b absolute -bottom-32 -right-20 w-[28rem] h-[28rem] rounded-full bg-blue-800/50 blur-3xl"></div>
-
+    <aside class="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden text-white flex-col justify-between p-12 xl:p-16">
         <div class="relative slide-in" style="--d:0">
             <div class="flex items-center gap-3">
                 <div class="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center ring-1 ring-white/25">
@@ -119,7 +138,7 @@
                 $today    = 14;
                 $offset   = 2; // month starts on Wednesday
             @endphp
-            <div class="slide-in mt-10 rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-5 shadow-2xl shadow-blue-900/30" style="--d:3">
+            <div class="slide-in mt-10 rounded-2xl bg-white/10 backdrop-blur-md ring-1 ring-white/20 p-5" style="--d:3">
                 <div class="grid grid-cols-7 gap-1.5 text-center text-[11px] font-semibold text-blue-100/80 mb-2">
                     @foreach(['M','T','W','T','F','S','S'] as $d)
                         <span>{{ $d }}</span>
@@ -163,16 +182,16 @@
 
             {{-- Mobile / tablet brand --}}
             <div class="text-center lg:text-left mb-8">
-                <div class="rise lg:hidden mx-auto w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-lg shadow-blue-500/25" style="--d:0">
+                <div class="rise lg:hidden mx-auto w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold" style="--d:0">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                     </svg>
                 </div>
-                <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-slate-900 tracking-tight" style="--d:1">LeaveFlow Portal</h2>
+                <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">LeaveFlow Portal</h2>
                 
             </div>
 
-            <div class="rise card-wrap bg-white py-8 px-6 shadow-xl shadow-slate-200/50 rounded-2xl border border-slate-100 sm:px-10 hover:shadow-2xl hover:shadow-slate-200/60" style="--d:3">
+            <div class="rise card-wrap login-glass-panel bg-white py-8 px-6 rounded-2xl border border-slate-100 sm:px-10" style="--d:3">
                 @if(session('info'))
                     <div class="alert-info mb-4 p-3 rounded-xl bg-blue-50 text-blue-800 text-xs border border-blue-200">
                         {{ session('info') }}
@@ -194,7 +213,7 @@
                             <svg class="field-icon absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            <input id="login" name="login" type="text" autocomplete="username" required value="{{ old('login', 'joel@company.com') }}" placeholder="e.g. joel@company.com or EMP-003" class="field appearance-none block w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <input id="login" name="login" type="text" autocomplete="username" required value="{{ old('login', 'joel@company.com') }}" placeholder="e.g. joel@company.com or EMP-003" class="field login-glass-field appearance-none block w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1">You can log in using either your corporate email or employee ID.</p>
                     </div>
@@ -208,7 +227,7 @@
                             <svg class="field-icon absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                             </svg>
-                            <input id="password" name="password" type="password" autocomplete="current-password" required value="password" placeholder="••••••••" class="field appearance-none block w-full pl-10 pr-11 py-2.5 border border-slate-300 rounded-xl shadow-xs placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <input id="password" name="password" type="password" autocomplete="current-password" required value="password" placeholder="••••••••" class="field login-glass-field appearance-none block w-full pl-10 pr-11 py-2.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             <button type="button" id="toggle-password" aria-label="Show password" aria-pressed="false"
                                     class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                                 <svg id="eye-open" class="w-4 h-4 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -230,7 +249,7 @@
                     </div>
 
                     <div class="rise" style="--d:7">
-                        <button id="submit-btn" type="submit" class="btn-primary w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-xl shadow-md text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
+                        <button id="submit-btn" type="submit" class="btn-primary w-full flex justify-center items-center py-2.5 px-4 border border-transparent rounded-xl text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500">
                             <span class="btn-label">Sign in to account</span>
                             <span class="btn-spinner" aria-hidden="true">
                                 <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24">
@@ -246,7 +265,7 @@
                 <div class="rise mt-8 border-t border-slate-100 pt-6" style="--d:8">
                     <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider text-center mb-3">Instant Demo Sign-in</p>
                     <div class="grid grid-cols-2 gap-2 text-xs">
-                        <a href="{{ route('fast.login', 'hr') }}" class="demo-card p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 flex items-center gap-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
+                        <a href="{{ route('fast.login', 'hr') }}" class="demo-card login-glass-demo p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 flex items-center gap-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                             <div class="avatar w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">HR</div>
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-slate-800 leading-tight truncate">Sarah Jenkins</p>
@@ -254,7 +273,7 @@
                             </div>
                             <svg class="go w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                         </a>
-                        <a href="{{ route('fast.login', 'lead') }}" class="demo-card p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 flex items-center gap-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
+                        <a href="{{ route('fast.login', 'lead') }}" class="demo-card login-glass-demo p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 flex items-center gap-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
                             <div class="avatar w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shrink-0">TL</div>
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-slate-800 leading-tight truncate">James Vance</p>
@@ -262,7 +281,7 @@
                             </div>
                             <svg class="go w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
                         </a>
-                        <a href="{{ route('fast.login', 'employee') }}" class="demo-card p-2.5 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 flex items-center gap-2 text-left col-span-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
+                        <a href="{{ route('fast.login', 'employee') }}" class="demo-card login-glass-demo p-2.5 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 flex items-center gap-2 text-left col-span-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
                             <div class="avatar w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">DEV</div>
                             <div class="flex-1 min-w-0">
                                 <p class="font-semibold text-slate-800 leading-tight">Joel Loter (Senior Developer)</p>

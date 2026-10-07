@@ -45,7 +45,6 @@ class LeaveCalculationService
         }
 
         $policy = $employee->leavePolicy;
-        $minAdvanceDays = $policy ? $policy->min_days_advance_notice : 3;
         $maxTeamOnLeave = $policy ? $policy->max_team_on_leave : 2;
 
         // Fetch working days (0 = Sunday, 1 = Monday, ..., 6 = Saturday)
@@ -129,7 +128,8 @@ class LeaveCalculationService
             $totalDays = (float) $workingDaysCount;
         }
 
-        // 3-Day Advance Rule Validation
+        // Annual leave may normally start today or within the next two days.
+        // Emergency requests may use past dates or a later future start date.
         $today = Carbon::today();
         $isAdvanceNoticeValid = true;
         $advanceNoticeMessage = null;
@@ -137,10 +137,10 @@ class LeaveCalculationService
         $effectiveEmergency = $isEmergency || $leaveType->is_emergency_type || $leaveType->code === 'emergency';
 
         if (!$effectiveEmergency && $leaveType->code === 'annual') {
-            $earliestAllowedDate = $today->copy()->addDays($minAdvanceDays);
-            if ($start->lt($earliestAllowedDate)) {
+            $latestAllowedDate = $today->copy()->addDays(2);
+            if ($start->lt($today) || $start->gt($latestAllowedDate)) {
                 $isAdvanceNoticeValid = false;
-                $advanceNoticeMessage = "Annual leave must be applied for at least {$minAdvanceDays} days in advance. Earliest allowed start date is " . $earliestAllowedDate->format('d M Y') . ".";
+                $advanceNoticeMessage = 'Annual leave may normally start today or within the next 2 days. Check Emergency Leave Exception to request a past date or a start date more than 2 days away.';
             }
         }
 

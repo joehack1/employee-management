@@ -13,6 +13,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
+        @keyframes flash-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
+        .flash-countdown { transform-origin: left center; animation: flash-countdown 6s linear forwards; }
         .dashboard-hero {
             background-image: linear-gradient(rgba(255, 255, 255, .84), rgba(255, 255, 255, .84)), url('{{ asset('2205_w026_n002_1930b_p1_1930.jpg') }}');
             background-position: center;
@@ -326,25 +328,27 @@
         <!-- Flash Messages -->
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
             @if(session('success'))
-                <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 text-sm shadow-xs">
-                    <svg class="w-5 h-5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                <div x-data="{ visible: true }" x-init="setTimeout(() => visible = false, 6000)" x-show="visible" x-cloak x-transition:leave.opacity.duration.400ms role="status" class="relative mb-3 overflow-hidden border border-slate-200 border-l-4 border-l-[#1d9692] bg-white px-4 py-3 text-sm text-slate-800">
+                    <span class="mr-2 text-[10px] font-bold uppercase tracking-wider text-[#1d9692]">Success</span>
                     <span>{{ session('success') }}</span>
+                    <span aria-hidden="true" class="flash-countdown absolute bottom-0 left-0 h-[2px] w-full bg-[#1d9692]"></span>
                 </div>
             @endif
 
             @if(session('error') || $errors->any())
-                <div class="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm shadow-xs mb-3">
-                    <div class="flex items-center gap-2 font-semibold">
-                        <svg class="w-5 h-5 text-rose-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                <div x-data="{ visible: true }" x-init="setTimeout(() => visible = false, 6000)" x-show="visible" x-cloak x-transition:leave.opacity.duration.400ms role="alert" class="relative mb-3 overflow-hidden border border-slate-200 border-l-4 border-l-[#a01e22] bg-white px-4 py-3 text-sm text-slate-800">
+                    <div>
+                        <span class="mr-2 text-[10px] font-bold uppercase tracking-wider text-[#a01e22]">{{ session('error') ? 'Error' : 'Check details' }}</span>
                         <span>{{ session('error') ?? 'Please check the form for errors:' }}</span>
                     </div>
                     @if($errors->any())
-                        <ul class="list-disc list-inside mt-2 text-xs text-rose-700 space-y-1">
+                        <ul class="mt-2 ml-1 space-y-1 border-l border-slate-200 pl-3 text-xs text-slate-600">
                             @foreach($errors->all() as $err)
                                 <li>{{ $err }}</li>
                             @endforeach
                         </ul>
                     @endif
+                    <span aria-hidden="true" class="flash-countdown absolute bottom-0 left-0 h-[2px] w-full bg-[#a01e22]"></span>
                 </div>
             @endif
         </div>

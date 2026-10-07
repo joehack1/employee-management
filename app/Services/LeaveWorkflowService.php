@@ -72,7 +72,7 @@ class LeaveWorkflowService
                 isEmergency: $isEmergency
             );
 
-            // Validate 3-day notice rule
+            // Validate the annual leave date window.
             if (!$calc['advance_notice_valid']) {
                 throw new Exception($calc['advance_notice_message']);
             }

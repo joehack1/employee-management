@@ -47,16 +47,16 @@
             </div>
 
             <!-- Annual Leave Calendar Picker -->
-            <div x-show="isAnnualLeave" x-cloak class="rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 to-white p-4 sm:p-6">
+            <div x-show="isAnnualLeave" x-cloak class="max-w-lg mx-auto rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 to-white p-3 sm:p-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
                     <div>
                         <h2 class="text-sm font-bold text-slate-900">Choose your annual leave dates</h2>
-                        <p class="mt-1 text-xs text-slate-500">Select a start date, then an end date. Weekends and public holidays are excluded from leave days.</p>
+                        <p class="mt-1 text-xs text-slate-500">Without Emergency, annual leave can start today or within the next 2 days. Check Emergency for past dates or dates further ahead. Choose any later end date.</p>
                     </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" @click="changeCalendarMonth(-1)" aria-label="Previous month" class="h-9 w-9 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-teal-50">&lsaquo;</button>
+                    <div class="flex items-center gap-1.5">
+                        <button type="button" @click="changeCalendarMonth(-1)" aria-label="Previous month" class="h-8 w-8 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-teal-50">&lsaquo;</button>
                         <span class="min-w-36 text-center text-sm font-bold text-slate-800" x-text="calendarMonthLabel()"></span>
-                        <button type="button" @click="changeCalendarMonth(1)" aria-label="Next month" class="h-9 w-9 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-teal-50">&rsaquo;</button>
+                        <button type="button" @click="changeCalendarMonth(1)" aria-label="Next month" class="h-8 w-8 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-teal-50">&rsaquo;</button>
                     </div>
                 </div>
 
@@ -70,7 +70,7 @@
                                 :disabled="!canSelectCalendarDate(cell.date)"
                                 :class="calendarDayClasses(cell.date)"
                                 :title="calendarDayTitle(cell.date)"
-                                class="aspect-square min-h-9 sm:min-h-12 rounded-xl text-xs sm:text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                class="mx-auto h-8 w-8 sm:h-9 sm:w-9 rounded-lg text-xs font-semibold transition focus:outline-none focus:ring-2 focus:ring-teal-500"
                                 x-text="cell.day"></button>
                     </template>
                 </div>
@@ -142,36 +142,34 @@
                             Emergency Leave Exception?
                         </label>
                         <p class="text-[11px] text-slate-500">
-                            Check this if taking leave for an unforeseen urgent matter, today, or backdated (e.g. yesterday/already taken). This bypasses the mandatory 3-day advance rule and routes directly with high priority.
+                            For annual leave, check this to request a past start date or a start date more than 2 days away. Emergency requests bypass the normal date window and are routed with high priority.
                         </p>
                     </div>
                 </div>
             </div>
 
-            <!-- Requirement 4, 14, 15: Live Dynamic Calculation Feedback Banner -->
-            <div x-show="calcResult !== null" x-cloak class="p-5 rounded-2xl border transition-all"
-                 :class="calcResult && !calcResult.advance_notice_valid ? 'bg-rose-50 border-rose-200 text-rose-900' : 'bg-blue-50/70 border-blue-200 text-slate-900'">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <span class="text-xs font-bold uppercase tracking-wider text-slate-500">Calculated Working Days:</span>
-                        <div class="flex items-baseline gap-2 mt-0.5">
-                            <span class="text-3xl font-extrabold text-blue-700" x-text="calcResult ? calcResult.total_days : '0.0'"></span>
-                            <span class="text-xs font-semibold text-slate-600">business days</span>
-                        </div>
+            <!-- Live leave day estimate and validation details -->
+            <div x-show="calcResult !== null" x-cloak class="rounded-xl border border-slate-200 border-l-4 border-l-[#1d9692] bg-white p-4">
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-baseline gap-2">
+                        <span class="text-xs font-medium text-slate-500">Leave day estimate</span>
+                        <span class="text-lg font-semibold text-slate-900" x-text="calcResult ? calcResult.total_days : '0.0'"></span>
+                        <span class="text-xs text-slate-500">days</span>
                     </div>
-                    <div class="text-right text-xs text-slate-500">
-                        <span x-text="calcResult ? calcResult.working_days_count : '0'"></span> working days<br>
-                        <span class="text-slate-400" x-text="(calcResult ? calcResult.weekend_days_count : 0) + ' weekends • ' + (calcResult ? calcResult.holiday_days_count : 0) + ' holidays excluded'"></span>
+                    <div class="text-xs text-slate-500 sm:text-right">
+                        <span x-text="calcResult ? calcResult.working_days_count : '0'"></span> working days
+                        <span class="mx-1 text-slate-300">·</span>
+                        <span x-text="(calcResult ? calcResult.weekend_days_count : 0) + ' weekends, ' + (calcResult ? calcResult.holiday_days_count : 0) + ' public holidays excluded'"></span>
                     </div>
                 </div>
 
-                <!-- 3-Day Rule Warning (Req 3) -->
+                <!-- Annual Leave Date Window Warning -->
                 <div x-show="calcResult && !calcResult.advance_notice_valid" class="mt-3 p-3 rounded-xl bg-rose-100/80 border border-rose-300 text-xs font-medium text-rose-800 flex items-start gap-2">
                     <svg class="w-4 h-4 text-rose-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
                     <div>
-                        <p class="font-bold">❌ 3-Day Advance Rule Notice</p>
+                        <p class="font-bold">❌ Annual Leave Date Window</p>
                         <p x-text="calcResult ? calcResult.advance_notice_message : ''"></p>
-                        <p class="mt-1 text-[11px] text-rose-700">If this is an unexpected emergency, please check the <strong>Emergency Leave Exception</strong> box above.</p>
+                        <p class="mt-1 text-[11px] text-rose-700">Check the <strong>Emergency Leave Exception</strong> box to request this start date.</p>
                     </div>
                 </div>
 
@@ -248,7 +246,7 @@ const annualLeaveCalendarConfig = {
     existingLeaveDates: @json($existingLeaveDates),
     holidays: @json($calendarHolidays),
     workingDayNumbers: @json($workingDayNumbers),
-    minAnnualStartDate: @json($minAnnualStartDate),
+    maxAnnualStartDate: @json($maxAnnualStartDate),
     today: @json($todayDate),
 };
 
@@ -267,7 +265,7 @@ function leaveApplicationForm(calendarConfig = {}) {
         existingLeaveDates: calendarConfig.existingLeaveDates || {},
         calendarHolidays: calendarConfig.holidays || [],
         workingDayNumbers: calendarConfig.workingDayNumbers || [1, 2, 3, 4, 5],
-        minAnnualStartDate: calendarConfig.minAnnualStartDate || '',
+        maxAnnualStartDate: calendarConfig.maxAnnualStartDate || '',
         today: calendarConfig.today || '',
         calendarYear: new Date().getFullYear(),
         calendarMonth: new Date().getMonth(),
@@ -365,12 +363,16 @@ function leaveApplicationForm(calendarConfig = {}) {
         canSelectCalendarDate(date) {
             if (!date || this.isCalendarBusy(date) || !this.isCalendarWorkday(date)) return false;
 
-            const beginsNewRange = !this.startDate || Boolean(this.endDate) || date < this.startDate;
-            if (beginsNewRange && !this.isEmergency && this.minAnnualStartDate && date < this.minAnnualStartDate) {
+            const beginsNewRange = !this.startDate || Boolean(this.calendarSelectionError) || date < this.startDate;
+            if (beginsNewRange && !this.isEmergency && this.isOutsideAnnualStartWindow(date)) {
                 return false;
             }
 
             return true;
+        },
+
+        isOutsideAnnualStartWindow(date) {
+            return Boolean(date && (date < this.today || (this.maxAnnualStartDate && date > this.maxAnnualStartDate)));
         },
 
         calendarDayClasses(date) {
@@ -381,7 +383,8 @@ function leaveApplicationForm(calendarConfig = {}) {
             if (date === this.startDate || (this.endDate && date === this.endDate)) return 'bg-teal-800 text-white shadow-sm ring-2 ring-teal-200';
             if (this.startDate && this.endDate && date > this.startDate && date < this.endDate) return 'bg-teal-100 text-teal-900';
             if (date === this.today) return 'bg-slate-950 text-white';
-            if (!this.isCalendarWorkday(date) || (!this.isEmergency && this.minAnnualStartDate && date < this.minAnnualStartDate)) {
+            const beginsNewRange = !this.startDate || Boolean(this.calendarSelectionError) || date < this.startDate;
+            if (!this.isCalendarWorkday(date) || (beginsNewRange && !this.isEmergency && this.isOutsideAnnualStartWindow(date))) {
                 return 'bg-slate-50 text-slate-300 cursor-not-allowed';
             }
             if (this.isCalendarHoliday(date)) return 'bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-200 hover:bg-amber-100';
@@ -393,7 +396,8 @@ function leaveApplicationForm(calendarConfig = {}) {
             if (this.existingLeaveDates[date] === 'approved') return 'Approved leave already exists';
             if (this.existingLeaveDates[date] === 'pending') return 'Pending leave request already exists';
             if (!this.isCalendarWorkday(date)) return 'Non-working day';
-            if (!this.isEmergency && this.minAnnualStartDate && date < this.minAnnualStartDate) return 'Select Emergency Leave Exception to request this date';
+            const beginsNewRange = !this.startDate || Boolean(this.calendarSelectionError) || date < this.startDate;
+            if (beginsNewRange && !this.isEmergency && this.isOutsideAnnualStartWindow(date)) return 'Check Emergency Leave Exception to request a past start date or a date more than 2 days away';
             if (this.isCalendarHoliday(date)) return 'Public holiday; excluded from leave day count';
             return 'Select date';
         },
@@ -401,7 +405,7 @@ function leaveApplicationForm(calendarConfig = {}) {
         selectCalendarDate(date) {
             if (!this.canSelectCalendarDate(date)) return;
 
-            const beginsNewRange = !this.startDate || Boolean(this.endDate) || Boolean(this.calendarSelectionError) || date < this.startDate;
+            const beginsNewRange = !this.startDate || Boolean(this.calendarSelectionError) || date < this.startDate;
             if (beginsNewRange) {
                 this.calendarSelectionError = '';
                 this.startDate = date;

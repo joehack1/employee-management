@@ -98,10 +98,9 @@ class LeaveApplicationController extends Controller
         if (empty($workingDayNumbers)) {
             $workingDayNumbers = [1, 2, 3, 4, 5];
         }
-        $minAdvanceDays = (int) ($employee->leavePolicy?->min_days_advance_notice ?? 3);
         $todayDate = Carbon::today()->toDateString();
-        $minAnnualStartDate = Carbon::parse($todayDate)->addDays($minAdvanceDays)->toDateString();
-        $defaultLeaveDate = Carbon::parse($minAnnualStartDate);
+        $maxAnnualStartDate = Carbon::parse($todayDate)->addDays(2)->toDateString();
+        $defaultLeaveDate = Carbon::parse($todayDate);
         for ($daysChecked = 0; $daysChecked < 370; $daysChecked++) {
             $dateKey = $defaultLeaveDate->toDateString();
             $isConfiguredWorkday = in_array($defaultLeaveDate->dayOfWeek, $workingDayNumbers, true);
@@ -120,7 +119,7 @@ class LeaveApplicationController extends Controller
             'calendarHolidays',
             'workingDayNumbers',
             'todayDate',
-            'minAnnualStartDate',
+            'maxAnnualStartDate',
             'defaultLeaveDate'
         ));
     }
