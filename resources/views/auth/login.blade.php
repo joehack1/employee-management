@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Employee Leave Management System</title>
     @include('partials.theme')
-    <script src="https://cdn.tailwindcss.com"></script>
-    @include('partials.tailwind-config')
+    @vite(['resources/css/app.css'])
 
     <style>
         /* ---------- Motion tokens ---------- */

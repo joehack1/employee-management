@@ -5,8 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Forgot Password - LeaveFlow</title>
     @include('partials.theme')
-    <script src="https://cdn.tailwindcss.com"></script>
-    @include('partials.tailwind-config')
+    @vite(['resources/css/app.css'])
 </head>
 <body class="h-full flex flex-col justify-center py-12 sm:px-6 lg:px-8">
     <button type="button" onclick="toggleTheme()"

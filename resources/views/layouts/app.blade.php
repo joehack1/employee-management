@@ -6,11 +6,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Employee Leave Management System')</title>
     @include('partials.theme')
-    <!-- Tailwind CSS CDN for instant rendering -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    @include('partials.tailwind-config')
-    <!-- Alpine.js for lightweight UI interactivity -->
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         [x-cloak] { display: none !important; }
         @keyframes flash-countdown { from { transform: scaleX(1); } to { transform: scaleX(0); } }
