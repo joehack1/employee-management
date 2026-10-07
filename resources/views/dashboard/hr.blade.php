@@ -3,7 +3,7 @@
 @section('title', 'HR Executive Dashboard - LeaveFlow')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     <!-- Top Header -->
     <div class="dashboard-hero rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

@@ -3,7 +3,7 @@
 @section('title', 'Employee Dashboard - LeaveFlow')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
     <!-- Employee Header & Status Card -->
     <div class="dashboard-hero bg-white rounded-3xl p-6 sm:p-8 shadow-xs border border-slate-200/80 flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div class="flex items-start sm:items-center gap-4">

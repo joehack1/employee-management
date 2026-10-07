@@ -5,50 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Employee Leave Management System')</title>
+    @include('partials.theme')
     <!-- Tailwind CSS CDN for instant rendering -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        const tealBrand = {
-            50: '#edf8f7', 100: '#d9efed', 200: '#b8e1de', 300: '#8bcbc7',
-            400: '#58b1ac', 500: '#35a29e', 600: '#1d9692', 700: '#187f7c',
-            800: '#175553', 900: '#164745', 950: '#0b2928'
-        };
-        const redBrand = {
-            50: '#fbf1f1', 100: '#f6e2e2', 200: '#edcaca', 300: '#dfa4a5',
-            400: '#cb7476', 500: '#b54c4f', 600: '#a01e22', 700: '#861a1d',
-            800: '#70191b', 900: '#5d191b', 950: '#330b0c'
-        };
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        blue: tealBrand,
-                        teal: tealBrand,
-                        emerald: tealBrand,
-                        indigo: tealBrand,
-                        cyan: tealBrand,
-                        green: tealBrand,
-                        purple: tealBrand,
-                        violet: tealBrand,
-                        rose: redBrand,
-                        red: redBrand,
-                        amber: redBrand,
-                        orange: redBrand,
-                        yellow: redBrand,
-                        brand: {
-                            50: tealBrand[50],
-                            100: tealBrand[100],
-                            500: tealBrand[500],
-                            600: tealBrand[600],
-                            700: tealBrand[700],
-                            800: tealBrand[800],
-                            900: tealBrand[900],
-                        }
-                    }
-                }
-            }
-        }
-    </script>
+    @include('partials.tailwind-config')
     <!-- Alpine.js for lightweight UI interactivity -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
@@ -58,31 +18,34 @@
             background-position: center;
             background-size: cover;
         }
+        .dark .dashboard-hero {
+            background-image: linear-gradient(rgba(0, 0, 0, .88), rgba(0, 0, 0, .88)), url('{{ asset('2205_w026_n002_1930b_p1_1930.jpg') }}');
+        }
     </style>
 </head>
 <body class="h-full font-sans antialiased text-slate-800">
     <div class="min-h-full flex flex-col">
         <!-- Top Navigation -->
-        <header class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div class="flex justify-between h-16">
-                    <div class="flex">
-                        <div class="flex-shrink-0 flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
-                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <header x-data="{ mobileOpen: false }" class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
+            <div class="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16 gap-2 sm:gap-4">
+                    <div class="flex min-w-0">
+                        <div class="flex-shrink-0 flex items-center gap-2 sm:gap-3 min-w-0">
+                            <div class="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
                                 </svg>
                             </div>
-                            <div>
-                                <a href="{{ route('dashboard') }}" class="text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2">
-                                    LeaveFlow <span class="text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-semibold border border-blue-200">HRIS</span>
+                            <div class="min-w-0">
+                                <a href="{{ route('dashboard') }}" class="text-[15px] sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 truncate">
+                                    LeaveFlow <span class="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-semibold border border-blue-200">HRIS</span>
                                 </a>
-                                <p class="text-xs text-slate-500">Employee Leave Management</p>
+                                <p class="hidden sm:block text-xs text-slate-500 truncate">Employee Leave Management</p>
                             </div>
                         </div>
 
                         <!-- Main Navigation Links -->
-                        <nav class="hidden md:ml-8 md:flex md:space-x-1 items-center">
+                        <nav class="hidden lg:flex lg:ml-8 lg:space-x-1 items-center whitespace-nowrap">
                             <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
                                 Dashboard
                             </a>
@@ -143,10 +106,19 @@
                         </nav>
                     </div>
 
-                    <!-- Right Top Navigation: Fast Demo Switcher, Notification Bell, User Profile -->
-                    <div class="flex items-center gap-3">
+                    <!-- Right Top Navigation: Mobile Menu, Fast Demo Switcher, Theme, Bell, Profile -->
+                    <div class="flex items-center gap-1 sm:gap-2 lg:gap-3">
+
+                        <!-- Mobile Menu Toggle -->
+                        <button type="button" @click="mobileOpen = !mobileOpen"
+                                class="lg:hidden p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none"
+                                title="Menu" aria-label="Toggle navigation menu" :aria-expanded="mobileOpen.toString()">
+                            <svg x-show="!mobileOpen" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                            <svg x-show="mobileOpen" x-cloak class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                        </button>
+
                         <!-- Fast Role Switcher (Essential for testing all roles effortlessly) -->
-                        <div class="hidden lg:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
+                        <div class="hidden xl:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
                             <span class="text-slate-500 font-medium px-2">Switch:</span>
                             <a href="{{ route('fast.login', 'hr') }}" title="Sarah Jenkins (HR Manager)" class="px-2 py-1 rounded-lg {{ auth()->user()->isHr() ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">HR</a>
                             <a href="{{ route('fast.login', 'manager') }}" title="Alex Morgan (Manager)" class="px-2 py-1 rounded-lg {{ auth()->user()->isManager() ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Manager</a>
@@ -154,6 +126,18 @@
                             <a href="{{ route('fast.login', 'employee') }}" title="Joel Loter (Senior Dev)" class="px-2 py-1 rounded-lg {{ auth()->user()->email === 'joel@company.com' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Joel (Dev)</a>
                             <a href="{{ route('fast.login', 'mary') }}" title="Mary Wanjiku (Engineer)" class="px-2 py-1 rounded-lg {{ auth()->user()->email === 'mary@company.com' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Mary</a>
                         </div>
+
+                        <!-- Dark Mode Toggle -->
+                        <button type="button" onclick="toggleTheme()"
+                                class="theme-toggle p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none"
+                                title="Toggle dark mode" aria-label="Toggle dark mode">
+                            <svg class="icon-moon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                            <svg class="icon-sun w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </button>
 
                         <!-- Notification Bell -->
                         @php
@@ -173,7 +157,7 @@
                             </button>
 
                             <!-- Notification Dropdown -->
-                            <div x-show="open" x-cloak class="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-50">
+                            <div x-show="open" x-cloak class="absolute right-0 mt-2 w-[min(24rem,calc(100vw-2rem))] sm:w-96 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-50">
                                 <div class="px-4 py-3 flex items-center justify-between">
                                     <span class="text-sm font-semibold text-slate-900">Notifications</span>
                                     @if($unreadCount > 0)
@@ -233,7 +217,7 @@
                                     <p class="font-semibold text-slate-900 leading-tight">{{ auth()->user()->name }}</p>
                                     <p class="text-slate-500 capitalize">{{ str_replace('_', ' ', auth()->user()->role) }}</p>
                                 </div>
-                                <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+                                <svg class="hidden sm:block w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
                             </button>
 
                             <div x-show="open" x-cloak class="absolute right-0 mt-2 w-56 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-50">
@@ -263,11 +247,84 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Mobile Navigation Panel -->
+                <div x-show="mobileOpen" x-cloak
+                     x-transition:enter="transition ease-out duration-150"
+                     x-transition:enter-start="opacity-0 -translate-y-1"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     x-transition:leave="transition ease-in duration-100"
+                     x-transition:leave-start="opacity-100 translate-y-0"
+                     x-transition:leave-end="opacity-0 -translate-y-1"
+                     class="lg:hidden border-t border-slate-200 bg-white shadow-lg">
+                    <div class="max-w-[1600px] mx-auto px-3 sm:px-6 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+                        <a @click="mobileOpen = false" href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
+                            Dashboard
+                        </a>
+                        @can('apply-leave')
+                        <a @click="mobileOpen = false" href="{{ route('leave.create') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('leave.create') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+                            Apply Leave
+                        </a>
+                        @endcan
+                        <a @click="mobileOpen = false" href="{{ route('leave.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('leave.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                            My Requests
+                        </a>
+                        <a @click="mobileOpen = false" href="{{ route('calendar.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('calendar.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            Calendar
+                        </a>
+                        @if(auth()->user()->isManager())
+                        <a @click="mobileOpen = false" href="{{ route('reports.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('reports.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                            Analytics
+                        </a>
+                        @endif
+
+                        @if(auth()->user()->isTeamLead() || auth()->user()->isHr() || auth()->user()->isManager())
+                        <a @click="mobileOpen = false" href="{{ route('approvals.pending') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('approvals.pending') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                            <span class="flex items-center gap-2.5">
+                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                                Approvals
+                            </span>
+                            @if($pendingCount > 0)
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white">{{ $pendingCount }}</span>
+                            @endif
+                        </a>
+                        @endif
+
+                        @if(auth()->user()->isHr())
+                        <div class="pt-3 mt-3 border-t border-slate-100 space-y-1">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 pb-1">HR Administration</p>
+                            <a @click="mobileOpen = false" href="{{ route('employees.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Employees Directory</a>
+                            <a @click="mobileOpen = false" href="{{ route('departments.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Departments & Teams</a>
+                            <a @click="mobileOpen = false" href="{{ route('leave_types.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Leave Types</a>
+                            <a @click="mobileOpen = false" href="{{ route('policies.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Leave Policies</a>
+                            <a @click="mobileOpen = false" href="{{ route('holidays.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Holidays & Working Days</a>
+                            <a @click="mobileOpen = false" href="{{ route('reports.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Reports & Analytics</a>
+                            <a @click="mobileOpen = false" href="{{ route('audit.index') }}" class="flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition">Audit Trail</a>
+                        </div>
+                        @endif
+
+                        <div class="pt-3 mt-3 border-t border-slate-100">
+                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 pb-2">Quick Switch (Demo)</p>
+                            <div class="flex flex-wrap gap-1.5 px-3">
+                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'hr') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->isHr() ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">HR</a>
+                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'manager') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->isManager() ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Manager</a>
+                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'lead') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->role === 'team_lead' ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Team Lead</a>
+                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'employee') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->email === 'joel@company.com' ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Joel (Dev)</a>
+                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'mary') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->email === 'mary@company.com' ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Mary</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </header>
 
         <!-- Flash Messages -->
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
             @if(session('success'))
                 <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center gap-3 text-sm shadow-xs">
                     <svg class="w-5 h-5 text-emerald-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
@@ -299,7 +356,7 @@
 
         <!-- Footer -->
         <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-            <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="max-w-[1600px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
                 <p>&copy; {{ date('Y') }} LeaveFlow System. Designed for Enterprise Leave Management.</p>
                 <div class="flex items-center gap-4 text-slate-400">
                     <span>Working Calendar: Mon-Fri</span>
