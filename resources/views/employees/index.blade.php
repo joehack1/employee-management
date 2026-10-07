@@ -73,7 +73,7 @@
                                 <p class="text-[11px] text-slate-400">{{ $emp->team->name ?? 'General Staff' }}</p>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="capitalize px-2 py-0.5 rounded-md font-semibold {{ $emp->user->role === 'hr' ? 'bg-purple-50 text-purple-700' : ($emp->user->role === 'team_lead' ? 'bg-amber-50 text-amber-700' : 'bg-slate-100 text-slate-700') }}">
+                                <span class="capitalize px-2 py-0.5 rounded-md font-semibold {{ $emp->user->role === 'hr' ? 'bg-purple-600 text-white' : ($emp->user->role === 'team_lead' ? 'bg-amber-600 text-white' : 'bg-slate-100 text-slate-700') }}">
                                     {{ str_replace('_', ' ', $emp->user->role) }}
                                 </span>
                             </td>
@@ -82,21 +82,21 @@
                             </td>
                             <td class="px-6 py-4">
                                 @if($emp->current_status === 'working')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-600 text-white">
                                         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Working
                                     </span>
                                 @elseif($emp->current_status === 'on_leave')
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-50 text-rose-700 border border-rose-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-rose-600 text-white">
                                         <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> On Leave
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-600 text-white">
                                         <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending Leave
                                     </span>
                                 @endif
                             </td>
                             <td class="px-6 py-4">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $emp->employment_status === 'active' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-700' }}">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $emp->employment_status === 'active' ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700' }}">
                                     {{ ucfirst($emp->employment_status) }}
                                 </span>
                             </td>

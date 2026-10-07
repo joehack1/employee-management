@@ -26,7 +26,7 @@
     <section class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
             <div><h2 class="font-bold text-slate-900">Staff currently on leave</h2><p class="text-xs text-slate-500 mt-1">Approved leave covering today</p></div>
-            <span class="px-3 py-1 rounded-full bg-teal-50 text-teal-800 text-xs font-semibold">{{ $onLeaveToday->count() }} away</span>
+            <span class="px-3 py-1 rounded-full bg-teal-600 text-white text-xs font-semibold">{{ $onLeaveToday->count() }} away</span>
         </div>
         <div class="overflow-x-auto">
             <table class="min-w-full text-left text-sm">
@@ -80,7 +80,7 @@
             <div class="px-6 py-5 border-b border-slate-100"><h2 class="font-bold text-slate-900">Departments</h2><p class="text-xs text-slate-500 mt-1">Active and total staff by department</p></div>
             <div class="divide-y divide-slate-100">
                 @foreach($departments as $department)
-                    <div class="px-6 py-4 flex items-center justify-between"><span class="text-sm font-medium text-slate-700">{{ $department->name }}</span><span class="px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 text-xs font-semibold">{{ $department->employees_count }} staff</span></div>
+                    <div class="px-6 py-4 flex items-center justify-between"><span class="text-sm font-medium text-slate-700">{{ $department->name }}</span><span class="px-2.5 py-1 rounded-full bg-teal-600 text-white text-xs font-semibold">{{ $department->employees_count }} staff</span></div>
                 @endforeach
             </div>
         </section>

@@ -74,8 +74,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Sick Leave',
                 'code' => 'sick',
-                'description' => 'Medical leave for health recovery. A supporting medical document is required for every request.',
-                'days_allowed' => 14.0,
+                'description' => 'Up to 30 days at full pay followed by up to 15 days at half pay. A supporting medical document is required for every request.',
+                'days_allowed' => 45.0,
                 'is_paid' => true,
                 'requires_attachment' => true,
                 'attachment_required_after_days' => 0,
@@ -117,8 +117,8 @@ class DatabaseSeeder extends Seeder
             [
                 'name' => 'Compassionate Leave',
                 'code' => 'compassionate',
-                'description' => 'Leave granted upon bereavement of an immediate family member.',
-                'days_allowed' => 5.0,
+                'description' => '7 paid days upon the death of a loved one.',
+                'days_allowed' => 7.0,
                 'is_paid' => true,
                 'requires_attachment' => false,
                 'is_emergency_type' => false,

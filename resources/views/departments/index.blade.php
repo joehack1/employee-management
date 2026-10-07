@@ -23,7 +23,7 @@
                 <div class="flex items-start justify-between border-b border-slate-100 pb-3">
                     <div>
                         <div class="flex items-center gap-2">
-                            <span class="px-2 py-0.5 rounded font-bold text-[10px] bg-blue-50 text-blue-700 border border-blue-200">{{ $dept->code }}</span>
+                            <span class="px-2 py-0.5 rounded font-bold text-[10px] bg-blue-600 text-white">{{ $dept->code }}</span>
                             <h2 class="text-base font-bold text-slate-900">{{ $dept->name }}</h2>
                         </div>
                         <p class="text-xs text-slate-500 mt-1">{{ $dept->description ?? 'No description' }}</p>

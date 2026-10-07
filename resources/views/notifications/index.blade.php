@@ -25,13 +25,13 @@
                 <div class="flex items-start gap-3">
                     <div class="mt-1">
                         @if(($note->data['type'] ?? '') === 'success')
-                            <div class="w-8 h-8 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs">✓</div>
+                            <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">✓</div>
                         @elseif(($note->data['type'] ?? '') === 'danger')
-                            <div class="w-8 h-8 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-xs">✕</div>
+                            <div class="w-8 h-8 rounded-full bg-rose-600 text-white flex items-center justify-center font-bold text-xs">✕</div>
                         @elseif(($note->data['type'] ?? '') === 'warning')
-                            <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xs">!</div>
+                            <div class="w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-xs">!</div>
                         @else
-                            <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold text-xs">ℹ</div>
+                            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-xs">ℹ</div>
                         @endif
                     </div>
                     <div>

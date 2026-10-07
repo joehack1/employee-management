@@ -9,7 +9,7 @@
         <div>
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight">HR Executive Dashboard</h1>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-600 text-white">
                     Administrator
                 </span>
             </div>
@@ -102,7 +102,7 @@
                         <h2 class="text-base font-bold text-slate-900">HR Actions</h2>
                         <p class="text-xs text-slate-500">Manager leave requests and cancellation confirmations need HR action</p>
                     </div>
-                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-600 text-white">
                         {{ $pendingApprovals->count() }} Requests
                     </span>
                 </div>
@@ -286,7 +286,7 @@
                                 <p class="text-[10px] text-slate-400">{{ $lb->employee->department->name ?? 'General' }}</p>
                             </div>
                             <div class="text-right">
-                                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                <span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-600 text-white">
                                     {{ $lb->available_days }} days left
                                 </span>
                                 <a href="{{ route('employees.leaveAccount', $lb->employee_id) }}" class="block text-[10px] text-blue-600 hover:underline mt-0.5">Adjust &rarr;</a>

@@ -42,7 +42,7 @@
                                 {{ $lt->days_allowed }} days
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $lt->is_paid ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-slate-100 text-slate-600' }}">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $lt->is_paid ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-600' }}">
                                     {{ $lt->is_paid ? 'Paid' : 'Unpaid' }}
                                 </span>
                             </td>
@@ -57,7 +57,7 @@
                             </td>
                             <td class="px-6 py-4 text-center">
                                 @if($lt->is_emergency_type)
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white">
                                         🚨 Emergency
                                     </span>
                                 @else
@@ -65,7 +65,7 @@
                                 @endif
                             </td>
                             <td class="px-6 py-4 text-center">
-                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $lt->is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-200 text-slate-600' }}">
+                                <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $lt->is_active ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-600' }}">
                                     {{ $lt->is_active ? 'Active' : 'Disabled' }}
                                 </span>
                             </td>

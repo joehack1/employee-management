@@ -62,7 +62,7 @@
         @foreach($deptStats as $ds)
             <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs space-y-2">
                 <div class="flex items-center justify-between">
-                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">{{ $ds['code'] }}</span>
+                    <span class="text-[10px] font-bold px-2 py-0.5 rounded bg-blue-600 text-white">{{ $ds['code'] }}</span>
                     <span class="text-xs text-slate-400">{{ $ds['employee_count'] }} staff</span>
                 </div>
                 <h3 class="text-sm font-bold text-slate-900">{{ $ds['name'] }}</h3>

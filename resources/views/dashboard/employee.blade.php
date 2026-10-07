@@ -23,15 +23,15 @@
                         </span>
                         <!-- Status Badge (Req 33) -->
                         @if($employee->current_status === 'working')
-                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-emerald-600 text-white">
                                 <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> Working
                             </span>
                         @elseif($employee->current_status === 'on_leave')
-                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-rose-600 text-white">
                                 <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span> On Leave
                             </span>
                         @else
-                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200">
+                            <span class="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full text-xs font-semibold bg-amber-600 text-white">
                                 <span class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></span> Pending Leave
                             </span>
                         @endif
@@ -97,7 +97,7 @@
                                 </td>
                                 <td class="px-6 py-4 text-center text-slate-500 text-xs">
                                     @if($bal->manual_adjustment_days != 0)
-                                        <span class="px-2 py-0.5 rounded-md {{ $bal->manual_adjustment_days > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">
+                                        <span class="px-2 py-0.5 rounded-md {{ $bal->manual_adjustment_days > 0 ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white' }}">
                                             {{ $bal->manual_adjustment_days > 0 ? '+' : '' }}{{ number_format($bal->manual_adjustment_days, 1) }}
                                         </span>
                                     @else
@@ -111,7 +111,7 @@
                                     {{ number_format($bal->pending_days, 1) }}
                                 </td>
                                 <td class="px-6 py-4 text-center">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-xl text-sm font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-xl text-sm font-extrabold bg-blue-600 text-white">
                                         {{ number_format($bal->available_days, 1) }} days
                                     </span>
                                 </td>
@@ -161,7 +161,7 @@
                                             {{ $app->leaveType->name }}
                                         </a>
                                         @if($app->is_emergency)
-                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                                            <span class="px-1.5 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white">
                                                 🚨 Emergency
                                             </span>
                                         @endif
@@ -235,6 +235,8 @@
                 <ul class="space-y-2 list-disc list-inside text-slate-600">
                     <li><strong>3-Day Notice Rule:</strong> Annual leave must be requested at least 3 days in advance.</li>
                     <li><strong>Emergency Exception:</strong> For urgent medical or personal emergencies, check <em>Emergency Leave?</em> to bypass the 3-day notice rule and allow backdated submission.</li>
+                    <li><strong>Sick Leave:</strong> Up to 30 days at full pay, followed by up to 15 days at half pay. A medical attachment is required for every sick leave request.</li>
+                    <li><strong>Compassionate Leave:</strong> Everyone is entitled to 7 paid days when a loved one passes away.</li>
                     <li><strong>Half-Day Leave:</strong> Morning or afternoon half-days calculate as 0.5 working days.</li>
                     <li><strong>Non-Working Days:</strong> Weekends and gazetted public holidays are automatically excluded from your leave count.</li>
                 </ul>

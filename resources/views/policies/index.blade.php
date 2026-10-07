@@ -24,7 +24,7 @@
                         <p class="text-xs text-slate-400">{{ $p->employees_count }} employees assigned</p>
                     </div>
                     @if($p->is_default)
-                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200">
+                        <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-blue-600 text-white">
                             Organization Default
                         </span>
                     @endif
@@ -69,10 +69,10 @@
                         <span class="px-2.5 py-1 rounded-lg bg-white border border-slate-200">Employee</span>
                         <span>&rarr;</span>
                         @if($p->approval_workflow === 'team_lead_then_hr')
-                            <span class="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-900 border border-amber-200">Team Lead</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-amber-600 text-white">Team Lead</span>
                             <span>&rarr;</span>
                         @elseif($p->approval_workflow === 'dept_head_then_hr')
-                            <span class="px-2.5 py-1 rounded-lg bg-purple-100 text-purple-900 border border-purple-200">Dept Head</span>
+                            <span class="px-2.5 py-1 rounded-lg bg-purple-600 text-white">Dept Head</span>
                             <span>&rarr;</span>
                         @endif
                         <span class="px-2.5 py-1 rounded-lg bg-blue-600 text-white shadow-xs">HR Final</span>

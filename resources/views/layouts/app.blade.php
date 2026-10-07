@@ -38,31 +38,31 @@
                             </div>
                             <div class="min-w-0">
                                 <a href="{{ route('dashboard') }}" class="text-[15px] sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 truncate">
-                                    LeaveFlow <span class="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 font-semibold border border-blue-200">HRIS</span>
+                                    LeaveFlow <span class="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-blue-600 text-white font-semibold">HRIS</span>
                                 </a>
                                 <p class="hidden sm:block text-xs text-slate-500 truncate">Employee Leave Management</p>
                             </div>
                         </div>
 
                         <!-- Main Navigation Links -->
-                        <nav class="hidden lg:flex lg:ml-8 lg:space-x-1 items-center whitespace-nowrap">
-                            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
+                        <nav class="hidden xl:flex xl:ml-8 xl:space-x-1 items-center whitespace-nowrap">
+                            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
                                 Dashboard
                             </a>
                             @can('apply-leave')
-                            <a href="{{ route('leave.create') }}" class="{{ request()->routeIs('leave.create') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5 font-medium text-blue-600">
+                            <a href="{{ route('leave.create') }}" class="{{ request()->routeIs('leave.create') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5 font-medium text-blue-600">
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                                 Apply Leave
                             </a>
                             @endcan
-                            <a href="{{ route('leave.index') }}" class="{{ request()->routeIs('leave.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
+                            <a href="{{ route('leave.index') }}" class="{{ request()->routeIs('leave.index') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
                                 My Requests
                             </a>
-                            <a href="{{ route('calendar.index') }}" class="{{ request()->routeIs('calendar.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
+                            <a href="{{ route('calendar.index') }}" class="{{ request()->routeIs('calendar.index') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
                                 Calendar
                             </a>
                             @if(auth()->user()->isManager())
-                                <a href="{{ route('reports.index') }}" class="{{ request()->routeIs('reports.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">Analytics</a>
+                                <a href="{{ route('reports.index') }}" class="{{ request()->routeIs('reports.*') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">Analytics</a>
                             @endif
 
                             @if(auth()->user()->isTeamLead() || auth()->user()->isHr() || auth()->user()->isManager())
@@ -72,7 +72,7 @@
                                         : (auth()->user()->isHr() ? ['pending_hr', 'cancellation_requested'] : ['pending_team_lead']);
                                     $pendingCount = \App\Models\LeaveApplication::whereIn('status', $approvalStatuses)->count();
                                 @endphp
-                                <a href="{{ route('approvals.pending') }}" class="{{ request()->routeIs('approvals.pending') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5">
+                                <a href="{{ route('approvals.pending') }}" class="{{ request()->routeIs('approvals.pending') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5">
                                     Approvals
                                     @if($pendingCount > 0)
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-bold bg-amber-500 text-white">
@@ -111,7 +111,7 @@
 
                         <!-- Mobile Menu Toggle -->
                         <button type="button" @click="mobileOpen = !mobileOpen"
-                                class="lg:hidden p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none"
+                                class="xl:hidden p-1.5 sm:p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none"
                                 title="Menu" aria-label="Toggle navigation menu" :aria-expanded="mobileOpen.toString()">
                             <svg x-show="!mobileOpen" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                             <svg x-show="mobileOpen" x-cloak class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -173,11 +173,11 @@
                                             <div class="flex items-start gap-2.5">
                                                 <div class="mt-0.5">
                                                     @if(($note->data['type'] ?? '') === 'success')
-                                                        <div class="w-6 h-6 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>
+                                                        <div class="w-6 h-6 rounded-full bg-emerald-600 text-white flex items-center justify-center text-xs">✓</div>
                                                     @elseif(($note->data['type'] ?? '') === 'danger')
-                                                        <div class="w-6 h-6 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center text-xs">✕</div>
+                                                        <div class="w-6 h-6 rounded-full bg-rose-600 text-white flex items-center justify-center text-xs">✕</div>
                                                     @else
-                                                        <div class="w-6 h-6 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs">ℹ</div>
+                                                        <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">ℹ</div>
                                                     @endif
                                                 </div>
                                                 <div class="flex-1 min-w-0">
@@ -225,7 +225,7 @@
                                     <p class="text-xs font-semibold text-slate-900">{{ auth()->user()->name }}</p>
                                     <p class="text-xs text-slate-500 truncate">{{ auth()->user()->email }}</p>
                                     @if(auth()->user()->employee)
-                                        <span class="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium {{ auth()->user()->employee->current_status === 'working' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : (auth()->user()->employee->current_status === 'on_leave' ? 'bg-rose-50 text-rose-700 border border-rose-200' : 'bg-amber-50 text-amber-700 border border-amber-200') }}">
+                                        <span class="mt-2 inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-medium {{ auth()->user()->employee->current_status === 'working' ? 'bg-emerald-600 text-white' : (auth()->user()->employee->current_status === 'on_leave' ? 'bg-rose-600 text-white' : 'bg-amber-600 text-white') }}">
                                             <span class="w-1.5 h-1.5 rounded-full {{ auth()->user()->employee->current_status === 'working' ? 'bg-emerald-500' : (auth()->user()->employee->current_status === 'on_leave' ? 'bg-rose-500' : 'bg-amber-500') }}"></span>
                                             Status: {{ ucfirst(str_replace('_', ' ', auth()->user()->employee->current_status)) }}
                                         </span>
@@ -256,35 +256,35 @@
                      x-transition:leave="transition ease-in duration-100"
                      x-transition:leave-start="opacity-100 translate-y-0"
                      x-transition:leave-end="opacity-0 -translate-y-1"
-                     class="lg:hidden border-t border-slate-200 bg-white shadow-lg">
+                     class="xl:hidden border-t border-slate-200 bg-white shadow-lg">
                     <div class="max-w-[1600px] mx-auto px-3 sm:px-6 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
-                        <a @click="mobileOpen = false" href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <a @click="mobileOpen = false" href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
                             Dashboard
                         </a>
                         @can('apply-leave')
-                        <a @click="mobileOpen = false" href="{{ route('leave.create') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('leave.create') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <a @click="mobileOpen = false" href="{{ route('leave.create') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('leave.create') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             Apply Leave
                         </a>
                         @endcan
-                        <a @click="mobileOpen = false" href="{{ route('leave.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('leave.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <a @click="mobileOpen = false" href="{{ route('leave.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('leave.index') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
                             My Requests
                         </a>
-                        <a @click="mobileOpen = false" href="{{ route('calendar.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('calendar.index') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <a @click="mobileOpen = false" href="{{ route('calendar.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('calendar.index') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                             Calendar
                         </a>
                         @if(auth()->user()->isManager())
-                        <a @click="mobileOpen = false" href="{{ route('reports.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('reports.*') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <a @click="mobileOpen = false" href="{{ route('reports.index') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('reports.*') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
                             Analytics
                         </a>
                         @endif
 
                         @if(auth()->user()->isTeamLead() || auth()->user()->isHr() || auth()->user()->isManager())
-                        <a @click="mobileOpen = false" href="{{ route('approvals.pending') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('approvals.pending') ? 'bg-blue-50 text-blue-700 font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
+                        <a @click="mobileOpen = false" href="{{ route('approvals.pending') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('approvals.pending') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <span class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
                                 Approvals

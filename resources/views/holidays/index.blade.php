@@ -74,7 +74,7 @@
                                     {{ $h->date->format('l, d M Y') }}
                                 </td>
                                 <td class="px-4 py-3">
-                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $h->type === 'public_holiday' ? 'bg-purple-50 text-purple-700' : 'bg-blue-50 text-blue-700' }}">
+                                    <span class="px-2 py-0.5 rounded text-[10px] font-bold {{ $h->type === 'public_holiday' ? 'bg-purple-600 text-white' : 'bg-blue-600 text-white' }}">
                                         {{ ucfirst(str_replace('_', ' ', $h->type)) }}
                                     </span>
                                 </td>

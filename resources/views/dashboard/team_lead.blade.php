@@ -9,7 +9,7 @@
         <div>
             <div class="flex items-center gap-3">
                 <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Team Lead Portal</h1>
-                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-600 text-white">
                     Lead: {{ $user->name }}
                 </span>
             </div>
@@ -32,7 +32,7 @@
                 <h2 class="text-base font-bold text-slate-900">Pending Team Leave Requests</h2>
                 <p class="text-xs text-slate-500">Your approval finalizes the request. HR is notified with the leave dates and duration.</p>
             </div>
-            <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-50 text-amber-700 border border-amber-200">
+            <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-amber-600 text-white">
                 {{ $pendingRequests->count() }} Pending
             </span>
         </div>
@@ -54,7 +54,7 @@
                     @forelse($pendingRequests as $req)
                         <tr class="hover:bg-slate-50 transition" x-data="{ openRejectModal: false, openApproveModal: false }">
                             <td class="px-4 py-3.5 flex items-center gap-2.5">
-                                <div class="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-bold text-xs flex items-center justify-center">
+                                <div class="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-xs flex items-center justify-center">
                                     {{ substr($req->employee->first_name, 0, 1) }}
                                 </div>
                                 <div>
@@ -167,15 +167,15 @@
                         </div>
                         <div class="flex items-center gap-3">
                             @if($tm->current_status === 'working')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-600 text-white">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Working
                                 </span>
                             @elseif($tm->current_status === 'on_leave')
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-rose-600 text-white">
                                     <span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> On Leave
                                 </span>
                             @else
-                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-amber-600 text-white">
                                     <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending Leave
                                 </span>
                             @endif

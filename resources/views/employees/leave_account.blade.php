@@ -58,7 +58,7 @@
                             <td class="px-4 py-3.5 text-center text-slate-500">{{ $bal->carried_forward_days }}</td>
                             <td class="px-4 py-3.5 text-center font-bold">
                                 @if($bal->manual_adjustment_days != 0)
-                                    <span class="px-2 py-0.5 rounded {{ $bal->manual_adjustment_days > 0 ? 'bg-emerald-50 text-emerald-700' : 'bg-rose-50 text-rose-700' }}">
+                                    <span class="px-2 py-0.5 rounded {{ $bal->manual_adjustment_days > 0 ? 'bg-emerald-600 text-white' : 'bg-rose-600 text-white' }}">
                                         {{ $bal->manual_adjustment_days > 0 ? '+' : '' }}{{ $bal->manual_adjustment_days }}
                                     </span>
                                 @else
@@ -68,7 +68,7 @@
                             <td class="px-4 py-3.5 text-center font-bold text-rose-600">{{ $bal->used_days }}</td>
                             <td class="px-4 py-3.5 text-center font-bold text-amber-600">{{ $bal->pending_days }}</td>
                             <td class="px-4 py-3.5 text-center">
-                                <span class="inline-flex px-3 py-1 rounded-xl font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                                <span class="inline-flex px-3 py-1 rounded-xl font-extrabold bg-blue-600 text-white">
                                     {{ $bal->available_days }} days
                                 </span>
                             </td>

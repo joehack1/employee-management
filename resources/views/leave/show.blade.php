@@ -16,7 +16,7 @@
                     {{ $application->status_badge['label'] }}
                 </span>
                 @if($application->is_emergency)
-                    <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-100 text-amber-800 border border-amber-300">
+                    <span class="px-2.5 py-0.5 rounded-lg text-xs font-bold bg-amber-600 text-white">
                         🚨 Emergency Exception
                     </span>
                 @endif
@@ -152,7 +152,7 @@
                                             <p class="text-[10px] text-slate-400">{{ round($att->file_size / 1024, 1) }} KB • Uploaded {{ $att->created_at->format('d M Y') }}</p>
                                         </div>
                                     </div>
-                                    <a href="{{ route('attachments.download', $att->id) }}" class="px-3 py-1.5 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 font-semibold text-xs transition">
+                                    <a href="{{ route('attachments.download', $att->id) }}" class="px-3 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs transition">
                                         Download Securely
                                     </a>
                                 </div>
@@ -209,7 +209,7 @@
                                         <td class="px-4 py-2 text-slate-500">{{ $day->date->format('l') }}</td>
                                         <td class="px-4 py-2 text-center">
                                             @if($day->is_working_day)
-                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-50 text-emerald-700">Working Day</span>
+                                                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-600 text-white">Working Day</span>
                                             @else
                                                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-500">Weekend / Holiday</span>
                                             @endif
