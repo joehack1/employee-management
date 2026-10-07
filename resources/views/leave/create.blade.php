@@ -13,9 +13,15 @@
     </div>
 
     <div class="bg-white rounded-3xl p-6 sm:p-10 shadow-xs border border-slate-200"
-         x-data="leaveApplicationForm()">
+         x-data="leaveApplicationForm(annualLeaveCalendarConfig)">
         <form action="{{ route('leave.store') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
+
+            @if($errors->has('general'))
+                <div class="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700" role="alert">
+                    {{ $errors->first('general') }}
+                </div>
+            @endif
 
             <!-- Leave Type Selector -->
             <div>
@@ -40,16 +46,65 @@
                 </select>
             </div>
 
-            <!-- Date Range Pickers -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <!-- Annual Leave Calendar Picker -->
+            <div x-show="isAnnualLeave" x-cloak class="rounded-3xl border border-teal-200 bg-gradient-to-br from-teal-50 to-white p-4 sm:p-6">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
+                    <div>
+                        <h2 class="text-sm font-bold text-slate-900">Choose your annual leave dates</h2>
+                        <p class="mt-1 text-xs text-slate-500">Select a start date, then an end date. Weekends and public holidays are excluded from leave days.</p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="button" @click="changeCalendarMonth(-1)" aria-label="Previous month" class="h-9 w-9 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-teal-50">&lsaquo;</button>
+                        <span class="min-w-36 text-center text-sm font-bold text-slate-800" x-text="calendarMonthLabel()"></span>
+                        <button type="button" @click="changeCalendarMonth(1)" aria-label="Next month" class="h-9 w-9 rounded-xl border border-slate-200 bg-white text-slate-700 hover:bg-teal-50">&rsaquo;</button>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-7 gap-1.5 sm:gap-2 text-center">
+                    <template x-for="weekday in weekdayLabels" :key="weekday">
+                        <div class="py-2 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-400" x-text="weekday"></div>
+                    </template>
+                    <template x-for="cell in calendarCells()" :key="cell.key">
+                        <button type="button"
+                                @click="selectCalendarDate(cell.date)"
+                                :disabled="!canSelectCalendarDate(cell.date)"
+                                :class="calendarDayClasses(cell.date)"
+                                :title="calendarDayTitle(cell.date)"
+                                class="aspect-square min-h-9 sm:min-h-12 rounded-xl text-xs sm:text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-teal-500"
+                                x-text="cell.day"></button>
+                    </template>
+                </div>
+
+                <div class="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-[11px] font-medium text-slate-600">
+                    <span class="inline-flex items-center gap-2"><span class="h-3 w-3 rounded bg-[#1d9692]"></span>Approved leave</span>
+                    <span class="inline-flex items-center gap-2"><span class="h-3 w-3 rounded bg-[#a01e22]"></span>Pending leave</span>
+                    <span class="inline-flex items-center gap-2"><span class="h-3 w-3 rounded bg-slate-950"></span>Today</span>
+                    <span class="inline-flex items-center gap-2"><span class="h-3 w-3 rounded bg-teal-800"></span>Your selection</span>
+                    <span class="inline-flex items-center gap-2"><span class="h-3 w-3 rounded border border-amber-200 bg-amber-50"></span>Public holiday</span>
+                </div>
+
+                <div class="mt-4 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-xs text-slate-600">
+                    <span class="font-semibold text-slate-800">Selected:</span>
+                    <span x-text="startDate ? formatCalendarDate(startDate) : 'Choose a start date'"></span>
+                    <span x-show="startDate && !endDate" class="ml-1 text-slate-400">— choose an end date</span>
+                    <span x-show="endDate"> to <span x-text="formatCalendarDate(endDate)"></span></span>
+                    <button type="button" x-show="startDate || endDate" @click="clearCalendarSelection()" class="ml-3 font-semibold text-teal-700 hover:text-teal-900">Clear</button>
+                    <span x-show="calendarSelectionError" x-text="calendarSelectionError" class="mt-2 block font-semibold text-rose-700"></span>
+                </div>
+                @error('start_date')<p class="mt-2 text-xs text-rose-600">{{ $message }}</p>@enderror
+                @error('end_date')<p class="mt-2 text-xs text-rose-600">{{ $message }}</p>@enderror
+            </div>
+
+            <!-- Date Range Pickers for other leave types; remain form fields for annual calendar -->
+            <div x-show="!isAnnualLeave" x-cloak class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                     <label for="start_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Start Date <span class="text-rose-500">*</span></label>
-                    <input type="date" id="start_date" name="start_date" required x-model="startDate" @change="onStartDateChange()" value="{{ old('start_date', date('Y-m-d', strtotime('+3 days'))) }}" class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <input type="date" id="start_date" name="start_date" :required="!isAnnualLeave" x-model="startDate" @change="onStartDateChange()" value="{{ old('start_date', $defaultLeaveDate) }}" class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
 
                 <div>
                     <label for="end_date" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">End Date <span class="text-rose-500">*</span></label>
-                    <input type="date" id="end_date" name="end_date" required x-model="endDate" @change="recalculate()" value="{{ old('end_date', date('Y-m-d', strtotime('+3 days'))) }}" class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">
+                    <input type="date" id="end_date" name="end_date" :required="!isAnnualLeave" x-model="endDate" @change="recalculate()" value="{{ old('end_date', $defaultLeaveDate) }}" class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">
                 </div>
             </div>
 
@@ -152,6 +207,7 @@
                 </label>
                 <textarea id="reason" name="reason" rows="3" :required="isEmergency || leaveTypeRequiresReason" maxlength="2000" placeholder="Add details if you wish..." class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">{{ old('reason') }}</textarea>
                 <p class="mt-1 text-[11px] text-slate-500" x-show="isEmergency || leaveTypeRequiresReason">A reason is required for this request.</p>
+                @error('reason')<p class="mt-2 text-xs text-rose-600">{{ $message }}</p>@enderror
             </div>
 
             <!-- Supporting Document Field -->
@@ -177,7 +233,7 @@
                     Cancel
                 </a>
                 <button type="submit"
-                        :disabled="calcResult && !calcResult.advance_notice_valid"
+                        :disabled="(isAnnualLeave && (!startDate || !endDate)) || (calcResult && !calcResult.advance_notice_valid)"
                         class="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white text-xs font-semibold shadow-md shadow-blue-500/20 transition flex items-center gap-2">
                     <span x-text="isEmergency ? 'Submit Emergency Request' : 'Submit Leave Application'"></span>
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
@@ -188,17 +244,35 @@
 </div>
 
 <script>
-function leaveApplicationForm() {
+const annualLeaveCalendarConfig = {
+    existingLeaveDates: @json($existingLeaveDates),
+    holidays: @json($calendarHolidays),
+    workingDayNumbers: @json($workingDayNumbers),
+    minAnnualStartDate: @json($minAnnualStartDate),
+    today: @json($todayDate),
+};
+
+function leaveApplicationForm(calendarConfig = {}) {
     return {
-        leaveTypeId: "{{ old('leave_type_id', request('leave_type_id', '')) }}",
-        startDate: "{{ old('start_date', date('Y-m-d', strtotime('+3 days'))) }}",
-        endDate: "{{ old('end_date', date('Y-m-d', strtotime('+3 days'))) }}",
+        leaveTypeId: @json(old('leave_type_id', request('leave_type_id', ''))),
+        startDate: @json(old('start_date', $defaultLeaveDate)),
+        endDate: @json(old('end_date', $defaultLeaveDate)),
         isHalfDay: false,
         halfDayType: 'morning',
         isEmergency: {{ old('is_emergency') ? 'true' : 'false' }},
+        isAnnualLeave: false,
         leaveTypeHasDocumentRule: false,
         leaveTypeRequiresReason: false,
         calcResult: null,
+        existingLeaveDates: calendarConfig.existingLeaveDates || {},
+        calendarHolidays: calendarConfig.holidays || [],
+        workingDayNumbers: calendarConfig.workingDayNumbers || [1, 2, 3, 4, 5],
+        minAnnualStartDate: calendarConfig.minAnnualStartDate || '',
+        today: calendarConfig.today || '',
+        calendarYear: new Date().getFullYear(),
+        calendarMonth: new Date().getMonth(),
+        calendarSelectionError: '',
+        weekdayLabels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
 
         init() {
             this.updateTypeFlags();
@@ -207,7 +281,146 @@ function leaveApplicationForm() {
             if (selectedOption?.getAttribute('data-is-emergency') === '1') {
                 this.isEmergency = true;
             }
+            this.setCalendarMonthFromSelection();
             this.recalculate();
+        },
+
+        calendarMonthLabel() {
+            return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' })
+                .format(new Date(this.calendarYear, this.calendarMonth, 1));
+        },
+
+        calendarCells() {
+            const firstDay = new Date(this.calendarYear, this.calendarMonth, 1);
+            const offset = (firstDay.getDay() + 6) % 7;
+            const daysInMonth = new Date(this.calendarYear, this.calendarMonth + 1, 0).getDate();
+            const cells = [];
+
+            for (let i = 0; i < offset; i++) {
+                cells.push({ key: `empty-${i}`, date: null, day: '' });
+            }
+            for (let day = 1; day <= daysInMonth; day++) {
+                const date = this.calendarDateString(new Date(this.calendarYear, this.calendarMonth, day));
+                cells.push({ key: date, date, day });
+            }
+            while (cells.length % 7 !== 0) {
+                cells.push({ key: `empty-${cells.length}`, date: null, day: '' });
+            }
+
+            return cells;
+        },
+
+        calendarDateString(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        },
+
+        formatCalendarDate(date) {
+            if (!date) return '';
+            return new Intl.DateTimeFormat('en', { day: 'numeric', month: 'short', year: 'numeric' })
+                .format(new Date(`${date}T12:00:00`));
+        },
+
+        setCalendarMonthFromSelection() {
+            const selectedDate = this.startDate ? new Date(`${this.startDate}T12:00:00`) : new Date();
+            if (!Number.isNaN(selectedDate.getTime())) {
+                this.calendarYear = selectedDate.getFullYear();
+                this.calendarMonth = selectedDate.getMonth();
+            }
+        },
+
+        changeCalendarMonth(offset) {
+            const nextMonth = new Date(this.calendarYear, this.calendarMonth + offset, 1);
+            this.calendarYear = nextMonth.getFullYear();
+            this.calendarMonth = nextMonth.getMonth();
+        },
+
+        isCalendarWorkday(date) {
+            const dayOfWeek = new Date(`${date}T12:00:00`).getDay();
+            return dayOfWeek !== 0 && dayOfWeek !== 6 && this.workingDayNumbers.includes(dayOfWeek);
+        },
+
+        isCalendarBusy(date) {
+            return Boolean(date && this.existingLeaveDates[date]);
+        },
+
+        isCalendarHoliday(date) {
+            return Boolean(date && this.calendarHolidays.includes(date));
+        },
+
+        rangeHasExistingLeave(start, end) {
+            let cursor = new Date(`${start}T12:00:00`);
+            const lastDate = new Date(`${end}T12:00:00`);
+            let checked = 0;
+            while (cursor <= lastDate && checked < 370) {
+                if (this.isCalendarBusy(this.calendarDateString(cursor))) return true;
+                cursor.setDate(cursor.getDate() + 1);
+                checked++;
+            }
+            return false;
+        },
+
+        canSelectCalendarDate(date) {
+            if (!date || this.isCalendarBusy(date) || !this.isCalendarWorkday(date)) return false;
+
+            const beginsNewRange = !this.startDate || Boolean(this.endDate) || date < this.startDate;
+            if (beginsNewRange && !this.isEmergency && this.minAnnualStartDate && date < this.minAnnualStartDate) {
+                return false;
+            }
+
+            return true;
+        },
+
+        calendarDayClasses(date) {
+            if (!date) return 'invisible pointer-events-none';
+            const status = this.existingLeaveDates[date];
+            if (status === 'approved') return 'bg-[#1d9692] text-white cursor-not-allowed';
+            if (status === 'pending') return 'bg-[#a01e22] text-white cursor-not-allowed';
+            if (date === this.startDate || (this.endDate && date === this.endDate)) return 'bg-teal-800 text-white shadow-sm ring-2 ring-teal-200';
+            if (this.startDate && this.endDate && date > this.startDate && date < this.endDate) return 'bg-teal-100 text-teal-900';
+            if (date === this.today) return 'bg-slate-950 text-white';
+            if (!this.isCalendarWorkday(date) || (!this.isEmergency && this.minAnnualStartDate && date < this.minAnnualStartDate)) {
+                return 'bg-slate-50 text-slate-300 cursor-not-allowed';
+            }
+            if (this.isCalendarHoliday(date)) return 'bg-amber-50 text-amber-800 ring-1 ring-inset ring-amber-200 hover:bg-amber-100';
+            return 'bg-white text-slate-700 hover:bg-teal-50 hover:text-teal-900';
+        },
+
+        calendarDayTitle(date) {
+            if (!date) return '';
+            if (this.existingLeaveDates[date] === 'approved') return 'Approved leave already exists';
+            if (this.existingLeaveDates[date] === 'pending') return 'Pending leave request already exists';
+            if (!this.isCalendarWorkday(date)) return 'Non-working day';
+            if (!this.isEmergency && this.minAnnualStartDate && date < this.minAnnualStartDate) return 'Select Emergency Leave Exception to request this date';
+            if (this.isCalendarHoliday(date)) return 'Public holiday; excluded from leave day count';
+            return 'Select date';
+        },
+
+        selectCalendarDate(date) {
+            if (!this.canSelectCalendarDate(date)) return;
+
+            const beginsNewRange = !this.startDate || Boolean(this.endDate) || Boolean(this.calendarSelectionError) || date < this.startDate;
+            if (beginsNewRange) {
+                this.calendarSelectionError = '';
+                this.startDate = date;
+                this.endDate = '';
+            } else if (this.rangeHasExistingLeave(this.startDate, date)) {
+                this.calendarSelectionError = 'That range overlaps another leave request. Choose a different end date.';
+                return;
+            } else {
+                this.endDate = date;
+            }
+
+            this.recalculate();
+        },
+
+        clearCalendarSelection() {
+            this.startDate = '';
+            this.endDate = '';
+            this.calendarSelectionError = '';
+            this.calcResult = null;
         },
 
         onStartDateChange() {
@@ -221,6 +434,8 @@ function leaveApplicationForm() {
             const select = document.getElementById('leave_type_id');
             const opt = select.options[select.selectedIndex];
             this.isEmergency = opt?.getAttribute('data-is-emergency') === '1';
+            this.updateTypeFlags();
+            if (this.isAnnualLeave) this.setCalendarMonthFromSelection();
             this.recalculate();
         },
 
@@ -228,8 +443,13 @@ function leaveApplicationForm() {
             const select = document.getElementById('leave_type_id');
             const opt = select.options[select.selectedIndex];
             if (opt) {
+                this.isAnnualLeave = opt.getAttribute('data-code') === 'annual';
                 this.leaveTypeHasDocumentRule = opt.getAttribute('data-has-document-rule') === '1';
                 this.leaveTypeRequiresReason = opt.getAttribute('data-requires-reason') === '1';
+            } else {
+                this.isAnnualLeave = false;
+                this.leaveTypeHasDocumentRule = false;
+                this.leaveTypeRequiresReason = false;
             }
         },
 
@@ -237,6 +457,7 @@ function leaveApplicationForm() {
             this.updateTypeFlags();
 
             if (!this.leaveTypeId || !this.startDate || !this.endDate) {
+                this.calcResult = null;
                 return;
             }
 

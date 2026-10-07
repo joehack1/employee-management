@@ -44,6 +44,23 @@ class LeaveWorkflowService
             $halfDayType = $isHalfDay ? ($validatedData['half_day_type'] ?? 'morning') : null;
             $isEmergency = !empty($validatedData['is_emergency']) || $leaveType->is_emergency_type || $leaveType->code === 'emergency';
 
+            // Serialize applications for this employee so concurrent submissions cannot overlap.
+            Employee::whereKey($employee->id)->lockForUpdate()->firstOrFail();
+
+            $overlappingApplication = LeaveApplication::where('employee_id', $employee->id)
+                ->whereIn('status', ['pending_team_lead', 'pending_manager', 'pending_hr', 'approved', 'cancellation_requested'])
+                ->where('start_date', '<=', $endDate)
+                ->where('end_date', '>=', $startDate)
+                ->first();
+
+            if ($overlappingApplication) {
+                throw new Exception(sprintf(
+                    'You already have a leave request from %s to %s. Choose dates that do not overlap.',
+                    $overlappingApplication->start_date->format('d M Y'),
+                    $overlappingApplication->end_date->format('d M Y')
+                ));
+            }
+
             // Run calculation engine
             $calc = $this->calculationService->calculate(
                 employee: $employee,

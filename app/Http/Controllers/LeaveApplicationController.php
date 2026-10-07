@@ -6,11 +6,14 @@ use App\Models\AuditLog;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveBalance;
+use App\Models\PublicHoliday;
 use App\Models\LeaveType;
+use App\Models\WorkingDay;
 use App\Services\LeaveCalculationService;
 use App\Services\LeaveLedgerService;
 use App\Services\LeaveWorkflowService;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -65,7 +68,61 @@ class LeaveApplicationController extends Controller
             ->get()
             ->keyBy('leave_type_id');
 
-        return view('leave.create', compact('employee', 'leaveTypes', 'balances'));
+        $existingLeaveDates = [];
+        $activeApplications = LeaveApplication::where('employee_id', $employee->id)
+            ->whereIn('status', ['pending_team_lead', 'pending_manager', 'pending_hr', 'approved', 'cancellation_requested'])
+            ->get(['start_date', 'end_date', 'status']);
+
+        foreach ($activeApplications as $application) {
+            $dateStatus = in_array($application->status, ['approved', 'cancellation_requested'], true)
+                ? 'approved'
+                : 'pending';
+
+            foreach (CarbonPeriod::create($application->start_date, $application->end_date) as $date) {
+                $dateKey = $date->toDateString();
+                if (!isset($existingLeaveDates[$dateKey]) || $dateStatus === 'approved') {
+                    $existingLeaveDates[$dateKey] = $dateStatus;
+                }
+            }
+        }
+
+        $calendarHolidays = PublicHoliday::get(['date'])
+            ->map(fn ($holiday) => $holiday->date->toDateString())
+            ->values()
+            ->all();
+        $workingDayNumbers = WorkingDay::whereBetween('day_of_week', [1, 5])
+            ->where('is_working_day', true)
+            ->pluck('day_of_week')
+            ->map(fn ($day) => (int) $day)
+            ->all();
+        if (empty($workingDayNumbers)) {
+            $workingDayNumbers = [1, 2, 3, 4, 5];
+        }
+        $minAdvanceDays = (int) ($employee->leavePolicy?->min_days_advance_notice ?? 3);
+        $todayDate = Carbon::today()->toDateString();
+        $minAnnualStartDate = Carbon::parse($todayDate)->addDays($minAdvanceDays)->toDateString();
+        $defaultLeaveDate = Carbon::parse($minAnnualStartDate);
+        for ($daysChecked = 0; $daysChecked < 370; $daysChecked++) {
+            $dateKey = $defaultLeaveDate->toDateString();
+            $isConfiguredWorkday = in_array($defaultLeaveDate->dayOfWeek, $workingDayNumbers, true);
+            if ($isConfiguredWorkday && !in_array($dateKey, $calendarHolidays, true) && !isset($existingLeaveDates[$dateKey])) {
+                break;
+            }
+            $defaultLeaveDate->addDay();
+        }
+        $defaultLeaveDate = $defaultLeaveDate->toDateString();
+
+        return view('leave.create', compact(
+            'employee',
+            'leaveTypes',
+            'balances',
+            'existingLeaveDates',
+            'calendarHolidays',
+            'workingDayNumbers',
+            'todayDate',
+            'minAnnualStartDate',
+            'defaultLeaveDate'
+        ));
     }
 
     /**

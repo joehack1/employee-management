@@ -32,11 +32,20 @@
                 </div>
             @endif
 
+            @if($errors->any())
+                <div class="mb-4 p-3 rounded-xl bg-rose-50 text-rose-800 text-xs border border-rose-200" role="alert">
+                    {{ $errors->first() }}
+                </div>
+            @endif
+
             <form class="space-y-4" action="{{ route('password.email') }}" method="POST">
                 @csrf
                 <div>
                     <label for="email" class="block text-xs font-semibold text-slate-700">Email address</label>
-                    <input id="email" name="email" type="email" required placeholder="name@company.com" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl sm:text-sm">
+                    <input id="email" name="email" type="email" required value="{{ old('email') }}" placeholder="name@company.com" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl sm:text-sm @error('email') border-rose-400 @enderror">
+                    @error('email')
+                        <p class="mt-1 text-[11px] text-rose-600">{{ $message }}</p>
+                    @enderror
                 </div>
                 <button type="submit" class="w-full py-2.5 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl text-sm transition">
                     Send Reset Link
