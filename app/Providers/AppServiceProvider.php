@@ -22,19 +22,15 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::define('manage-hr', function (User $user) {
-            return in_array($user->role, ['hr', 'admin', 'administrator']);
+            return in_array($user->role, ['hr', 'administrator']);
         });
 
         Gate::define('manage-team', function (User $user) {
-            return in_array($user->role, ['team_lead', 'hr', 'admin', 'administrator', 'manager']);
+            return in_array($user->role, ['team_lead', 'hr', 'administrator', 'manager']);
         });
 
         Gate::define('manage-analytics', function (User $user) {
-            return in_array($user->role, ['hr', 'admin', 'administrator', 'manager']);
-        });
-
-        Gate::define('manage-system', function (User $user) {
-            return $user->isSuperAdmin();
+            return in_array($user->role, ['hr', 'administrator', 'manager']);
         });
 
         Gate::define('apply-leave', function (User $user) {

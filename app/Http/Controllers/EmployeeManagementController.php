@@ -55,7 +55,7 @@ class EmployeeManagementController extends Controller
     public function create()
     {
         $departments = Department::where('is_active', true)->get();
-        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'administrator', 'manager'])->get();
+        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'administrator', 'manager'])->get();
         $policies = LeavePolicy::all();
 
         return view('employees.create', compact('departments', 'teamLeads', 'policies'));
@@ -77,7 +77,7 @@ class EmployeeManagementController extends Controller
             'date_employed' => ['required', 'date'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
             'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
-            'role' => ['required', 'in:employee,team_lead,hr,admin,manager,administrator'],
+            'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
             'password' => ['required', 'string', 'min:6'],
         ]);
 
@@ -139,7 +139,7 @@ class EmployeeManagementController extends Controller
     {
         $employee = Employee::with('user')->findOrFail($id);
         $departments = Department::where('is_active', true)->get();
-        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'administrator', 'manager'])->get();
+        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'administrator', 'manager'])->get();
         $policies = LeavePolicy::all();
 
         return view('employees.edit', compact('employee', 'departments', 'teamLeads', 'policies'));
@@ -164,7 +164,7 @@ class EmployeeManagementController extends Controller
             'date_employed' => ['required', 'date'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
             'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
-            'role' => ['required', 'in:employee,team_lead,hr,admin,manager,administrator'],
+            'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
             'employment_status' => ['required', 'in:active,probation,deactivated'],
         ]);
 

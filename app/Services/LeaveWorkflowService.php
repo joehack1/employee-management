@@ -103,7 +103,7 @@ class LeaveWorkflowService
             if ($applicantRole === 'manager') {
                 $initialStatus = 'pending_hr';
                 $approvalLevel = 'hr';
-            } elseif (in_array($applicantRole, ['team_lead', 'hr', 'admin', 'administrator'], true)
+            } elseif (in_array($applicantRole, ['team_lead', 'hr', 'administrator'], true)
                 || $workflow === 'direct_hr'
                 || !$employee->team_lead_id
                 || $employee->team_lead_id === $authUserId) {
@@ -261,7 +261,7 @@ class LeaveWorkflowService
 
     private function notifyHrOfApprovedLeave(LeaveApplication $application, string $approvedBy): void
     {
-        $hrUsers = User::whereIn('role', ['hr', 'admin', 'administrator'])->get();
+        $hrUsers = User::whereIn('role', ['hr', 'administrator'])->get();
         Notification::send($hrUsers, new LeaveStatusNotification(
             application: $application,
             title: 'Leave approved by ' . $approvedBy,
@@ -549,7 +549,7 @@ class LeaveWorkflowService
      */
     protected function notifyHrApprovers(LeaveApplication $application): void
     {
-        $hrUsers = User::whereIn('role', ['hr', 'admin', 'administrator'])->get();
+        $hrUsers = User::whereIn('role', ['hr', 'administrator'])->get();
         Notification::send($hrUsers, new LeaveStatusNotification(
             application: $application,
             title: $application->is_emergency ? '🚨 URGENT: Emergency Leave Request' : 'Leave Application Awaiting HR Review',

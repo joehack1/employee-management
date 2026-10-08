@@ -59,34 +59,6 @@ class AuthController extends Controller
         return redirect()->intended(route('dashboard'));
     }
 
-    public function startImpersonation(Request $request)
-    {
-        $administrator = Auth::user();
-        abort_unless($administrator?->isSuperAdmin(), 403);
-        abort_if($request->session()->has('impersonator_id'), 403);
-
-        $validated = $request->validate([
-            'user_id' => ['required', 'integer', 'exists:users,id'],
-        ]);
-
-        $target = User::whereKey($validated['user_id'])
-            ->where('is_active', true)
-            ->where('role', '!=', 'administrator')
-            ->firstOrFail();
-
-        $request->session()->put('impersonator_id', $administrator->id);
-        $request->session()->regenerate();
-        AuditLog::log(
-            action: 'account_impersonation_started',
-            entityType: 'User',
-            entityId: $target->id,
-            description: "Administrator {$administrator->email} switched into {$target->email}"
-        );
-        Auth::login($target);
-
-        return redirect()->route('dashboard')->with('success', "You are now viewing the account for {$target->name}.");
-    }
-
     public function stopImpersonation(Request $request)
     {
         $administratorId = $request->session()->pull('impersonator_id');

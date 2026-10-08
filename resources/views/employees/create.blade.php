@@ -111,12 +111,11 @@
                         <option value="employee" selected>Employee</option>
                         <option value="team_lead">Team Lead</option>
                         <option value="hr">HR Manager</option>
-                        <option value="admin">HR Administrator</option>
-                        <option value="administrator">System Administrator (Full Access)</option>
+                        <option value="administrator">Super Admin</option>
                         <option value="manager">Manager</option>
                     </select>
                 </div>
-                <p class="sm:col-span-2 -mt-2 text-xs text-amber-700">System Administrators have full system access and can switch into other user accounts.</p>
+                <p class="sm:col-span-2 -mt-2 text-xs text-amber-700">Super Admin has full system access.</p>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Initial Password <span class="text-rose-500">*</span></label>
                     <input type="password" name="password" required value="password" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">

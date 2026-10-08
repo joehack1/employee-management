@@ -121,35 +121,6 @@
                             <svg x-show="mobileOpen" x-cloak class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
 
-                        @if(auth()->user()->isSuperAdmin() || session()->has('impersonator_id'))
-                            @php
-                                $switchableUsers = \App\Models\User::where('is_active', true)
-                                    ->where('role', '!=', 'administrator')
-                                    ->orderBy('name')
-                                    ->get(['id', 'name', 'email', 'role']);
-                            @endphp
-                        @endif
-                        @if(auth()->user()->isSuperAdmin())
-                            <div class="relative" x-data="{ open: false }">
-                                <button type="button" @click="open = !open" @click.outside="open = false" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50" aria-label="Switch account">
-                                    Switch account
-                                </button>
-                                <div x-show="open" x-cloak class="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 z-50">
-                                    <form method="POST" action="{{ route('administrator.impersonate') }}" class="space-y-3">
-                                        @csrf
-                                        <label for="switch-account-user" class="block text-xs font-semibold text-slate-700">View another account</label>
-                                        <select id="switch-account-user" name="user_id" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs">
-                                            <option value="">Select an active account</option>
-                                            @foreach($switchableUsers as $switchableUser)
-                                                <option value="{{ $switchableUser->id }}">{{ $switchableUser->name }} · {{ str_replace('_', ' ', $switchableUser->role) }} · {{ $switchableUser->email }}</option>
-                                            @endforeach
-                                        </select>
-                                        <button type="submit" class="w-full rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Switch account</button>
-                                    </form>
-                                </div>
-                            </div>
-                        @endif
-
                         <!-- Notification Bell -->
                         @php
                             $unreadCount = auth()->user()->unreadNotifications->count();

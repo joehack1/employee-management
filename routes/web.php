@@ -35,9 +35,6 @@ Route::middleware('guest')->group(function () {
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
-    Route::post('/administrator/impersonate', [AuthController::class, 'startImpersonation'])
-        ->middleware('can:manage-system')
-        ->name('administrator.impersonate');
     Route::post('/administrator/impersonate/stop', [AuthController::class, 'stopImpersonation'])
         ->name('administrator.impersonate.stop');
 
