@@ -22,7 +22,16 @@ class LeaveApprovalController extends Controller
         $user = Auth::user();
         $employee = $user->employee;
 
-        if ($user->isManager()) {
+        if ($user->isSuperAdmin()) {
+            $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
+                ->whereIn('status', ['pending_team_lead', 'pending_manager', 'pending_hr'])
+                ->orderBy('is_emergency', 'desc')
+                ->orderBy('created_at', 'asc')
+                ->paginate(15);
+            $viewTitle = 'All Pending Approvals';
+            $approvalLevel = 'administrator';
+            $isHrView = false;
+        } elseif ($user->isManager()) {
             $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
                 ->where('status', 'pending_manager')
                 ->orderBy('is_emergency', 'desc')
@@ -32,9 +41,9 @@ class LeaveApprovalController extends Controller
             $approvalLevel = 'manager';
             $isHrView = false;
         } elseif ($user->isHr()) {
-            // HR only approves manager leave and cancellation requests.
+            // HR reviews requests routed directly to HR.
             $query = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
-                ->whereIn('status', ['pending_hr', 'cancellation_requested']);
+                ->where('status', 'pending_hr');
 
             $applications = $query->orderBy('is_emergency', 'desc')->orderBy('created_at', 'asc')->paginate(15);
             $viewTitle = 'HR Approvals Queue';
@@ -70,7 +79,7 @@ class LeaveApprovalController extends Controller
     public function teamLeadApprove(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role !== 'team_lead') {
+        if ($user->role !== 'team_lead' && !$user->isSuperAdmin()) {
             abort(403);
         }
 
@@ -88,7 +97,7 @@ class LeaveApprovalController extends Controller
     public function teamLeadReject(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role !== 'team_lead') {
+        if ($user->role !== 'team_lead' && !$user->isSuperAdmin()) {
             abort(403);
         }
 
@@ -108,7 +117,7 @@ class LeaveApprovalController extends Controller
 
     public function managerApprove(Request $request, $id)
     {
-        if (!Auth::user()->isManager()) {
+        if (!Auth::user()->isManager() && !Auth::user()->isSuperAdmin()) {
             abort(403, 'Unauthorized');
         }
 
@@ -123,7 +132,7 @@ class LeaveApprovalController extends Controller
 
     public function managerReject(Request $request, $id)
     {
-        if (!Auth::user()->isManager()) {
+        if (!Auth::user()->isManager() && !Auth::user()->isSuperAdmin()) {
             abort(403, 'Unauthorized');
         }
 
@@ -171,23 +180,6 @@ class LeaveApprovalController extends Controller
         try {
             $this->workflowService->rejectByHr($application, $user->id, $request->rejection_reason);
             return back()->with('success', "Application {$application->application_number} rejected by HR.");
-        } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
-        }
-    }
-
-    public function approveCancellation(Request $request, $id)
-    {
-        $user = Auth::user();
-        if (!$user->isHr()) {
-            abort(403);
-        }
-
-        $application = LeaveApplication::where('status', 'cancellation_requested')->findOrFail($id);
-
-        try {
-            $this->workflowService->approveCancellation($application, $user->id, $request->input('comment'));
-            return back()->with('success', "Cancellation approved for {$application->application_number}. Days refunded to employee ledger.");
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }

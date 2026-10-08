@@ -51,20 +51,10 @@
                 </button>
             @endif
 
-            <!-- Cancellation Approval for HR -->
-            @if($isHr && $application->status === 'cancellation_requested')
-                <form action="{{ route('approvals.approveCancellation', $application->id) }}" method="POST" class="inline">
-                    @csrf
-                    <button type="submit" class="px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold shadow-xs">
-                        Approve Cancellation (Refund Days)
-                    </button>
-                </form>
-            @endif
-
             <!-- Employee Cancellation Request (Req 25) -->
             @if($isOwner && $application->status === 'approved')
                 <button @click="openCancelModal = true" class="px-4 py-2 rounded-xl border border-rose-300 text-rose-700 hover:bg-rose-50 text-xs font-semibold transition">
-                    Request Cancellation
+                    Cancel Leave
                 </button>
             @endif
         </div>
@@ -185,7 +175,6 @@
                     <div class="p-4 rounded-2xl bg-orange-50 border border-orange-300 text-xs text-orange-900 space-y-1">
                         <p class="font-bold">⚠️ Cancellation Requested</p>
                         <p><strong>Employee's Reason:</strong> {{ $application->cancellation_reason }}</p>
-                        <p class="text-[11px] text-orange-700">Awaiting HR confirmation to process refund.</p>
                     </div>
                 @endif
 
@@ -391,9 +380,9 @@
     <!-- Employee Cancellation Request Modal (Req 25) -->
     <div x-show="openCancelModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
         <div @click.outside="openCancelModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
-            <h3 class="text-base font-bold text-slate-900">Request Leave Cancellation</h3>
+            <h3 class="text-base font-bold text-slate-900">Cancel Approved Leave</h3>
             <p class="text-xs text-slate-500 mt-1">
-                Provide a reason for cancelling your approved leave. Upon HR review, days will be returned to your balance ledger.
+                Provide a reason for cancelling your approved leave. The leave will be cancelled immediately and the days returned to your balance.
             </p>
             <form action="{{ route('leave.cancel', $application->id) }}" method="POST" class="mt-4 space-y-3">
                 @csrf
@@ -403,7 +392,7 @@
                 </div>
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" @click="openCancelModal = false" class="px-4 py-2 rounded-xl text-xs text-slate-600">Dismiss</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white">Submit Request</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-700 text-white">Cancel Leave</button>
                 </div>
             </form>
         </div>

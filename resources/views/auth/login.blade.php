@@ -182,7 +182,7 @@
                 <div class="rise lg:hidden mx-auto w-16 h-16 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg" style="--d:0">
                     <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="w-full h-full object-contain">
                 </div>
-                <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">LeaveFlow Portal</h2>
+                <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">{{ now()->hour < 12 ? 'Good morning' : (now()->hour < 17 ? 'Good afternoon' : 'Good evening') }}, <span class="text-teal-300">LeaveFlow</span></h2>
                 
             </div>
 

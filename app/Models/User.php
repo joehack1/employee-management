@@ -56,7 +56,7 @@ class User extends Authenticatable
 
     public function isTeamLead(): bool
     {
-        return in_array($this->role, ['team_lead', 'hr', 'admin']);
+        return in_array($this->role, ['team_lead', 'hr', 'admin', 'administrator']);
     }
 
     public function isManager(): bool
@@ -66,11 +66,16 @@ class User extends Authenticatable
 
     public function isHr(): bool
     {
-        return in_array($this->role, ['hr', 'admin']);
+        return in_array($this->role, ['hr', 'admin', 'administrator']);
     }
 
     public function isAdmin(): bool
     {
-        return $this->role === 'admin';
+        return in_array($this->role, ['admin', 'administrator']);
+    }
+
+    public function isSuperAdmin(): bool
+    {
+        return $this->role === 'administrator';
     }
 }

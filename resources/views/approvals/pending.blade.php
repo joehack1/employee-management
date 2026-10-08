@@ -3,7 +3,7 @@
 @section('title', $viewTitle . ' - LeaveFlow')
 
 @section('content')
-<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+<div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ $viewTitle }}</h1>
@@ -66,28 +66,19 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-right space-x-2">
-                                @if($app->status === 'cancellation_requested')
-                                    <form action="{{ route('approvals.approveCancellation', $app->id) }}" method="POST" class="inline">
-                                        @csrf
-                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold">
-                                            Approve Cancellation
-                                        </button>
-                                    </form>
-                                @else
                                     <button @click="openApprove = true" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs">
                                         Approve
                                     </button>
                                     <button @click="openReject = true" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs">
                                         Reject
                                     </button>
-                                @endif
                                 <a href="{{ route('leave.show', $app->id) }}" class="text-xs text-slate-400 hover:text-slate-600">Details</a>
 
                                 <!-- Approve Modal -->
                                 <div x-show="openApprove" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
                                     <div @click.outside="openApprove = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-slate-900">Approve Request</h3>
-                                        <form action="{{ $approvalLevel === 'manager' ? route('approvals.managerApprove', $app->id) : ($isHrView ? route('approvals.hrApprove', $app->id) : route('approvals.leadApprove', $app->id)) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ $approvalLevel === 'administrator' ? route(match($app->status) { 'pending_manager' => 'approvals.managerApprove', 'pending_hr' => 'approvals.hrApprove', default => 'approvals.leadApprove' }, $app->id) : ($approvalLevel === 'manager' ? route('approvals.managerApprove', $app->id) : ($isHrView ? route('approvals.hrApprove', $app->id) : route('approvals.leadApprove', $app->id))) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-700">Comment (Optional)</label>
@@ -105,7 +96,7 @@
                                 <div x-show="openReject" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
                                     <div @click.outside="openReject = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-rose-600">Reject Application</h3>
-                                        <form action="{{ $approvalLevel === 'manager' ? route('approvals.managerReject', $app->id) : ($isHrView ? route('approvals.hrReject', $app->id) : route('approvals.leadReject', $app->id)) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ $approvalLevel === 'administrator' ? route(match($app->status) { 'pending_manager' => 'approvals.managerReject', 'pending_hr' => 'approvals.hrReject', default => 'approvals.leadReject' }, $app->id) : ($approvalLevel === 'manager' ? route('approvals.managerReject', $app->id) : ($isHrView ? route('approvals.hrReject', $app->id) : route('approvals.leadReject', $app->id))) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-700">Reason for Rejection <span class="text-rose-500">*</span></label>

@@ -3,7 +3,8 @@
 @section('title', 'HR Executive Dashboard - LeaveFlow')
 
 @section('content')
-<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+<div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" x-data="dashboardGreeting(@json(auth()->id()))">
+    @include('dashboard.greeting')
     <!-- Top Header -->
     <div class="dashboard-hero rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -56,7 +57,7 @@
 
         <!-- Metric 4: HR actions -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Manager Leave / Cancellations</p>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending HR Approvals</p>
             <p class="text-2xl font-extrabold text-amber-500 mt-1">{{ $pendingApprovals->count() }}</p>
             <a href="{{ route('approvals.pending') }}" class="text-[10px] text-amber-600 font-bold hover:underline mt-1 inline-block">Review actions &rarr;</a>
         </div>
@@ -82,8 +83,8 @@
             <div class="flex items-center gap-3">
                 <span class="text-2xl">🚨</span>
                 <div>
-                    <h3 class="text-sm font-bold text-amber-900">Urgent: {{ $emergencyRequests->count() }} Manager Leave Request(s)</h3>
-                    <p class="text-xs text-amber-700">A manager has submitted an emergency leave request for HR review.</p>
+                    <h3 class="text-sm font-bold text-amber-900">Urgent: {{ $emergencyRequests->count() }} Emergency Leave Request(s)</h3>
+                    <p class="text-xs text-amber-700">An emergency leave request needs HR review.</p>
                 </div>
             </div>
                     <a href="{{ route('approvals.pending') }}" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition">
@@ -100,7 +101,7 @@
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                     <div>
                         <h2 class="text-base font-bold text-slate-900">HR Actions</h2>
-                        <p class="text-xs text-slate-500">Manager leave requests and cancellation confirmations need HR action</p>
+                        <p class="text-xs text-slate-500">Leave requests routed to HR need your review</p>
                     </div>
                     <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-600 text-white">
                         {{ $pendingApprovals->count() }} Requests
@@ -151,21 +152,12 @@
                                         </span>
                                     </td>
                                     <td class="px-4 py-3.5 text-right space-x-1.5">
-                                        @if($app->status === 'cancellation_requested')
-                                            <form action="{{ route('approvals.approveCancellation', $app->id) }}" method="POST" class="inline">
-                                                @csrf
-                                                <button type="submit" class="px-3 py-1.5 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold">
-                                                    Approve Cancel
-                                                </button>
-                                            </form>
-                                        @else
-                                            <button @click="openHrApprove = true" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs">
-                                                Approve
-                                            </button>
-                                            <button @click="openHrReject = true" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs">
-                                                Reject
-                                            </button>
-                                        @endif
+                                        <button @click="openHrApprove = true" class="px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs">
+                                            Approve
+                                        </button>
+                                        <button @click="openHrReject = true" class="px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs">
+                                            Reject
+                                        </button>
                                         <a href="{{ route('leave.show', $app->id) }}" class="p-1.5 text-slate-400 hover:text-slate-600">
                                             &rarr;
                                         </a>

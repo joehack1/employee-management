@@ -287,7 +287,7 @@ class LeaveApplicationController extends Controller
 
         try {
             $this->workflowService->requestCancellation($application, $request->cancellation_reason, $user->id);
-            return back()->with('success', 'Cancellation request submitted. It will be reviewed by HR/Team Lead.');
+            return back()->with('success', 'Leave request cancelled and days refunded to your balance.');
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }

@@ -35,6 +35,10 @@ Route::middleware('guest')->group(function () {
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+    Route::post('/administrator/impersonate', [AuthController::class, 'startImpersonation'])
+        ->name('administrator.impersonate');
+    Route::post('/administrator/impersonate/stop', [AuthController::class, 'stopImpersonation'])
+        ->name('administrator.impersonate.stop');
 
     // Dashboard
     Route::get('/', [DashboardController::class, 'index'])->name('home');
@@ -70,7 +74,6 @@ Route::middleware('auth')->group(function () {
     Route::post('/approvals/{id}/hr-reject', [LeaveApprovalController::class, 'hrReject'])->name('approvals.hrReject');
     Route::post('/approvals/{id}/manager-approve', [LeaveApprovalController::class, 'managerApprove'])->name('approvals.managerApprove');
     Route::post('/approvals/{id}/manager-reject', [LeaveApprovalController::class, 'managerReject'])->name('approvals.managerReject');
-    Route::post('/approvals/{id}/approve-cancellation', [LeaveApprovalController::class, 'approveCancellation'])->name('approvals.approveCancellation');
 
     // Calendar
     Route::get('/calendar', [LeaveCalendarController::class, 'index'])->name('calendar.index');

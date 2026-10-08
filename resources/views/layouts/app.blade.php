@@ -25,7 +25,7 @@
     <div class="min-h-full flex flex-col">
         <!-- Top Navigation -->
         <header x-data="{ mobileOpen: false }" class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
-            <div class="max-w-[1600px] mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="max-w-[1920px] mx-auto px-3 sm:px-6 lg:px-8">
                 <div class="flex justify-between h-16 gap-2 sm:gap-4">
                     <div class="flex min-w-0">
                         <div class="flex-shrink-0 flex items-center gap-2 sm:gap-3 min-w-0">
@@ -34,7 +34,7 @@
                             </a>
                             <div class="min-w-0">
                                 <a href="{{ route('dashboard') }}" class="text-[15px] sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 truncate">
-                                    LeaveFlow <span class="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-blue-600 text-white font-semibold">HRIS</span>
+                                    LeaveFlow
                                 </a>
                                 <p class="hidden sm:block text-xs text-slate-500 truncate">Employee Leave Management</p>
                             </div>
@@ -42,8 +42,14 @@
 
                         <!-- Main Navigation Links -->
                         <nav class="hidden xl:flex xl:ml-8 xl:space-x-1 items-center whitespace-nowrap">
-                            <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">
-                                Dashboard
+                            <a href="{{ route('dashboard') }}" aria-label="Dashboard" title="Dashboard" class="{{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} {{ auth()->user()->isHr() ? 'px-2' : 'px-3' }} py-2 rounded-lg text-sm transition">
+                                @if(auth()->user()->isHr())
+                                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10.5 12 3l9 7.5M5.25 9v11.25h5.25v-6h3v6h5.25V9"/>
+                                    </svg>
+                                @else
+                                    Dashboard
+                                @endif
                             </a>
                             @can('apply-leave')
                             <a href="{{ route('leave.create') }}" class="{{ request()->routeIs('leave.create') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5 font-medium text-blue-600">
@@ -63,9 +69,11 @@
 
                             @if(auth()->user()->isTeamLead() || auth()->user()->isHr() || auth()->user()->isManager())
                                 @php
-                                    $approvalStatuses = auth()->user()->isManager()
+                                    $approvalStatuses = auth()->user()->isSuperAdmin()
+                                        ? ['pending_team_lead', 'pending_manager', 'pending_hr']
+                                        : (auth()->user()->isManager()
                                         ? ['pending_manager']
-                                        : (auth()->user()->isHr() ? ['pending_hr', 'cancellation_requested'] : ['pending_team_lead']);
+                                        : (auth()->user()->isHr() ? ['pending_hr'] : ['pending_team_lead']));
                                     $pendingCount = \App\Models\LeaveApplication::whereIn('status', $approvalStatuses)->count();
                                 @endphp
                                 <a href="{{ route('approvals.pending') }}" class="{{ request()->routeIs('approvals.pending') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5">
@@ -113,17 +121,32 @@
                             <svg x-show="mobileOpen" x-cloak class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
 
-                        <!-- Dark Mode Toggle -->
-                        <button type="button" onclick="toggleTheme()"
-                                class="theme-toggle p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none"
-                                title="Toggle dark mode" aria-label="Toggle dark mode">
-                            <svg class="icon-moon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
-                            </svg>
-                            <svg class="icon-sun w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
-                            </svg>
-                        </button>
+                        @if(auth()->user()->isSuperAdmin())
+                            @php
+                                $switchableUsers = \App\Models\User::where('is_active', true)
+                                    ->where('role', '!=', 'administrator')
+                                    ->orderBy('name')
+                                    ->get(['id', 'name', 'email', 'role']);
+                            @endphp
+                            <div class="relative" x-data="{ open: false }">
+                                <button type="button" @click="open = !open" @click.outside="open = false" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50" aria-label="Switch account">
+                                    Switch account
+                                </button>
+                                <div x-show="open" x-cloak class="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 shadow-xl ring-1 ring-black/5 z-50">
+                                    <form method="POST" action="{{ route('administrator.impersonate') }}" class="space-y-3">
+                                        @csrf
+                                        <label for="switch-account-user" class="block text-xs font-semibold text-slate-700">View another account</label>
+                                        <select id="switch-account-user" name="user_id" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs">
+                                            <option value="">Select an active account</option>
+                                            @foreach($switchableUsers as $switchableUser)
+                                                <option value="{{ $switchableUser->id }}">{{ $switchableUser->name }} · {{ str_replace('_', ' ', $switchableUser->role) }} · {{ $switchableUser->email }}</option>
+                                            @endforeach
+                                        </select>
+                                        <button type="submit" class="w-full rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Switch account</button>
+                                    </form>
+                                </div>
+                            </div>
+                        @endif
 
                         <!-- Notification Bell -->
                         @php
@@ -231,6 +254,18 @@
                                 </div>
                             </div>
                         </div>
+                        <!-- Dark Mode Toggle -->
+                        <button type="button" onclick="toggleTheme()"
+                                class="theme-toggle p-2 rounded-xl text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition focus:outline-none"
+                                title="Toggle dark mode" aria-label="Toggle dark mode">
+                            <svg class="icon-moon w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+                            </svg>
+                            <svg class="icon-sun w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path>
+                            </svg>
+                        </button>
+
                     </div>
                 </div>
 
@@ -243,7 +278,7 @@
                      x-transition:leave-start="opacity-100 translate-y-0"
                      x-transition:leave-end="opacity-0 -translate-y-1"
                      class="xl:hidden border-t border-slate-200 bg-white shadow-lg">
-                    <div class="max-w-[1600px] mx-auto px-3 sm:px-6 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
+                    <div class="max-w-[1920px] mx-auto px-3 sm:px-6 py-4 space-y-1 max-h-[calc(100vh-4rem)] overflow-y-auto">
                         <a @click="mobileOpen = false" href="{{ route('dashboard') }}" class="flex items-center gap-2.5 px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('dashboard') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l9-9 9 9M5 10v10a1 1 0 001 1h3a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1h3a1 1 0 001-1V10"/></svg>
                             Dashboard
@@ -299,8 +334,36 @@
             </div>
         </header>
 
+        @if(session()->has('impersonator_id'))
+            <div class="flex items-center justify-center gap-3 bg-amber-100 px-4 py-2 text-xs text-amber-950">
+                <span>Viewing as <strong>{{ auth()->user()->name }}</strong>.</span>
+                <div class="relative" x-data="{ open: false }">
+                    <button type="button" @click="open = !open" @click.outside="open = false" class="rounded-lg border border-amber-300 px-2.5 py-1 font-semibold hover:bg-amber-200" aria-label="Switch to another account">
+                        Switch account
+                    </button>
+                    <div x-show="open" x-cloak class="absolute left-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 text-slate-800 shadow-xl ring-1 ring-black/5">
+                        <form method="POST" action="{{ route('administrator.impersonate') }}" class="space-y-3">
+                            @csrf
+                            <label for="switch-account-from-view" class="block text-xs font-semibold">View another active account</label>
+                            <select id="switch-account-from-view" name="user_id" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs">
+                                <option value="">Select an account</option>
+                                @foreach($switchableUsers as $switchableUser)
+                                    <option value="{{ $switchableUser->id }}">{{ $switchableUser->name }} · {{ str_replace('_', ' ', $switchableUser->role) }} · {{ $switchableUser->email }}</option>
+                                @endforeach
+                            </select>
+                            <button type="submit" class="w-full rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Switch to selected account</button>
+                        </form>
+                    </div>
+                </div>
+                <form method="POST" action="{{ route('administrator.impersonate.stop') }}">
+                    @csrf
+                    <button type="submit" class="font-bold underline underline-offset-2">Return to Administrator</button>
+                </form>
+            </div>
+        @endif
+
         <!-- Flash Messages -->
-        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
+        <div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 mt-4 w-full">
             @if(session('success'))
                 <div x-data="{ visible: true }" x-init="setTimeout(() => visible = false, 6000)" x-show="visible" x-cloak x-transition:leave.opacity.duration.400ms role="status" class="relative mb-3 overflow-hidden border border-slate-200 border-l-4 border-l-[#1d9692] bg-white px-4 py-3 text-sm text-slate-800">
                     <span class="mr-2 text-[10px] font-bold uppercase tracking-wider text-[#1d9692]">Success</span>
@@ -334,7 +397,7 @@
 
         <!-- Footer -->
         <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
-            <div class="max-w-[1600px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <div class="max-w-[1920px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
                 <p>&copy; {{ date('Y') }} LeaveFlow System. Designed for Enterprise Leave Management.</p>
                 <div class="flex items-center gap-4 text-slate-400">
                     <span>Working Calendar: Mon-Fri</span>

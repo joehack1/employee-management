@@ -59,6 +59,71 @@ class AuthController extends Controller
         return redirect()->intended(route('dashboard'));
     }
 
+    public function startImpersonation(Request $request)
+    {
+        $administratorId = $request->session()->get('impersonator_id');
+        $administrator = $administratorId
+            ? User::whereKey($administratorId)->where('role', 'administrator')->where('is_active', true)->first()
+            : Auth::user();
+
+        abort_unless($administrator?->isSuperAdmin(), 403);
+
+        $validated = $request->validate([
+            'user_id' => ['required', 'integer', 'exists:users,id'],
+        ]);
+
+        $target = User::whereKey($validated['user_id'])
+            ->where('is_active', true)
+            ->where('role', '!=', 'administrator')
+            ->firstOrFail();
+
+        $request->session()->put('impersonator_id', $administrator->id);
+        $request->session()->regenerate();
+        // Attribute each account switch to the administrator, even after switching accounts.
+        Auth::login($administrator);
+        AuditLog::log(
+            action: 'account_impersonation_started',
+            entityType: 'User',
+            entityId: $target->id,
+            description: "Administrator {$administrator->email} switched into {$target->email}"
+        );
+        Auth::login($target);
+
+        return redirect()->route('dashboard')->with('success', "You are now viewing the account for {$target->name}.");
+    }
+
+    public function stopImpersonation(Request $request)
+    {
+        $administratorId = $request->session()->pull('impersonator_id');
+        abort_unless($administratorId, 403);
+
+        $administrator = User::whereKey($administratorId)
+            ->where('role', 'administrator')
+            ->where('is_active', true)
+            ->first();
+
+        if (!$administrator) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->with('error', 'The administrator account is no longer active. Please sign in again.');
+        }
+
+        $viewedUserId = Auth::id();
+        Auth::login($administrator);
+        $request->session()->regenerate();
+
+        AuditLog::log(
+            action: 'account_impersonation_ended',
+            entityType: 'User',
+            entityId: $viewedUserId,
+            description: "Administrator {$administrator->email} stopped viewing another account"
+        );
+
+        return redirect()->route('dashboard')->with('success', 'You have returned to your administrator account.');
+    }
+
     public function logout(Request $request)
     {
         $user = Auth::user();

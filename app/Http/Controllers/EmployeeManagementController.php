@@ -55,7 +55,7 @@ class EmployeeManagementController extends Controller
     public function create()
     {
         $departments = Department::where('is_active', true)->get();
-        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'manager'])->get();
+        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'administrator', 'manager'])->get();
         $policies = LeavePolicy::all();
 
         return view('employees.create', compact('departments', 'teamLeads', 'policies'));
@@ -139,7 +139,7 @@ class EmployeeManagementController extends Controller
     {
         $employee = Employee::with('user')->findOrFail($id);
         $departments = Department::where('is_active', true)->get();
-        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'manager'])->get();
+        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'administrator', 'manager'])->get();
         $policies = LeavePolicy::all();
 
         return view('employees.edit', compact('employee', 'departments', 'teamLeads', 'policies'));

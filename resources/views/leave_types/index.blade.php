@@ -3,7 +3,7 @@
 @section('title', 'Leave Types Management - LeaveFlow')
 
 @section('content')
-<div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ openCreateModal: false }">
+<div class="max-w-[1920px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="{ openCreateModal: false }">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Leave Types Configuration</h1>

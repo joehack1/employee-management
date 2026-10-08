@@ -200,7 +200,7 @@ class DashboardController extends Controller
             ->get();
 
         $pendingApprovals = LeaveApplication::with(['employee.department', 'leaveType', 'approvals.approver'])
-            ->whereIn('status', ['pending_hr', 'cancellation_requested'])
+            ->where('status', 'pending_hr')
             ->orderBy('is_emergency', 'desc')
             ->orderBy('created_at', 'asc')
             ->get();

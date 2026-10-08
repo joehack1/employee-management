@@ -13,7 +13,7 @@ class DepartmentController extends Controller
     public function index()
     {
         $departments = Department::with(['teams.leader', 'parent', 'employees'])->get();
-        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin'])->get();
+        $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'admin', 'administrator'])->get();
 
         return view('departments.index', compact('departments', 'teamLeads'));
     }

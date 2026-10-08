@@ -103,7 +103,7 @@ class LeaveWorkflowService
             if ($applicantRole === 'manager') {
                 $initialStatus = 'pending_hr';
                 $approvalLevel = 'hr';
-            } elseif (in_array($applicantRole, ['team_lead', 'hr', 'admin'], true)
+            } elseif (in_array($applicantRole, ['team_lead', 'hr', 'admin', 'administrator'], true)
                 || $workflow === 'direct_hr'
                 || !$employee->team_lead_id
                 || $employee->team_lead_id === $authUserId) {
@@ -261,7 +261,7 @@ class LeaveWorkflowService
 
     private function notifyHrOfApprovedLeave(LeaveApplication $application, string $approvedBy): void
     {
-        $hrUsers = User::whereIn('role', ['hr', 'admin'])->get();
+        $hrUsers = User::whereIn('role', ['hr', 'admin', 'administrator'])->get();
         Notification::send($hrUsers, new LeaveStatusNotification(
             application: $application,
             title: 'Leave approved by ' . $approvedBy,
@@ -469,7 +469,7 @@ class LeaveWorkflowService
     }
 
     /**
-     * Employee requests cancellation of an approved leave.
+     * Cancel an approved leave and refund its days immediately.
      */
     public function requestCancellation(LeaveApplication $application, string $reason, int $employeeUserId): void
     {
@@ -478,64 +478,32 @@ class LeaveWorkflowService
         }
 
         DB::transaction(function () use ($application, $reason, $employeeUserId) {
-            $application->status = 'cancellation_requested';
+            $application->status = 'cancelled';
+            $application->cancelled_at = Carbon::now();
+            $application->cancelled_by = $employeeUserId;
             $application->cancellation_reason = $reason;
             $application->save();
 
             LeaveComment::create([
                 'leave_application_id' => $application->id,
                 'user_id' => $employeeUserId,
-                'comment' => "Requested Cancellation: " . $reason,
+                'comment' => "Cancelled leave: {$reason}",
             ]);
 
-            AuditLog::log(
-                action: 'cancellation_requested',
-                entityType: 'LeaveApplication',
-                entityId: $application->id,
-                description: "Employee requested cancellation for {$application->application_number}. Reason: {$reason}"
-            );
-
-            $this->notifyNextApprover($application, 'Cancellation Request');
-        });
-    }
-
-    /**
-     * Approve cancellation and refund days to ledger.
-     */
-    public function approveCancellation(LeaveApplication $application, int $approverUserId, ?string $comment = null): void
-    {
-        DB::transaction(function () use ($application, $approverUserId, $comment) {
-            $reason = $application->cancellation_reason ?? 'Approved employee cancellation request';
-
-            $application->status = 'cancelled';
-            $application->cancelled_at = Carbon::now();
-            $application->cancelled_by = $approverUserId;
-            $application->save();
-
-            LeaveApproval::create([
-                'leave_application_id' => $application->id,
-                'approver_id' => $approverUserId,
-                'level' => 'hr',
-                'action' => 'cancellation_approved',
-                'comment' => $comment,
-            ]);
-
-            // Refund days back into ledger
-            $this->ledgerService->refundCancelledDays($application, $approverUserId, $reason);
+            $this->ledgerService->refundCancelledDays($application, $employeeUserId, $reason);
 
             AuditLog::log(
-                action: 'cancellation_approved',
+                action: 'leave_cancelled',
                 entityType: 'LeaveApplication',
                 entityId: $application->id,
-                description: "Cancellation approved for {$application->application_number}. Days refunded: {$application->total_days}"
+                description: "Employee cancelled {$application->application_number}. Days refunded: {$application->total_days}. Reason: {$reason}"
             );
 
-            // Notify employee
             if ($application->employee->user) {
                 $application->employee->user->notify(new LeaveStatusNotification(
                     application: $application,
-                    title: 'Leave Cancellation Approved',
-                    message: "Your leave cancellation request for {$application->application_number} was approved. {$application->total_days} days have been returned to your balance.",
+                    title: 'Leave Cancellation Processed',
+                    message: "Your leave request {$application->application_number} has been cancelled. {$application->total_days} days have been returned to your balance.",
                     type: 'success'
                 ));
             }
@@ -571,7 +539,7 @@ class LeaveWorkflowService
                     type: 'warning'
                 ));
             }
-        } elseif (in_array($application->status, ['pending_hr', 'cancellation_requested'])) {
+        } elseif ($application->status === 'pending_hr') {
             $this->notifyHrApprovers($application);
         }
     }
@@ -581,7 +549,7 @@ class LeaveWorkflowService
      */
     protected function notifyHrApprovers(LeaveApplication $application): void
     {
-        $hrUsers = User::whereIn('role', ['hr', 'admin'])->get();
+        $hrUsers = User::whereIn('role', ['hr', 'admin', 'administrator'])->get();
         Notification::send($hrUsers, new LeaveStatusNotification(
             application: $application,
             title: $application->is_emergency ? '🚨 URGENT: Emergency Leave Request' : 'Leave Application Awaiting HR Review',

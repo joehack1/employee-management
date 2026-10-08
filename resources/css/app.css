@@ -1,6 +1,10 @@
 @import 'tailwindcss';
 
 @layer base {
+    :root {
+        font-size: 106.25%;
+    }
+
     html {
         scroll-behavior: smooth;
     }
@@ -23,6 +27,15 @@
         outline: 2px solid color-mix(in srgb, var(--color-brand-500) 65%, transparent);
         outline-offset: 2px;
     }
+}
+
+/* Raise the tiny utility labels used throughout dense tables and status badges. */
+[class~="text-[10px]"] {
+    font-size: 11px !important;
+}
+
+[class~="text-[11px]"] {
+    font-size: 12px !important;
 }
 
 @keyframes page-enter {
@@ -67,6 +80,7 @@ main :where(section, article):hover {
 .employee-directory-row:hover > td {
     background-color: white;
 }
+
 
 @media (prefers-reduced-motion: reduce) {
     *,
