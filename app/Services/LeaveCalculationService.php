@@ -128,8 +128,8 @@ class LeaveCalculationService
             $totalDays = (float) $workingDaysCount;
         }
 
-        // Annual leave may normally start today or within the next two days.
-        // Emergency requests may use past dates or a later future start date.
+        // Normal annual leave needs more than three calendar days' notice.
+        // Past dates and starts within the next three days require the emergency exception.
         $today = Carbon::today();
         $isAdvanceNoticeValid = true;
         $advanceNoticeMessage = null;
@@ -137,10 +137,10 @@ class LeaveCalculationService
         $effectiveEmergency = $isEmergency || $leaveType->is_emergency_type || $leaveType->code === 'emergency';
 
         if (!$effectiveEmergency && $leaveType->code === 'annual') {
-            $latestAllowedDate = $today->copy()->addDays(2);
-            if ($start->lt($today) || $start->gt($latestAllowedDate)) {
+            $shortNoticeThrough = $today->copy()->addDays(3);
+            if ($start->lt($today) || $start->lte($shortNoticeThrough)) {
                 $isAdvanceNoticeValid = false;
-                $advanceNoticeMessage = 'Annual leave may normally start today or within the next 2 days. Check Emergency Leave Exception to request a past date or a start date more than 2 days away.';
+                $advanceNoticeMessage = 'Normal annual leave must start more than 3 days from today. Check Emergency Leave Exception for a past start date or a start date within the next 3 days.';
             }
         }
 

@@ -61,12 +61,7 @@ class LeaveApplicationController extends Controller
             return redirect()->route('dashboard')->with('error', 'Employee profile not found.');
         }
 
-        $year = Carbon::now()->year;
         $leaveTypes = LeaveType::where('is_active', true)->get();
-        $balances = LeaveBalance::where('employee_id', $employee->id)
-            ->where('year', $year)
-            ->get()
-            ->keyBy('leave_type_id');
 
         $existingLeaveDates = [];
         $activeApplications = LeaveApplication::where('employee_id', $employee->id)
@@ -114,7 +109,6 @@ class LeaveApplicationController extends Controller
         return view('leave.create', compact(
             'employee',
             'leaveTypes',
-            'balances',
             'existingLeaveDates',
             'calendarHolidays',
             'workingDayNumbers',
@@ -165,6 +159,7 @@ class LeaveApplicationController extends Controller
         // Fetch balance
         $balance = $this->ledgerService->getOrCreateBalance($employee, $leaveType, Carbon::parse($startDate)->year);
         $result['available_balance'] = $balance->available_days;
+        $result['available_balance_year'] = Carbon::parse($startDate)->year;
         $result['has_sufficient_balance'] = $leaveType->code === 'unpaid' || ($balance->available_days >= $result['total_days']);
 
         return response()->json($result);

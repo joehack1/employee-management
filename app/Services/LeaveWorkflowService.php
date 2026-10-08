@@ -320,6 +320,8 @@ class LeaveWorkflowService
                     type: 'danger'
                 ));
             }
+
+            $this->notifyHrOfRejectedLeave($application, 'Team Lead', $reason);
         });
     }
 
@@ -362,6 +364,8 @@ class LeaveWorkflowService
                     type: 'danger'
                 ));
             }
+
+            $this->notifyHrOfRejectedLeave($application, 'Manager', $reason);
         });
     }
 
@@ -465,6 +469,8 @@ class LeaveWorkflowService
                     type: 'danger'
                 ));
             }
+
+            $this->notifyHrOfRejectedLeave($application, 'HR', $reason);
         });
     }
 
@@ -563,6 +569,27 @@ class LeaveWorkflowService
                 $application->is_emergency ? ' - [EMERGENCY EXCEPTION]' : ''
             ),
             type: $application->is_emergency ? 'danger' : 'info'
+        ));
+    }
+
+    protected function notifyHrOfRejectedLeave(LeaveApplication $application, string $rejectedBy, string $reason): void
+    {
+        $hrUsers = User::whereIn('role', ['hr', 'administrator'])->get();
+
+        Notification::send($hrUsers, new LeaveStatusNotification(
+            application: $application,
+            title: 'Leave request rejected by ' . $rejectedBy,
+            message: sprintf(
+                '%s’s %s request (%s, %s to %s) was rejected by %s. Reason: %s',
+                $application->employee->full_name,
+                $application->leaveType->name,
+                $application->application_number,
+                $application->start_date->format('d M Y'),
+                $application->end_date->format('d M Y'),
+                $rejectedBy,
+                $reason
+            ),
+            type: 'danger'
         ));
     }
 }

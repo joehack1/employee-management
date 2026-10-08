@@ -29,10 +29,6 @@
                 <select id="leave_type_id" name="leave_type_id" required x-model="leaveTypeId" @change="onLeaveTypeChange()" class="mt-1.5 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl shadow-xs text-sm focus:ring-blue-500 focus:border-blue-500">
                     <option value="">-- Select Leave Type --</option>
                     @foreach($leaveTypes as $lt)
-                        @php
-                            $bal = $balances->get($lt->id);
-                            $avail = $bal ? $bal->available_days : $lt->days_allowed;
-                        @endphp
                         <option value="{{ $lt->id }}"
                                 data-code="{{ $lt->code }}"
                                 data-requires-attachment="{{ $lt->requires_attachment ? '1' : '0' }}"
@@ -40,7 +36,7 @@
                                 data-requires-reason="{{ $lt->requires_reason ? '1' : '0' }}"
                                 data-is-emergency="{{ $lt->is_emergency_type ? '1' : '0' }}"
                                 {{ old('leave_type_id', request('leave_type_id')) == $lt->id ? 'selected' : '' }}>
-                            {{ $lt->name }} (Available: {{ $avail }} days)
+                            {{ $lt->name }}
                         </option>
                     @endforeach
                 </select>
@@ -95,7 +91,7 @@
                             Emergency Leave Exception?
                         </label>
                         <p class="text-[11px] text-slate-500">
-                            For annual leave, check this to request a past start date or a start date more than 2 days away. Emergency requests bypass the normal date window and are routed with high priority.
+                            For annual leave, check this if the start date is in the past or within the next 3 days. Normal annual leave can start more than 3 days from today.
                         </p>
                     </div>
                 </div>
@@ -115,6 +111,10 @@
                         <span x-text="(calcResult ? calcResult.weekend_days_count : 0) + ' weekends, ' + (calcResult ? calcResult.holiday_days_count : 0) + ' public holidays excluded'"></span>
                     </div>
                 </div>
+                <p class="mt-2 text-xs text-slate-600">
+                    Available balance for <span x-text="calcResult ? calcResult.available_balance_year : ''"></span>:
+                    <strong x-text="calcResult ? calcResult.available_balance : '0'"></strong> days
+                </p>
 
                 <!-- Annual Leave Date Window Warning -->
                 <div x-show="calcResult && !calcResult.advance_notice_valid" class="mt-3 p-3 rounded-xl bg-rose-100/80 border border-rose-300 text-xs font-medium text-rose-800 flex items-start gap-2">
@@ -122,7 +122,7 @@
                     <div>
                         <p class="font-bold">❌ Annual Leave Date Window</p>
                         <p x-text="calcResult ? calcResult.advance_notice_message : ''"></p>
-                        <p class="mt-1 text-[11px] text-rose-700">Check the <strong>Emergency Leave Exception</strong> box to request this start date.</p>
+                        <p class="mt-1 text-[11px] text-rose-700">Check the <strong>Emergency Leave Exception</strong> box for past dates or dates within the next 3 days.</p>
                     </div>
                 </div>
 
@@ -146,7 +146,7 @@
 
                 <!-- Insufficient Balance Warning (Req 5) -->
                 <div x-show="calcResult && !calcResult.has_sufficient_balance" class="mt-3 p-3 rounded-xl bg-rose-100/80 border border-rose-300 text-xs font-medium text-rose-800">
-                    ⚠️ <strong>Insufficient Balance:</strong> You requested <span x-text="calcResult.total_days"></span> days, but only have <span x-text="calcResult.available_balance"></span> available days.
+                    ⚠️ <strong>Insufficient Balance:</strong> You requested <span x-text="calcResult.total_days"></span> days, but only have <span x-text="calcResult.available_balance"></span> available days for <span x-text="calcResult.available_balance_year"></span>.
                 </div>
             </div>
 
