@@ -29,11 +29,9 @@
                 <div class="flex justify-between h-16 gap-2 sm:gap-4">
                     <div class="flex min-w-0">
                         <div class="flex-shrink-0 flex items-center gap-2 sm:gap-3 min-w-0">
-                            <div class="w-9 h-9 sm:w-10 sm:h-10 flex-shrink-0 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
-                                <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                </svg>
-                            </div>
+                            <a href="{{ route('dashboard') }}" class="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center" aria-label="LeaveFlow dashboard">
+                                <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="max-w-full max-h-full object-contain">
+                            </a>
                             <div class="min-w-0">
                                 <a href="{{ route('dashboard') }}" class="text-[15px] sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 truncate">
                                     LeaveFlow <span class="hidden sm:inline text-xs px-2 py-0.5 rounded-md bg-blue-600 text-white font-semibold">HRIS</span>

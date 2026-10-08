@@ -1,5 +1,84 @@
 @import 'tailwindcss';
 
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        animation: page-enter 420ms cubic-bezier(.2, .7, .2, 1) both;
+    }
+
+    :where(a, button, input, select, textarea, summary) {
+        transition-property: color, background-color, border-color, box-shadow, opacity, transform;
+        transition-duration: 180ms;
+        transition-timing-function: cubic-bezier(.2, .7, .2, 1);
+    }
+
+    :where(button:not(:disabled), [role="button"]):active {
+        transform: scale(.98);
+    }
+
+    :where(input, select, textarea):focus-visible {
+        outline: 2px solid color-mix(in srgb, var(--color-brand-500) 65%, transparent);
+        outline-offset: 2px;
+    }
+}
+
+@keyframes page-enter {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes content-enter {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+main > * {
+    animation: content-enter 460ms cubic-bezier(.2, .7, .2, 1) both;
+}
+
+main :where(section, article) {
+    transition: box-shadow 220ms ease, border-color 220ms ease, transform 220ms ease;
+}
+
+main :where(section, article):hover {
+    transform: translateY(-1px);
+}
+
+.employee-directory-row {
+    position: relative;
+    z-index: 0;
+    transition: transform 180ms cubic-bezier(.2, .7, .2, 1), filter 180ms ease;
+}
+
+.employee-directory-row > td {
+    position: relative;
+    transition: background-color 180ms ease, box-shadow 180ms ease;
+}
+
+.employee-directory-row:hover {
+    z-index: 20;
+    transform: translateY(-2px);
+    filter: drop-shadow(0 8px 10px rgb(15 23 42 / 14%));
+}
+
+.employee-directory-row:hover > td {
+    background-color: white;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: .01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: .01ms !important;
+    }
+}
+
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 

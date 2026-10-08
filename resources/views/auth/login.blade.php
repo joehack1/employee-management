@@ -117,10 +117,8 @@
     <aside class="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden text-white flex-col justify-between p-12 xl:p-16">
         <div class="relative slide-in" style="--d:0">
             <div class="flex items-center gap-3">
-                <div class="w-11 h-11 rounded-xl bg-white/15 backdrop-blur flex items-center justify-center ring-1 ring-white/25">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
+                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center ring-1 ring-white/25 p-1">
+                    <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="w-full h-full object-contain">
                 </div>
                 <span class="text-lg font-bold tracking-tight">LeaveFlow</span>
             </div>
@@ -181,10 +179,8 @@
 
             {{-- Mobile / tablet brand --}}
             <div class="text-center lg:text-left mb-8">
-                <div class="rise lg:hidden mx-auto w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center text-white font-bold" style="--d:0">
-                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                    </svg>
+                <div class="rise lg:hidden mx-auto w-16 h-16 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg" style="--d:0">
+                    <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="w-full h-full object-contain">
                 </div>
                 <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">LeaveFlow Portal</h2>
                 

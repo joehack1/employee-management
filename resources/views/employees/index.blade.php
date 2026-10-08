@@ -54,7 +54,7 @@
                 </thead>
                 <tbody class="divide-y divide-slate-100 font-medium text-xs">
                     @forelse($employees as $emp)
-                        <tr class="hover:bg-slate-50 transition">
+                        <tr class="employee-directory-row">
                             <td class="px-6 py-4 flex items-center gap-3">
                                 @if($emp->user?->avatar)
                                     <img src="{{ asset('storage/' . $emp->user->avatar) }}" alt="{{ $emp->full_name }} profile picture" class="w-9 h-9 rounded-full object-cover">
