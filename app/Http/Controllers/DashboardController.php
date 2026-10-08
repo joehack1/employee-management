@@ -134,10 +134,10 @@ class DashboardController extends Controller
 
         // Get team members assigned to this lead
         $teamMembers = Employee::with(['user', 'department', 'team'])
-            ->where('team_lead_id', $user->id)
-            ->orWhere(function ($q) use ($employee) {
+            ->where(function ($q) use ($user, $employee) {
+                $q->where('team_lead_id', $user->id);
                 if ($employee && $employee->team_id) {
-                    $q->where('team_id', $employee->team_id);
+                    $q->orWhere('team_id', $employee->team_id);
                 }
             })
             ->where('employment_status', 'active')

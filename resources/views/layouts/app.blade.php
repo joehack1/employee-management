@@ -104,7 +104,7 @@
                         </nav>
                     </div>
 
-                    <!-- Right Top Navigation: Mobile Menu, Fast Demo Switcher, Theme, Bell, Profile -->
+                    <!-- Right Top Navigation: Mobile Menu, Theme, Bell, Profile -->
                     <div class="flex items-center gap-1 sm:gap-2 lg:gap-3">
 
                         <!-- Mobile Menu Toggle -->
@@ -114,16 +114,6 @@
                             <svg x-show="!mobileOpen" class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                             <svg x-show="mobileOpen" x-cloak class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
-
-                        <!-- Fast Role Switcher (Essential for testing all roles effortlessly) -->
-                        <div class="hidden xl:flex items-center bg-slate-100 p-1 rounded-xl border border-slate-200 text-xs">
-                            <span class="text-slate-500 font-medium px-2">Switch:</span>
-                            <a href="{{ route('fast.login', 'hr') }}" title="Sarah Jenkins (HR Manager)" class="px-2 py-1 rounded-lg {{ auth()->user()->isHr() ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">HR</a>
-                            <a href="{{ route('fast.login', 'manager') }}" title="Alex Morgan (Manager)" class="px-2 py-1 rounded-lg {{ auth()->user()->isManager() ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Manager</a>
-                            <a href="{{ route('fast.login', 'lead') }}" title="James Vance (Team Lead)" class="px-2 py-1 rounded-lg {{ auth()->user()->role === 'team_lead' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Team Lead</a>
-                            <a href="{{ route('fast.login', 'employee') }}" title="Joel Loter (Senior Dev)" class="px-2 py-1 rounded-lg {{ auth()->user()->email === 'joel@company.com' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Joel (Dev)</a>
-                            <a href="{{ route('fast.login', 'mary') }}" title="Mary Wanjiku (Engineer)" class="px-2 py-1 rounded-lg {{ auth()->user()->email === 'mary@company.com' ? 'bg-white shadow-xs font-semibold text-blue-700' : 'text-slate-600 hover:text-slate-900' }}">Mary</a>
-                        </div>
 
                         <!-- Dark Mode Toggle -->
                         <button type="button" onclick="toggleTheme()"
@@ -306,16 +296,6 @@
                         </div>
                         @endif
 
-                        <div class="pt-3 mt-3 border-t border-slate-100">
-                            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-3 pb-2">Quick Switch (Demo)</p>
-                            <div class="flex flex-wrap gap-1.5 px-3">
-                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'hr') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->isHr() ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">HR</a>
-                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'manager') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->isManager() ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Manager</a>
-                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'lead') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->role === 'team_lead' ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Team Lead</a>
-                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'employee') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->email === 'joel@company.com' ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Joel (Dev)</a>
-                                <a @click="mobileOpen = false" href="{{ route('fast.login', 'mary') }}" class="px-2.5 py-1.5 rounded-lg text-xs font-medium {{ auth()->user()->email === 'mary@company.com' ? 'bg-white shadow-xs text-blue-700 font-semibold' : 'bg-slate-100 text-slate-600' }}">Mary</a>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>

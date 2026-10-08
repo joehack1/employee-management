@@ -260,36 +260,6 @@
                     </div>
                 </form>
 
-                {{-- Fast One-Click Demo Switcher --}}
-                <div class="rise mt-8 border-t border-slate-100 pt-6" style="--d:8">
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider text-center mb-3">Instant Demo Sign-in</p>
-                    <div class="grid grid-cols-2 gap-2 text-xs">
-                        <a href="{{ route('fast.login', 'hr') }}" class="demo-card login-glass-demo p-2.5 rounded-xl border border-slate-200 hover:border-blue-400 hover:bg-blue-50/50 flex items-center gap-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
-                            <div class="avatar w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center font-bold shrink-0">HR</div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-semibold text-slate-800 leading-tight truncate">Sarah Jenkins</p>
-                                <p class="text-[10px] text-slate-400">HR Manager</p>
-                            </div>
-                            <svg class="go w-3.5 h-3.5 text-blue-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                        </a>
-                        <a href="{{ route('fast.login', 'lead') }}" class="demo-card login-glass-demo p-2.5 rounded-xl border border-slate-200 hover:border-amber-400 hover:bg-amber-50/50 flex items-center gap-2 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-500">
-                            <div class="avatar w-7 h-7 rounded-lg bg-amber-600 text-white flex items-center justify-center font-bold shrink-0">TL</div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-semibold text-slate-800 leading-tight truncate">James Vance</p>
-                                <p class="text-[10px] text-slate-400">Team Lead</p>
-                            </div>
-                            <svg class="go w-3.5 h-3.5 text-amber-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                        </a>
-                        <a href="{{ route('fast.login', 'employee') }}" class="demo-card login-glass-demo p-2.5 rounded-xl border border-slate-200 hover:border-emerald-400 hover:bg-emerald-50/50 flex items-center gap-2 text-left col-span-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500">
-                            <div class="avatar w-7 h-7 rounded-lg bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">DEV</div>
-                            <div class="flex-1 min-w-0">
-                                <p class="font-semibold text-slate-800 leading-tight">Joel Loter (Senior Developer)</p>
-                                <p class="text-[10px] text-slate-400">EMP-003 • 13 Days Available • 3 Days Pending</p>
-                            </div>
-                            <svg class="go w-3.5 h-3.5 text-emerald-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5l7 7-7 7"></path></svg>
-                        </a>
-                    </div>
-                </div>
             </div>
         </div>
     </main>

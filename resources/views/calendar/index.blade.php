@@ -6,8 +6,8 @@
 <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6" x-data="leaveCalendar()">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">Organization Leave Calendar</h1>
-            <p class="text-xs text-slate-500">Visual schedule of approved employee absences, holidays, and team coverage</p>
+            <h1 class="text-2xl font-bold text-slate-900 tracking-tight">{{ auth()->user()->isHr() || auth()->user()->isManager() ? 'Organization Leave Calendar' : 'Team Leave Calendar' }}</h1>
+            <p class="text-xs text-slate-500">{{ auth()->user()->isHr() || auth()->user()->isManager() ? 'Visual schedule of approved employee absences, holidays, and team coverage' : 'Approved leave dates for your team' }}</p>
         </div>
         
         <!-- Month Navigation -->
@@ -34,12 +34,14 @@
                 </select>
             @endif
 
-            <select x-model="selectedTeam" @change="fetchEvents()" class="text-xs px-3 py-2 border border-slate-300 rounded-xl">
-                <option value="">All Teams</option>
-                @foreach($teams as $team)
-                    <option value="{{ $team->id }}">{{ $team->name }}</option>
-                @endforeach
-            </select>
+            @if(auth()->user()->isHr() || auth()->user()->isManager())
+                <select x-model="selectedTeam" @change="fetchEvents()" class="text-xs px-3 py-2 border border-slate-300 rounded-xl">
+                    <option value="">All Teams</option>
+                    @foreach($teams as $team)
+                        <option value="{{ $team->id }}">{{ $team->name }}</option>
+                    @endforeach
+                </select>
+            @endif
         </div>
 
         <!-- Legend -->

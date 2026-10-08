@@ -32,9 +32,6 @@ Route::middleware('guest')->group(function () {
         ->name('password.update');
 });
 
-// Demo fast login switcher
-Route::get('/fast-login/{roleOrEmail}', [AuthController::class, 'fastLogin'])->name('fast.login');
-
 // Authenticated Routes
 Route::middleware('auth')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');

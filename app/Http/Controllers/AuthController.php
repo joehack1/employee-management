@@ -59,27 +59,6 @@ class AuthController extends Controller
         return redirect()->intended(route('dashboard'));
     }
 
-    public function fastLogin(string $roleOrEmail)
-    {
-        $user = match($roleOrEmail) {
-            'hr' => User::where('role', 'hr')->first(),
-            'manager' => User::where('role', 'manager')->first(),
-            'lead' => User::where('role', 'team_lead')->first(),
-            'employee' => User::where('email', 'joel@company.com')->first() ?? User::where('role', 'employee')->first(),
-            'mary' => User::where('email', 'mary@company.com')->first(),
-            'peter' => User::where('email', 'peter@company.com')->first(),
-            default => User::where('email', $roleOrEmail)->first(),
-        };
-
-        if ($user) {
-            Auth::login($user);
-            request()->session()->regenerate();
-            return redirect()->route('dashboard')->with('success', "Logged in as {$user->name} ({$user->role})");
-        }
-
-        return redirect()->route('login')->with('error', 'User not found for fast login.');
-    }
-
     public function logout(Request $request)
     {
         $user = Auth::user();

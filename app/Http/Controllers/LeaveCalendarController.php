@@ -21,8 +21,26 @@ class LeaveCalendarController extends Controller
         $month = $request->input('month', Carbon::now()->month);
         $year = $request->input('year', Carbon::now()->year);
 
-        $departments = Department::where('is_active', true)->get();
-        $teams = Team::all();
+        $canViewOrganizationCalendar = $user->isHr() || $user->isManager();
+        $departments = $canViewOrganizationCalendar ? Department::where('is_active', true)->get() : collect();
+
+        if ($canViewOrganizationCalendar) {
+            $teams = Team::all();
+        } elseif ($user->isTeamLead()) {
+            $teamIds = Employee::query()
+                ->where(function ($query) use ($user, $employee) {
+                    $query->where('team_lead_id', $user->id);
+                    if ($employee?->team_id) {
+                        $query->orWhere('team_id', $employee->team_id);
+                    }
+                })
+                ->whereNotNull('team_id')
+                ->pluck('team_id')
+                ->unique();
+            $teams = Team::whereIn('id', $teamIds)->get();
+        } else {
+            $teams = $employee?->team_id ? Team::whereKey($employee->team_id)->get() : collect();
+        }
 
         return view('calendar.index', compact('month', 'year', 'departments', 'teams', 'user', 'employee'));
     }
@@ -49,18 +67,19 @@ class LeaveCalendarController extends Controller
                   });
             });
 
-        // Team Leads only see team unless HR/Admin
-        if ($user->role === 'team_lead') {
-            $teamMemberIds = Employee::where('team_lead_id', $user->id)
-                ->orWhere(function ($q) use ($employee) {
-                    if ($employee && $employee->team_id) {
-                        $q->where('team_id', $employee->team_id);
+        // Employees and team leads can only see approved leave for their team.
+        if ($user->isTeamLead() && !$user->isHr()) {
+            $teamMemberIds = Employee::query()
+                ->where(function ($q) use ($user, $employee) {
+                    $q->where('team_lead_id', $user->id);
+                    if ($employee?->team_id) {
+                        $q->orWhere('team_id', $employee->team_id);
                     }
                 })
                 ->pluck('id');
             $query->whereIn('employee_id', $teamMemberIds);
         } elseif (!$user->isHr() && !$user->isAdmin() && !$user->isManager()) {
-            // Standard employee sees own team or own leaves
+            // Standard employees see only their own team's calendar.
             if ($employee && $employee->team_id) {
                 $teamMemberIds = Employee::where('team_id', $employee->team_id)->pluck('id');
                 $query->whereIn('employee_id', $teamMemberIds);
@@ -69,11 +88,11 @@ class LeaveCalendarController extends Controller
             }
         }
 
-        if ($request->filled('department_id')) {
+        if (($user->isHr() || $user->isManager()) && $request->filled('department_id')) {
             $query->whereHas('employee', fn($q) => $q->where('department_id', $request->department_id));
         }
 
-        if ($request->filled('team_id')) {
+        if (($user->isHr() || $user->isManager()) && $request->filled('team_id')) {
             $query->whereHas('employee', fn($q) => $q->where('team_id', $request->team_id));
         }
 
