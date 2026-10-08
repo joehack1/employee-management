@@ -339,24 +339,6 @@
         @if(session()->has('impersonator_id'))
             <div class="flex items-center justify-center gap-3 bg-amber-100 px-4 py-2 text-xs text-amber-950">
                 <span>Viewing as <strong>{{ auth()->user()->name }}</strong>.</span>
-                <div class="relative" x-data="{ open: false }">
-                    <button type="button" @click="open = !open" @click.outside="open = false" class="rounded-lg border border-amber-300 px-2.5 py-1 font-semibold hover:bg-amber-200" aria-label="Switch to another account">
-                        Switch account
-                    </button>
-                    <div x-show="open" x-cloak class="absolute left-0 top-full z-50 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-2xl bg-white p-4 text-slate-800 shadow-xl ring-1 ring-black/5">
-                        <form method="POST" action="{{ route('administrator.impersonate') }}" class="space-y-3">
-                            @csrf
-                            <label for="switch-account-from-view" class="block text-xs font-semibold">View another active account</label>
-                            <select id="switch-account-from-view" name="user_id" required class="w-full rounded-xl border border-slate-300 px-3 py-2 text-xs">
-                                <option value="">Select an account</option>
-                                @foreach($switchableUsers as $switchableUser)
-                                    <option value="{{ $switchableUser->id }}">{{ $switchableUser->name }} · {{ str_replace('_', ' ', $switchableUser->role) }} · {{ $switchableUser->email }}</option>
-                                @endforeach
-                            </select>
-                            <button type="submit" class="w-full rounded-xl bg-blue-600 px-3 py-2 text-xs font-semibold text-white hover:bg-blue-700">Switch to selected account</button>
-                        </form>
-                    </div>
-                </div>
                 <form method="POST" action="{{ route('administrator.impersonate.stop') }}">
                     @csrf
                     <button type="submit" class="font-bold underline underline-offset-2">Return to Administrator</button>

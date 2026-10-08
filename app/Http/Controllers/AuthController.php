@@ -61,12 +61,9 @@ class AuthController extends Controller
 
     public function startImpersonation(Request $request)
     {
-        $administratorId = $request->session()->get('impersonator_id');
-        $administrator = $administratorId
-            ? User::whereKey($administratorId)->where('role', 'administrator')->where('is_active', true)->first()
-            : Auth::user();
-
+        $administrator = Auth::user();
         abort_unless($administrator?->isSuperAdmin(), 403);
+        abort_if($request->session()->has('impersonator_id'), 403);
 
         $validated = $request->validate([
             'user_id' => ['required', 'integer', 'exists:users,id'],
@@ -79,8 +76,6 @@ class AuthController extends Controller
 
         $request->session()->put('impersonator_id', $administrator->id);
         $request->session()->regenerate();
-        // Attribute each account switch to the administrator, even after switching accounts.
-        Auth::login($administrator);
         AuditLog::log(
             action: 'account_impersonation_started',
             entityType: 'User',

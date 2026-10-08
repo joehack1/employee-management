@@ -123,9 +123,11 @@
                     <option value="employee" {{ $employee->user->role === 'employee' ? 'selected' : '' }}>Employee</option>
                     <option value="team_lead" {{ $employee->user->role === 'team_lead' ? 'selected' : '' }}>Team Lead</option>
                     <option value="hr" {{ $employee->user->role === 'hr' ? 'selected' : '' }}>HR Manager</option>
-                    <option value="admin" {{ $employee->user->role === 'admin' ? 'selected' : '' }}>Administrator</option>
+                    <option value="admin" {{ $employee->user->role === 'admin' ? 'selected' : '' }}>HR Administrator</option>
+                    <option value="administrator" {{ $employee->user->role === 'administrator' ? 'selected' : '' }}>System Administrator (Full Access)</option>
                     <option value="manager" {{ $employee->user->role === 'manager' ? 'selected' : '' }}>Manager</option>
                 </select>
+                <p class="mt-2 text-xs text-amber-700">System Administrators have full system access and can switch into other user accounts.</p>
             </div>
 
             <div class="pt-4 flex items-center justify-end gap-3 border-t border-slate-100">
