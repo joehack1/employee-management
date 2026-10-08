@@ -121,13 +121,15 @@
                             <svg x-show="mobileOpen" x-cloak class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
                         </button>
 
-                        @if(auth()->user()->isSuperAdmin())
+                        @if(auth()->user()->isSuperAdmin() || session()->has('impersonator_id'))
                             @php
                                 $switchableUsers = \App\Models\User::where('is_active', true)
                                     ->where('role', '!=', 'administrator')
                                     ->orderBy('name')
                                     ->get(['id', 'name', 'email', 'role']);
                             @endphp
+                        @endif
+                        @if(auth()->user()->isSuperAdmin())
                             <div class="relative" x-data="{ open: false }">
                                 <button type="button" @click="open = !open" @click.outside="open = false" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50" aria-label="Switch account">
                                     Switch account
