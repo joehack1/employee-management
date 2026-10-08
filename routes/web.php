@@ -42,6 +42,10 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('home');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 
+    Route::get('/manager/departments/{id}', [DepartmentController::class, 'showForManager'])
+        ->middleware('can:manage-analytics')
+        ->name('manager.departments.show');
+
     // Profile & Password
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::post('/profile', [ProfileController::class, 'updateProfile'])->name('profile.update');

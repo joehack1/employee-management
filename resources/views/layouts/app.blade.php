@@ -74,7 +74,11 @@
                                         : (auth()->user()->isManager()
                                         ? ['pending_manager']
                                         : (auth()->user()->isHr() ? ['pending_hr'] : ['pending_team_lead']));
-                                    $pendingCount = \App\Models\LeaveApplication::whereIn('status', $approvalStatuses)->count();
+                                    $pendingQuery = \App\Models\LeaveApplication::whereIn('status', $approvalStatuses);
+                                    if (auth()->user()->isManager()) {
+                                        $pendingQuery->whereIn('employee_id', \App\Models\Employee::managerEmployeeIds(auth()->user()));
+                                    }
+                                    $pendingCount = $pendingQuery->count();
                                 @endphp
                                 <a href="{{ route('approvals.pending') }}" class="{{ request()->routeIs('approvals.pending') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition flex items-center gap-1.5">
                                     Approvals

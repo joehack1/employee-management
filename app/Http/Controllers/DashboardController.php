@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveBalance;
 use App\Models\LeaveType;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -19,7 +20,7 @@ class DashboardController extends Controller
         $employee = $user->employee;
 
         if ($user->isManager()) {
-            return $this->managerDashboard();
+            return $this->managerDashboard($user);
         }
 
         if ($user->isHr()) {
@@ -33,7 +34,7 @@ class DashboardController extends Controller
         return $this->employeeDashboard($user, $employee);
     }
 
-    protected function managerDashboard()
+    protected function managerDashboard(User $user)
     {
         $today = Carbon::today()->toDateString();
         $year = Carbon::now()->year;
@@ -46,7 +47,9 @@ class DashboardController extends Controller
             ->orderBy('start_date')
             ->get();
 
+        $managerEmployeeIds = Employee::managerEmployeeIds($user);
         $pendingRequests = LeaveApplication::with(['employee.department', 'employee.user', 'leaveType'])
+            ->whereIn('employee_id', $managerEmployeeIds)
             ->where('status', 'pending_manager')
             ->orderBy('is_emergency', 'desc')
             ->orderBy('created_at')
@@ -65,7 +68,9 @@ class DashboardController extends Controller
             ->whereYear('start_date', $year)
             ->sum('total_days');
 
-        $departments = Department::withCount('employees')->get();
+        $departments = Department::withCount('employees')
+            ->withCount(['employees as active_employees_count' => fn ($query) => $query->where('employment_status', 'active')])
+            ->get();
 
         return view('dashboard.manager', compact(
             'totalEmployees', 'onLeaveToday', 'pendingRequests', 'upcomingLeave',

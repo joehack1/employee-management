@@ -65,6 +65,28 @@ class Employee extends Model
         return $this->belongsTo(User::class, 'manager_id');
     }
 
+    public static function managerEmployeeIds(User $manager): array
+    {
+        $managerIds = User::query()
+            ->where('role', 'manager')
+            ->orderBy('id')
+            ->pluck('id');
+
+        return self::query()
+            ->where(function ($query) use ($manager, $managerIds) {
+                $query->where('manager_id', $manager->id);
+
+                // Notifications fall back to the first manager for employees without
+                // a valid manager assignment, so show those requests in the same queue.
+                if ((int) $managerIds->first() === (int) $manager->id) {
+                    $query->orWhereNull('manager_id')
+                        ->orWhereNotIn('manager_id', $managerIds);
+                }
+            })
+            ->pluck('id')
+            ->all();
+    }
+
     public function leavePolicy(): BelongsTo
     {
         return $this->belongsTo(LeavePolicy::class);

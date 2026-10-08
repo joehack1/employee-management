@@ -32,7 +32,9 @@ class LeaveApprovalController extends Controller
             $approvalLevel = 'administrator';
             $isHrView = false;
         } elseif ($user->isManager()) {
+            $managerEmployeeIds = Employee::managerEmployeeIds($user);
             $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
+                ->whereIn('employee_id', $managerEmployeeIds)
                 ->where('status', 'pending_manager')
                 ->orderBy('is_emergency', 'desc')
                 ->orderBy('created_at', 'asc')
@@ -117,33 +119,53 @@ class LeaveApprovalController extends Controller
 
     public function managerApprove(Request $request, $id)
     {
-        if (!Auth::user()->isManager() && !Auth::user()->isSuperAdmin()) {
+        $user = Auth::user();
+        if (!$user->isManager() && !$user->isSuperAdmin()) {
             abort(403, 'Unauthorized');
         }
 
-        $application = LeaveApplication::where('status', 'pending_manager')->findOrFail($id);
+        $query = LeaveApplication::where('status', 'pending_manager');
+        if (!$user->isSuperAdmin()) {
+            $query->whereIn('employee_id', Employee::managerEmployeeIds($user));
+        }
+        $application = $query->findOrFail($id);
         try {
-            $this->workflowService->approveByManager($application, Auth::id(), $request->input('comment'));
-            return back()->with('success', "Application {$application->application_number} approved.");
+            $this->workflowService->approveByManager($application, $user->id, $request->input('comment'));
+            return $this->managerActionRedirect($request)->with('success', "Application {$application->application_number} approved.");
         } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return $this->managerActionRedirect($request)->with('error', $e->getMessage());
         }
     }
 
     public function managerReject(Request $request, $id)
     {
-        if (!Auth::user()->isManager() && !Auth::user()->isSuperAdmin()) {
+        $user = Auth::user();
+        if (!$user->isManager() && !$user->isSuperAdmin()) {
             abort(403, 'Unauthorized');
         }
 
         $request->validate(['rejection_reason' => ['required', 'string', 'min:5', 'max:500']]);
-        $application = LeaveApplication::where('status', 'pending_manager')->findOrFail($id);
+        $query = LeaveApplication::where('status', 'pending_manager');
+        if (!$user->isSuperAdmin()) {
+            $query->whereIn('employee_id', Employee::managerEmployeeIds($user));
+        }
+        $application = $query->findOrFail($id);
         try {
             $this->workflowService->rejectByManager($application, Auth::id(), $request->rejection_reason);
-            return back()->with('success', "Application {$application->application_number} rejected.");
+            return $this->managerActionRedirect($request)->with('success', "Application {$application->application_number} rejected.");
         } catch (Exception $e) {
-            return back()->with('error', $e->getMessage());
+            return $this->managerActionRedirect($request)->with('error', $e->getMessage());
         }
+    }
+
+    private function managerActionRedirect(Request $request)
+    {
+        $destination = $request->input('return_to');
+        $route = in_array($destination, ['dashboard', 'approvals.pending'], true)
+            ? $destination
+            : 'approvals.pending';
+
+        return redirect()->route($route);
     }
 
     public function hrApprove(Request $request, $id)

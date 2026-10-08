@@ -49,8 +49,9 @@ class LeaveStatusNotification extends Notification
         $this->application->loadMissing(['employee', 'leaveType']);
         $employee = $this->application->employee;
         $leaveType = $this->application->leaveType;
+        $isApplicant = $employee && (int) ($notifiable->id ?? 0) === (int) $employee->user_id;
         $recipientName = $notifiable->name ?? $employee?->first_name ?? 'there';
-        $balance = $employee && $leaveType
+        $balance = $isApplicant && $leaveType
             ? LeaveBalance::where('employee_id', $employee->id)
                 ->where('leave_type_id', $leaveType->id)
                 ->where('year', $this->application->start_date->year)
@@ -61,7 +62,7 @@ class LeaveStatusNotification extends Notification
             ->subject($this->title)
             ->greeting("Hello {$recipientName},")
             ->line($this->message)
-            ->line('Leave summary')
+            ->line($isApplicant ? 'Your leave summary' : 'Applicant: ' . ($employee?->full_name ?? 'Employee'))
             ->line('Leave type: ' . ($leaveType?->name ?? 'Leave'))
             ->line(sprintf(
                 'Dates: %s to %s (%s working days)',
@@ -70,19 +71,19 @@ class LeaveStatusNotification extends Notification
                 $this->formatDays((float) $this->application->total_days)
             ));
 
-        $leaveTypeMessage = match ($leaveType?->code) {
-            'sick' => 'We are sorry to hear that you are unwell. Please take care, and we wish you a smooth and speedy recovery.',
-            'annual' => 'We hope you enjoy your time away and return feeling rested.',
-            'compassionate' => 'We are sorry for your loss. Please accept our sincere condolences, and take the time you need with your loved ones.',
-            'maternity' => 'Wishing you and your family good health and happiness during this special time.',
-            'paternity' => 'Wishing you and your family good health and happiness as you welcome this new chapter.',
-            'emergency' => 'We hope everything is okay. Please let HR know if you need any support during this time.',
-            'study' => 'We wish you success with your studies and exams.',
-            'unpaid' => 'If you have questions about how this leave affects your balance or pay, please contact HR.',
-            default => 'Please contact HR if you need any support or have questions about your leave.',
-        };
+        if ($isApplicant) {
+            $leaveTypeMessage = match ($leaveType?->code) {
+                'sick' => 'We are sorry to hear that you are unwell. Please take care, and we wish you a smooth and speedy recovery.',
+                'annual' => 'We hope you enjoy your time away and return feeling rested.',
+                'compassionate' => 'We are sorry for your loss. Please accept our sincere condolences, and take the time you need with your loved ones.',
+                'maternity' => 'Wishing you and your family good health and happiness during this special time.',
+                'paternity' => 'Wishing you and your family good health and happiness as you welcome this new chapter.',
+                'emergency' => 'We hope everything is okay. Please let HR know if you need any support during this time.',
+                'study' => 'We wish you success with your studies and exams.',
+                'unpaid' => 'If you have questions about how this leave affects your balance or pay, please contact HR.',
+                default => 'Please contact HR if you need any support or have questions about your leave.',
+            };
 
-        if ($leaveTypeMessage) {
             $mail->line($leaveTypeMessage);
         }
 
@@ -95,21 +96,23 @@ class LeaveStatusNotification extends Notification
             $mail->line("You indicated that you will deliver your {$documentDescription} to HR personally. Please bring them with you when you return to work.");
         }
 
-        if ($balance) {
-            $mail->line(sprintf(
-                'Your available %s balance after this request is %s days.',
-                $leaveType->name,
-                $this->formatDays($balance->available_days)
-            ));
-        } else {
-            $mail->line('Your leave balance is not currently available in the system. Please contact HR if you need help confirming it.');
+        if ($isApplicant) {
+            if ($balance) {
+                $mail->line(sprintf(
+                    'Your available %s balance after this request is %s days.',
+                    $leaveType->name,
+                    $this->formatDays($balance->available_days)
+                ));
+            } else {
+                $mail->line('Your leave balance is not currently available in the system. Please contact HR if you need help confirming it.');
+            }
         }
 
         if (in_array($this->application->status, ['pending_team_lead', 'pending_manager', 'pending_hr', 'approved'], true)) {
             $returnDate = $this->expectedReturnDate();
-            $returnLabel = $this->application->status === 'approved'
-                ? 'Expected back at work'
-                : 'Expected back at work if approved';
+            $returnLabel = $isApplicant
+                ? ($this->application->status === 'approved' ? 'Expected back at work' : 'Expected back at work if approved')
+                : ($this->application->status === 'approved' ? 'Applicant expected back at work' : 'Applicant expected back at work if approved');
             $mail->line($returnLabel . ': ' . $returnDate->format('l, d M Y') . '.');
         }
 

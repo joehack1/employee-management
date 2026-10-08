@@ -10,6 +10,23 @@ use Illuminate\Http\Request;
 
 class DepartmentController extends Controller
 {
+    public function showForManager($id)
+    {
+        $department = Department::with([
+            'teams.leader',
+            'teams.employees',
+            'employees.team',
+            'employees.manager',
+            'employees.teamLead',
+        ])->withCount('employees')->findOrFail($id);
+
+        $activeEmployeesCount = $department->employees
+            ->where('employment_status', 'active')
+            ->count();
+
+        return view('departments.manager-show', compact('department', 'activeEmployeesCount'));
+    }
+
     public function index()
     {
         $departments = Department::with(['teams.leader', 'parent', 'employees'])->get();

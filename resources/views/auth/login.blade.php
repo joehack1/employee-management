@@ -182,7 +182,7 @@
                 <div class="rise lg:hidden mx-auto w-16 h-16 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg" style="--d:0">
                     <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="w-full h-full object-contain">
                 </div>
-                <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">{{ now()->hour < 12 ? 'Good morning' : (now()->hour < 17 ? 'Good afternoon' : 'Good evening') }}, <span class="text-teal-300">LeaveFlow</span></h2>
+                <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">{{ now()->hour < 12 ? 'Good morning' : (now()->hour < 17 ? 'Good afternoon' : 'Good evening') }}!</h2>
                 
             </div>
 
@@ -208,7 +208,7 @@
                             <svg class="field-icon absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                             </svg>
-                            <input id="login" name="login" type="text" autocomplete="username" required value="{{ old('login', 'joel@company.com') }}" placeholder="e.g. joel@company.com or EMP-003" class="field login-glass-field appearance-none block w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <input id="login" name="login" type="text" autocomplete="username" required value="{{ old('login') }}" placeholder="employee@indepthresearch.co.ke" class="field login-glass-field appearance-none block w-full pl-10 pr-3.5 py-2.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                         </div>
                         <p class="text-[11px] text-slate-400 mt-1">You can log in using either your corporate email or employee ID.</p>
                     </div>
@@ -222,7 +222,7 @@
                             <svg class="field-icon absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                             </svg>
-                            <input id="password" name="password" type="password" autocomplete="current-password" required value="password" placeholder="••••••••" class="field login-glass-field appearance-none block w-full pl-10 pr-11 py-2.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <input id="password" name="password" type="password" autocomplete="current-password" required placeholder="Enter your password" class="field login-glass-field appearance-none block w-full pl-10 pr-11 py-2.5 border border-slate-300 rounded-xl placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             <button type="button" id="toggle-password" aria-label="Show password" aria-pressed="false"
                                     class="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500">
                                 <svg id="eye-open" class="w-4 h-4 transition duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

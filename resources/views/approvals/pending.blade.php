@@ -75,6 +75,7 @@
                                 <a href="{{ route('leave.show', $app->id) }}" class="text-xs text-slate-400 hover:text-slate-600">Details</a>
 
                                 <!-- Approve Modal -->
+                                <template x-teleport="body">
                                 <div x-show="openApprove" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
                                     <div @click.outside="openApprove = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-slate-900">Approve Request</h3>
@@ -91,8 +92,10 @@
                                         </form>
                                     </div>
                                 </div>
+                                </template>
 
                                 <!-- Reject Modal with Mandatory Reason (Req 8 & 10) -->
+                                <template x-teleport="body">
                                 <div x-show="openReject" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
                                     <div @click.outside="openReject = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-rose-600">Reject Application</h3>
@@ -109,6 +112,7 @@
                                         </form>
                                     </div>
                                 </div>
+                                </template>
                             </td>
                         </tr>
                     @empty

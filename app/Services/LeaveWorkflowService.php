@@ -536,7 +536,7 @@ class LeaveWorkflowService
         } elseif ($application->status === 'pending_manager') {
             $manager = User::whereKey($application->employee->manager_id)
                 ->where('role', 'manager')
-                ->first() ?? User::where('role', 'manager')->first();
+                ->first() ?? User::where('role', 'manager')->orderBy('id')->first();
             if ($manager) {
                 $manager->notify(new LeaveStatusNotification(
                     application: $application,

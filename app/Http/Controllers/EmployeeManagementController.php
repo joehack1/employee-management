@@ -9,6 +9,7 @@ use App\Models\LeaveBalance;
 use App\Models\LeavePolicy;
 use App\Models\LeaveType;
 use App\Models\User;
+use App\Notifications\EmployeeAssignmentNotification;
 use App\Services\LeaveLedgerService;
 use Carbon\Carbon;
 use Exception;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 use Illuminate\Validation\Rule;
 
 class EmployeeManagementController extends Controller
@@ -81,7 +83,7 @@ class EmployeeManagementController extends Controller
             'password' => ['required', 'string', 'min:6'],
         ]);
 
-        DB::transaction(function () use ($validated) {
+        $employee = DB::transaction(function () use ($validated) {
             $user = User::create([
                 'name' => "{$validated['first_name']} {$validated['last_name']}",
                 'email' => $validated['email'],
@@ -130,7 +132,14 @@ class EmployeeManagementController extends Controller
             }
 
             AuditLog::log('employee_created', 'Employee', $employee->id, "Employee {$employee->full_name} created by HR");
+
+            return $employee;
         });
+
+        $this->notifyAssignedManagersAndTeamLeads(
+            [$validated['manager_id'] ?? null, $validated['team_lead_id'] ?? null],
+            $employee
+        );
 
         return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
@@ -149,6 +158,8 @@ class EmployeeManagementController extends Controller
     {
         $employee = Employee::findOrFail($id);
         $user = $employee->user;
+        $previousManagerId = $employee->manager_id;
+        $previousTeamLeadId = $employee->team_lead_id;
 
         $validated = $request->validate([
             'employee_number' => ['required', 'string', Rule::unique('employees')->ignore($employee->id)],
@@ -182,6 +193,18 @@ class EmployeeManagementController extends Controller
 
             AuditLog::log('employee_updated', 'Employee', $employee->id, "Employee {$employee->full_name} updated by HR");
         });
+
+        $newAssigneeIds = [];
+        if ((int) $previousManagerId !== (int) ($validated['manager_id'] ?? 0)) {
+            $newAssigneeIds[] = $validated['manager_id'] ?? null;
+        }
+        if ((int) $previousTeamLeadId !== (int) ($validated['team_lead_id'] ?? 0)) {
+            $newAssigneeIds[] = $validated['team_lead_id'] ?? null;
+        }
+
+        if ($newAssigneeIds) {
+            $this->notifyAssignedManagersAndTeamLeads($newAssigneeIds, $employee);
+        }
 
         return redirect()->route('employees.index')->with('success', 'Employee updated successfully.');
     }
@@ -280,6 +303,18 @@ class EmployeeManagementController extends Controller
             ));
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
+        }
+    }
+
+    private function notifyAssignedManagersAndTeamLeads(array $userIds, Employee $employee): void
+    {
+        $recipients = User::whereIn('id', array_filter($userIds))
+            ->where('is_active', true)
+            ->get()
+            ->unique('id');
+
+        if ($recipients->isNotEmpty()) {
+            Notification::send($recipients, new EmployeeAssignmentNotification($employee));
         }
     }
 }
