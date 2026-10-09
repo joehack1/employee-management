@@ -23,6 +23,17 @@ class NotificationController extends Controller
         return back()->with('success', 'Notification marked as read.');
     }
 
+    public function open($id)
+    {
+        $notification = Auth::user()->notifications()->where('id', $id)->firstOrFail();
+        $notification->markAsRead();
+        $target = $notification->data['url'] ?? route('notifications.index');
+        $targetPath = parse_url($target, PHP_URL_PATH) ?: '/notifications';
+        $targetQuery = parse_url($target, PHP_URL_QUERY);
+
+        return redirect($targetPath . ($targetQuery ? '?' . $targetQuery : ''));
+    }
+
     public function markAllAsRead()
     {
         Auth::user()->unreadNotifications->markAsRead();

@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Employee Leave Management System')</title>
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicon_io 2/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io 2/favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io 2/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io 2/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('favicon_io 2/site.webmanifest') }}">
     @include('partials.theme')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -67,13 +72,13 @@
                                 <a href="{{ route('reports.index') }}" class="{{ request()->routeIs('reports.*') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100' }} px-3 py-2 rounded-lg text-sm transition">Analytics</a>
                             @endif
 
-                            @if(auth()->user()->isTeamLead() || auth()->user()->isHr() || auth()->user()->isManager())
+                            @if(auth()->user()->role === 'team_lead' || auth()->user()->isManager() || auth()->user()->isSuperAdmin())
                                 @php
                                     $approvalStatuses = auth()->user()->isSuperAdmin()
-                                        ? ['pending_team_lead', 'pending_manager', 'pending_hr']
+                                        ? ['pending_team_lead', 'pending_manager']
                                         : (auth()->user()->isManager()
                                         ? ['pending_manager']
-                                        : (auth()->user()->isHr() ? ['pending_hr'] : ['pending_team_lead']));
+                                        : ['pending_team_lead']);
                                     $pendingQuery = \App\Models\LeaveApplication::whereIn('status', $approvalStatuses);
                                     if (auth()->user()->isManager()) {
                                         $pendingQuery->whereIn('employee_id', \App\Models\Employee::managerEmployeeIds(auth()->user()));
@@ -166,11 +171,11 @@
                                                         <div class="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs">ℹ</div>
                                                     @endif
                                                 </div>
-                                                <div class="flex-1 min-w-0">
+                                                <a href="{{ route('notifications.open', $note->id) }}" class="flex-1 min-w-0 rounded hover:underline">
                                                     <p class="text-xs font-semibold text-slate-900">{{ $note->data['title'] ?? 'Notification' }}</p>
                                                     <p class="text-xs text-slate-600 mt-0.5 line-clamp-2">{{ $note->data['message'] ?? '' }}</p>
                                                     <p class="text-[10px] text-slate-400 mt-1">{{ $note->created_at->diffForHumans() }}</p>
-                                                </div>
+                                                </a>
                                                 @if($note->unread())
                                                     <form action="{{ route('notifications.read', $note->id) }}" method="POST">
                                                         @csrf
@@ -281,7 +286,7 @@
                         </a>
                         @endif
 
-                        @if(auth()->user()->isTeamLead() || auth()->user()->isHr() || auth()->user()->isManager())
+                        @if(auth()->user()->role === 'team_lead' || auth()->user()->isManager() || auth()->user()->isSuperAdmin())
                         <a @click="mobileOpen = false" href="{{ route('approvals.pending') }}" class="flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition {{ request()->routeIs('approvals.pending') ? 'bg-blue-600 text-white font-semibold' : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900' }}">
                             <span class="flex items-center gap-2.5">
                                 <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>

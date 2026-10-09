@@ -47,6 +47,13 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Phone Number</label>
                     <input type="text" name="phone" value="{{ old('phone', $employee->phone) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Gender <span class="text-rose-500">*</span></label>
+                    <select name="gender" required class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
+                        <option value="female" {{ old('gender', $employee->gender) === 'female' ? 'selected' : '' }}>Female</option>
+                        <option value="male" {{ old('gender', $employee->gender) === 'male' ? 'selected' : '' }}>Male</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Position & Department Grid -->
@@ -104,7 +111,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Days</label>
-                    <input type="number" step="0.5" name="annual_entitlement" required value="{{ old('annual_entitlement', $employee->annual_entitlement) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <input type="number" step="0.5" name="annual_entitlement" readonly value="{{ old('annual_entitlement', $employee->annual_entitlement) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Employment Status</label>

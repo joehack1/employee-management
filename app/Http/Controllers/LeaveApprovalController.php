@@ -6,10 +6,12 @@ use App\Models\AuditLog;
 use App\Models\Employee;
 use App\Models\LeaveApplication;
 use App\Models\LeaveComment;
+use App\Notifications\CoverAssignmentNotification;
 use App\Services\LeaveWorkflowService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class LeaveApprovalController extends Controller
 {
@@ -24,7 +26,7 @@ class LeaveApprovalController extends Controller
 
         if ($user->isSuperAdmin()) {
             $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
-                ->whereIn('status', ['pending_team_lead', 'pending_manager', 'pending_hr'])
+                ->whereIn('status', ['pending_team_lead', 'pending_manager'])
                 ->orderBy('is_emergency', 'desc')
                 ->orderBy('created_at', 'asc')
                 ->paginate(15);
@@ -43,14 +45,8 @@ class LeaveApprovalController extends Controller
             $approvalLevel = 'manager';
             $isHrView = false;
         } elseif ($user->isHr()) {
-            // HR reviews requests routed directly to HR.
-            $query = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
-                ->where('status', 'pending_hr');
-
-            $applications = $query->orderBy('is_emergency', 'desc')->orderBy('created_at', 'asc')->paginate(15);
-            $viewTitle = 'HR Approvals Queue';
-            $isHrView = true;
-            $approvalLevel = 'hr';
+            return redirect()->route('notifications.index')
+                ->with('success', 'HR receives notifications about leave requests and decisions. HR sign-off is not required.');
         } elseif ($user->role === 'team_lead') {
             // Team lead sees supervisees with pending_team_lead
             $teamMemberIds = Employee::where('team_lead_id', $user->id)
@@ -75,7 +71,16 @@ class LeaveApprovalController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        return view('approvals.pending', compact('applications', 'viewTitle', 'isHrView', 'approvalLevel'));
+        $coverCandidatesByApplication = collect();
+        if (in_array($approvalLevel, ['team_lead', 'administrator'], true)) {
+            foreach ($applications as $application) {
+                if ($application->status === 'pending_team_lead') {
+                    $coverCandidatesByApplication[$application->id] = Employee::coverageCandidatesFor($application, $user->id);
+                }
+            }
+        }
+
+        return view('approvals.pending', compact('applications', 'viewTitle', 'isHrView', 'approvalLevel', 'coverCandidatesByApplication'));
     }
 
     public function teamLeadApprove(Request $request, $id)
@@ -85,11 +90,30 @@ class LeaveApprovalController extends Controller
             abort(403);
         }
 
-        $application = LeaveApplication::where('status', 'pending_team_lead')->findOrFail($id);
+        $query = LeaveApplication::with('employee')->where('status', 'pending_team_lead');
+        if (!$user->isSuperAdmin()) {
+            $teamId = $user->employee?->team_id;
+            $query->whereHas('employee', function ($employees) use ($user, $teamId) {
+                $employees->where('team_lead_id', $user->id);
+                if ($teamId) {
+                    $employees->orWhere('team_id', $teamId);
+                }
+            });
+        }
+        $application = $query->findOrFail($id);
+        $coverCandidates = Employee::coverageCandidatesFor($application, $user->id);
+        $validated = $request->validate([
+            'cover_employee_id' => ['required', 'integer', Rule::in($coverCandidates->pluck('id')->all())],
+            'comment' => ['nullable', 'string', 'max:1000'],
+        ]);
         $comment = $request->input('comment');
 
         try {
             $this->workflowService->approveByTeamLead($application, $user->id, $comment);
+            $coverEmployee = $coverCandidates->firstWhere('id', (int) $validated['cover_employee_id']);
+            $application->cover_employee_id = $coverEmployee->id;
+            $application->save();
+            $coverEmployee->user->notify(new CoverAssignmentNotification($application->load(['employee', 'leaveType'])));
             return back()->with('success', "Application {$application->application_number} approved. HR has been notified.");
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());

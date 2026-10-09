@@ -22,7 +22,7 @@
     <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200 divide-y divide-slate-100">
         @forelse($notifications as $note)
             <div class="py-4 flex items-start justify-between gap-4 {{ $note->unread() ? 'bg-blue-50/30 -mx-6 px-6' : '' }}">
-                <div class="flex items-start gap-3">
+                <a href="{{ route('notifications.open', $note->id) }}" class="flex flex-1 items-start gap-3 hover:bg-slate-50 rounded-xl transition">
                     <div class="mt-1">
                         @if(($note->data['type'] ?? '') === 'success')
                             <div class="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-xs">✓</div>
@@ -41,11 +41,11 @@
                             <span>{{ $note->created_at->format('d M Y \a\t H:i') }}</span>
                             @if(isset($note->data['url']))
                                 <span>•</span>
-                                <a href="{{ $note->data['url'] }}" class="text-blue-600 hover:underline font-semibold">View Application &rarr;</a>
+                                <span class="text-blue-600 font-semibold">Open notification &rarr;</span>
                             @endif
                         </div>
                     </div>
-                </div>
+                </a>
 
                 @if($note->unread())
                     <form action="{{ route('notifications.read', $note->id) }}" method="POST">

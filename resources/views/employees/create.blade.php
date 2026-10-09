@@ -42,6 +42,14 @@
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Phone Number</label>
                     <input type="text" name="phone" value="{{ old('phone') }}" placeholder="+254 700 000 000" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
                 </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Gender <span class="text-rose-500">*</span></label>
+                    <select name="gender" required class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
+                        <option value="">-- Select Gender --</option>
+                        <option value="female" {{ old('gender') === 'female' ? 'selected' : '' }}>Female</option>
+                        <option value="male" {{ old('gender') === 'male' ? 'selected' : '' }}>Male</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Position & Department Grid -->
@@ -87,7 +95,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Date Joined <span class="text-rose-500">*</span></label>
-                    <input type="date" name="date_employed" required value="{{ old('date_employed', date('Y-m-d')) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
+                    <input type="date" id="date_employed" name="date_employed" required value="{{ old('date_employed', date('Y-m-d')) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Leave Policy</label>
@@ -99,7 +107,7 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Entitlement (Days) <span class="text-rose-500">*</span></label>
-                    <input type="number" step="0.5" name="annual_entitlement" required value="{{ old('annual_entitlement', 21) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <input type="number" id="annual_entitlement" step="0.5" name="annual_entitlement" readonly value="{{ old('annual_entitlement', 21) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
                 </div>
             </div>
 
@@ -116,10 +124,7 @@
                     </select>
                 </div>
                 <p class="sm:col-span-2 -mt-2 text-xs text-amber-700">Super Admin has full system access.</p>
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Initial Password <span class="text-rose-500">*</span></label>
-                    <input type="password" name="password" required value="password" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
-                </div>
+                <p class="sm:col-span-2 text-xs text-slate-500">A secure temporary password will be generated and sent to the employee’s email address.</p>
             </div>
 
             <!-- Action buttons -->
@@ -135,3 +140,22 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+    (() => {
+        const hiredAt = document.getElementById('date_employed');
+        const entitlement = document.getElementById('annual_entitlement');
+        const refreshEntitlement = () => {
+            if (!hiredAt.value) return;
+            const [year, month, day] = hiredAt.value.split('-').map(Number);
+            const today = new Date();
+            let years = today.getFullYear() - year;
+            if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) years--;
+            entitlement.value = years >= 7 ? 33 : (years > 3 ? 27 : 21);
+        };
+        hiredAt.addEventListener('change', refreshEntitlement);
+        refreshEntitlement();
+    })();
+</script>
+@endpush

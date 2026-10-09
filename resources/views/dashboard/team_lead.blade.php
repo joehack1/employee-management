@@ -103,6 +103,19 @@
                                         </p>
                                         <form action="{{ route('approvals.leadApprove', $req->id) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
+                                            @php($coverCandidates = $coverCandidatesByApplication->get($req->id, collect()))
+                                            <div>
+                                                <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span></label>
+                                                <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                                                    <option value="">Select a colleague</option>
+                                                    @foreach($coverCandidates as $candidate)
+                                                        <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
+                                                    @endforeach
+                                                </select>
+                                                @if($coverCandidates->isEmpty())
+                                                    <p class="mt-1 text-[11px] text-rose-600">No available team colleague can cover these dates.</p>
+                                                @endif
+                                            </div>
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-700">Approval Comment (Optional)</label>
                                                 <textarea name="comment" rows="3" placeholder="e.g. Approved. Please ensure handover is completed before Friday." class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>
@@ -167,6 +180,7 @@
                             </div>
                         </div>
                         <div class="flex items-center gap-3">
+                            <span class="text-xs font-semibold text-blue-700">Annual remaining: {{ number_format((float) ($tm->balances->first()?->available_days ?? 0), 1) }} days</span>
                             @if($tm->current_status === 'working')
                                 <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-600 text-white">
                                     <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Working

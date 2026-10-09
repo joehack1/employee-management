@@ -53,6 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // Notifications
     Route::get('/notifications', [NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notifications/{id}/open', [NotificationController::class, 'open'])->name('notifications.open');
     Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead'])->name('notifications.read');
     Route::post('/notifications/read-all', [NotificationController::class, 'markAllAsRead'])->name('notifications.readAll');
 
@@ -135,5 +136,6 @@ Route::middleware('auth')->group(function () {
     Route::middleware('can:manage-analytics')->group(function () {
         Route::get('/reports', [ReportController::class, 'index'])->name('reports.index');
         Route::get('/reports/export', [ReportController::class, 'exportCsv'])->name('reports.export');
+        Route::get('/reports/export/excel', [ReportController::class, 'exportExcel'])->name('reports.export.excel');
     });
 });

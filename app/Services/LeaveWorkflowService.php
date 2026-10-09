@@ -101,8 +101,8 @@ class LeaveWorkflowService
             $approvalLevel = 'team_lead';
 
             if ($applicantRole === 'manager') {
-                $initialStatus = 'pending_hr';
-                $approvalLevel = 'hr';
+                $initialStatus = 'pending_manager';
+                $approvalLevel = 'manager';
             } elseif (in_array($applicantRole, ['team_lead', 'hr', 'administrator'], true)
                 || $workflow === 'direct_hr'
                 || !$employee->team_lead_id
@@ -176,6 +176,7 @@ class LeaveWorkflowService
 
             // Notify approvers
             $this->notifyNextApprover($application);
+            $this->notifyHrOfSubmission($application);
 
             // Notify employee of successful submission
             if ($employee->user) {
@@ -569,6 +570,23 @@ class LeaveWorkflowService
                 $application->is_emergency ? ' - [EMERGENCY EXCEPTION]' : ''
             ),
             type: $application->is_emergency ? 'danger' : 'info'
+        ));
+    }
+
+    protected function notifyHrOfSubmission(LeaveApplication $application): void
+    {
+        $hrUsers = User::whereIn('role', ['hr', 'administrator'])->get();
+        Notification::send($hrUsers, new LeaveStatusNotification(
+            application: $application,
+            title: 'Leave application received — no action required',
+            message: sprintf(
+                '%s submitted %s from %s to %s. The request is awaiting its assigned approver; HR sign-off is not required.',
+                $application->employee->full_name,
+                $application->leaveType->name,
+                $application->start_date->format('d M Y'),
+                $application->end_date->format('d M Y')
+            ),
+            type: 'info'
         ));
     }
 

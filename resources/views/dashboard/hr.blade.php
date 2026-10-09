@@ -57,9 +57,9 @@
 
         <!-- Metric 4: HR actions -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Pending HR Approvals</p>
-            <p class="text-2xl font-extrabold text-amber-500 mt-1">{{ $pendingApprovals->count() }}</p>
-            <a href="{{ route('approvals.pending') }}" class="text-[10px] text-amber-600 font-bold hover:underline mt-1 inline-block">Review actions &rarr;</a>
+            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">HR Sign-Off</p>
+            <p class="text-lg font-extrabold text-emerald-600 mt-2">Not required</p>
+            <a href="{{ route('notifications.index') }}" class="text-[10px] text-blue-600 font-bold hover:underline mt-1 inline-block">View notifications &rarr;</a>
         </div>
 
         <!-- Metric 5: Annual Leave Used -->
@@ -84,11 +84,11 @@
                 <span class="text-2xl">🚨</span>
                 <div>
                     <h3 class="text-sm font-bold text-amber-900">Urgent: {{ $emergencyRequests->count() }} Emergency Leave Request(s)</h3>
-                    <p class="text-xs text-amber-700">An emergency leave request needs HR review.</p>
+                    <p class="text-xs text-amber-700">The assigned approver is reviewing this request. HR will be notified of the decision.</p>
                 </div>
             </div>
-                    <a href="{{ route('approvals.pending') }}" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition">
-                Review Request &rarr;
+                    <a href="{{ route('notifications.index') }}" class="px-3.5 py-1.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-semibold text-xs transition">
+                View Notifications &rarr;
             </a>
         </div>
     @endif
@@ -100,11 +100,11 @@
             <div class="bg-white rounded-3xl p-6 shadow-xs border border-slate-200 space-y-4">
                 <div class="flex items-center justify-between border-b border-slate-100 pb-4">
                     <div>
-                        <h2 class="text-base font-bold text-slate-900">HR Actions</h2>
-                        <p class="text-xs text-slate-500">Leave requests routed to HR need your review</p>
+                        <h2 class="text-base font-bold text-slate-900">HR Notifications</h2>
+                        <p class="text-xs text-slate-500">Team leads and managers make leave decisions. HR receives notifications; no sign-off is required.</p>
                     </div>
                     <span class="text-xs font-semibold px-2.5 py-1 rounded-full bg-blue-600 text-white">
-                        {{ $pendingApprovals->count() }} Requests
+                        Notifications only
                     </span>
                 </div>
 
@@ -208,7 +208,7 @@
                             @empty
                                 <tr>
                                     <td colspan="6" class="px-4 py-8 text-center text-slate-400 text-xs">
-                                        All leave applications are up to date! No pending approvals.
+                                        No HR approvals are pending because HR sign-off is not required. Check your notifications for updates.
                                     </td>
                                 </tr>
                             @endforelse

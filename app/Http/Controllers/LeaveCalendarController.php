@@ -23,6 +23,10 @@ class LeaveCalendarController extends Controller
 
         $canViewOrganizationCalendar = $user->isHr() || $user->isManager();
         $departments = $canViewOrganizationCalendar ? Department::where('is_active', true)->get() : collect();
+        $employees = $user->isHr()
+            ? Employee::orderBy('first_name')->orderBy('last_name')->get(['id', 'first_name', 'last_name', 'employee_number'])
+            : collect();
+        $selectedEmployee = $user->isHr() ? $request->input('employee_id', '') : '';
 
         if ($canViewOrganizationCalendar) {
             $teams = Team::all();
@@ -42,7 +46,7 @@ class LeaveCalendarController extends Controller
             $teams = $employee?->team_id ? Team::whereKey($employee->team_id)->get() : collect();
         }
 
-        return view('calendar.index', compact('month', 'year', 'departments', 'teams', 'user', 'employee'));
+        return view('calendar.index', compact('month', 'year', 'departments', 'teams', 'employees', 'selectedEmployee', 'user', 'employee'));
     }
 
     public function eventsJson(Request $request)
@@ -94,6 +98,10 @@ class LeaveCalendarController extends Controller
 
         if (($user->isHr() || $user->isManager()) && $request->filled('team_id')) {
             $query->whereHas('employee', fn($q) => $q->where('team_id', $request->team_id));
+        }
+
+        if ($user->isHr() && $request->filled('employee_id') && ctype_digit((string) $request->input('employee_id'))) {
+            $query->where('employee_id', (int) $request->input('employee_id'));
         }
 
         $applications = $query->get();

@@ -135,7 +135,7 @@
                     <ul class="list-disc list-inside text-amber-800 text-[11px] space-y-0.5">
                         <template x-for="c in calcResult.team_conflicts" :key="c.employee_name">
                             <li>
-                                <strong x-text="c.employee_name"></strong> (<span x-text="c.leave_type"></span>, <span x-text="c.start_date + ' - ' + c.end_date"></span>)
+                                <strong x-text="c.employee_name"></strong> (<span x-text="c.start_date + ' - ' + c.end_date"></span>)
                             </li>
                         </template>
                     </ul>
@@ -162,17 +162,18 @@
             </div>
 
             <!-- Supporting Document Field -->
-            <div>
+            <div x-show="!isAnnualLeave || isEmergency" x-cloak
+                 x-effect="if (isAnnualLeave && !isEmergency) { $refs.attachment.value = ''; $refs.manualAttachmentExpected.checked = false; }">
                 <label for="attachment" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
                     Supporting Attachment <span x-show="leaveTypeHasDocumentRule" class="text-rose-600 font-semibold">(Document rules apply; hand delivery is allowed)</span>
                 </label>
                 <div class="mt-1.5 flex items-center gap-3">
-                    <input type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl p-1">
+                    <input x-ref="attachment" type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl p-1">
                 </div>
                 <p class="text-[11px] text-slate-500 mt-1">Attach a supporting document here, or check below if you will deliver one to HR personally.</p>
                 <p class="text-[11px] text-slate-400 mt-1">Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB). Uploaded files are stored securely.</p>
                 <label class="mt-3 flex items-start gap-2 text-xs text-slate-700">
-                    <input type="checkbox" name="manual_attachment_expected" value="1" {{ old('manual_attachment_expected') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-blue-600">
+                    <input x-ref="manualAttachmentExpected" type="checkbox" name="manual_attachment_expected" value="1" {{ old('manual_attachment_expected') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-blue-600">
                     <span>I will deliver the supporting document to HR personally.</span>
                 </label>
                 @error('attachment')<p class="mt-2 text-xs text-rose-600">{{ $message }}</p>@enderror

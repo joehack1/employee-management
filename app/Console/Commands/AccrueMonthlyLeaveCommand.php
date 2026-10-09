@@ -14,7 +14,7 @@ class AccrueMonthlyLeaveCommand extends Command
 {
     protected $signature = 'leave:accrue-monthly {--date= : Accrual date for an administrative run (YYYY-MM-DD)}';
 
-    protected $description = 'Credit monthly annual leave entitlement based on employee tenure';
+    protected $description = 'Synchronize annual leave entitlement with employee tenure';
 
     public function handle(): int
     {
@@ -37,9 +37,9 @@ class AccrueMonthlyLeaveCommand extends Command
             ->chunkById(100, function ($employees) use ($date, $period, $leaveType, &$credited) {
                 foreach ($employees as $employee) {
                     $reason = "Monthly annual leave accrual {$period}";
-                    $rate = $employee->date_employed->lt($date->copy()->subYears(3)) ? 2.25 : 1.75;
+                    $entitlement = $employee->annualLeaveEntitlement($date);
 
-                    DB::transaction(function () use ($employee, $date, $period, $leaveType, $reason, $rate, &$credited) {
+                    DB::transaction(function () use ($employee, $date, $period, $leaveType, $reason, $entitlement, &$credited) {
                         $alreadyCredited = LeaveTransaction::where('employee_id', $employee->id)
                             ->where('leave_type_id', $leaveType->id)
                             ->where('type', 'accrual')
@@ -56,25 +56,28 @@ class AccrueMonthlyLeaveCommand extends Command
                         );
 
                         $balance = LeaveBalance::whereKey($balance->id)->lockForUpdate()->first();
-                        $balance->entitled_days = (float) $balance->entitled_days + $rate;
+                        $adjustment = $entitlement - (float) $balance->entitled_days;
+                        $balance->entitled_days = $entitlement;
                         $balance->save();
 
-                        LeaveTransaction::create([
-                            'employee_id' => $employee->id,
-                            'leave_type_id' => $leaveType->id,
-                            'type' => 'accrual',
-                            'amount' => $rate,
-                            'running_balance' => $balance->available_days,
-                            'reason' => $reason,
-                            'created_by' => null,
-                        ]);
+                        if ($adjustment != 0.0) {
+                            LeaveTransaction::create([
+                                'employee_id' => $employee->id,
+                                'leave_type_id' => $leaveType->id,
+                                'type' => 'accrual',
+                                'amount' => $adjustment,
+                                'running_balance' => $balance->available_days,
+                                'reason' => $reason,
+                                'created_by' => null,
+                            ]);
+                        }
 
                         $credited++;
                     });
                 }
             });
 
-        $this->info("Credited {$period} annual leave for {$credited} employee(s).");
+        $this->info("Synchronized annual leave entitlements for {$credited} employee(s) in {$period}.");
         return self::SUCCESS;
     }
 }

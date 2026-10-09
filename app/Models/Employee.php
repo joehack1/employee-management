@@ -16,6 +16,7 @@ class Employee extends Model
         'last_name',
         'email',
         'phone',
+        'gender',
         'department_id',
         'team_id',
         'job_title',
@@ -38,6 +39,22 @@ class Employee extends Model
     public function getFullNameAttribute(): string
     {
         return "{$this->first_name} {$this->last_name}";
+    }
+
+    public function annualLeaveEntitlement(?Carbon $asOf = null): float
+    {
+        $years = $this->date_employed?->diffInYears($asOf ?? Carbon::today()) ?? 0;
+
+        return $years >= 7 ? 33.0 : ($years > 3 ? 27.0 : 21.0);
+    }
+
+    public function leaveTypesForGender($leaveTypes)
+    {
+        return $leaveTypes->reject(function (LeaveType $leaveType) {
+            $identifier = strtolower($leaveType->code . ' ' . $leaveType->name);
+            return ($this->gender === 'male' && str_contains($identifier, 'maternity'))
+                || ($this->gender === 'female' && str_contains($identifier, 'paternity'));
+        })->values();
     }
 
     public function user(): BelongsTo
@@ -105,6 +122,32 @@ class Employee extends Model
     public function leaveApplications(): HasMany
     {
         return $this->hasMany(LeaveApplication::class)->orderBy('created_at', 'desc');
+    }
+
+    public static function coverageCandidatesFor(LeaveApplication $application, ?int $teamLeadId = null)
+    {
+        $employee = $application->employee;
+        $query = self::query()
+            ->with('user')
+            ->where('employment_status', 'active')
+            ->where('id', '!=', $employee->id)
+            ->whereHas('user');
+
+        if ($employee->team_id) {
+            $query->where('team_id', $employee->team_id);
+        } elseif ($employee->department_id) {
+            $query->where('department_id', $employee->department_id);
+        } elseif ($teamLeadId) {
+            $query->where('team_lead_id', $teamLeadId);
+        } else {
+            return collect();
+        }
+
+        return $query->whereDoesntHave('leaveApplications', function ($applications) use ($application) {
+            $applications->whereIn('status', ['approved', 'pending_team_lead', 'pending_manager', 'pending_hr'])
+                ->whereDate('start_date', '<=', $application->end_date->toDateString())
+                ->whereDate('end_date', '>=', $application->start_date->toDateString());
+        })->orderBy('first_name')->orderBy('last_name')->get();
     }
 
     /**

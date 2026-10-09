@@ -81,6 +81,21 @@
                                         <h3 class="text-base font-bold text-slate-900">Approve Request</h3>
                                         <form action="{{ $approvalLevel === 'administrator' ? route(match($app->status) { 'pending_manager' => 'approvals.managerApprove', 'pending_hr' => 'approvals.hrApprove', default => 'approvals.leadApprove' }, $app->id) : ($approvalLevel === 'manager' ? route('approvals.managerApprove', $app->id) : ($isHrView ? route('approvals.hrApprove', $app->id) : route('approvals.leadApprove', $app->id))) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
+                                            @if($app->status === 'pending_team_lead' && in_array($approvalLevel, ['team_lead', 'administrator'], true))
+                                                @php($coverCandidates = $coverCandidatesByApplication->get($app->id, collect()))
+                                                <div>
+                                                    <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span></label>
+                                                    <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                                                        <option value="">Select a colleague</option>
+                                                        @foreach($coverCandidates as $candidate)
+                                                            <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
+                                                        @endforeach
+                                                    </select>
+                                                    @if($coverCandidates->isEmpty())
+                                                        <p class="mt-1 text-[11px] text-rose-600">No available team colleague can cover these dates.</p>
+                                                    @endif
+                                                </div>
+                                            @endif
                                             <div>
                                                 <label class="block text-xs font-semibold text-slate-700">Comment (Optional)</label>
                                                 <textarea name="comment" rows="3" placeholder="Approval comment or handover note..." class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>

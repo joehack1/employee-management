@@ -103,6 +103,13 @@
                 </div>
 
                 <!-- Reason Details -->
+                @if($application->coverEmployee)
+                    <div class="rounded-2xl border border-teal-200 bg-teal-50 p-4">
+                        <h3 class="text-xs font-bold uppercase tracking-wider text-teal-800">Covering responsibilities</h3>
+                        <p class="mt-1 text-sm font-semibold text-slate-900">{{ $application->coverEmployee->full_name }}</p>
+                    </div>
+                @endif
+
                 <div>
                     <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Reason for Request</h3>
                     <div class="mt-2 p-4 rounded-2xl bg-slate-50 border border-slate-100 text-xs text-slate-700 leading-relaxed">
@@ -277,14 +284,12 @@
                         @endif
                     </div>
 
-                    <!-- Step 3: HR Final Approval -->
+                    <!-- Step 3: HR Notification -->
                     @php $hrApproval = $application->approvals->where('level', 'hr')->first(); @endphp
                     <div class="relative">
                         @if($hrApproval)
                             <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full {{ in_array($hrApproval->action, ['approved', 'cancellation_approved']) ? 'bg-emerald-600' : 'bg-rose-600' }} border-2 border-white ring-2 ring-emerald-100"></span>
-                            <p class="text-xs font-bold text-slate-900">
-                                HR Review: {{ ucfirst(str_replace('_', ' ', $hrApproval->action)) }}
-                            </p>
+                            <p class="text-xs font-bold text-slate-900">Historical HR review: {{ ucfirst(str_replace('_', ' ', $hrApproval->action)) }}</p>
                             <p class="text-[11px] text-slate-500">{{ $hrApproval->created_at->format('d M Y H:i') }}</p>
                             <p class="text-[11px] text-slate-600 mt-0.5">Reviewed by {{ $hrApproval->approver->name }}</p>
                             @if($hrApproval->comment)
@@ -292,10 +297,14 @@
                                     "{{ $hrApproval->comment }}"
                                 </p>
                             @endif
+                        @elseif($application->status === 'approved' || $application->status === 'rejected')
+                            <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-blue-600 border-2 border-white ring-2 ring-blue-100"></span>
+                            <p class="text-xs font-bold text-slate-900">HR Notified</p>
+                            <p class="text-[11px] text-slate-600">HR was notified when the approver recorded this decision. No sign-off is required.</p>
                         @else
                             <span class="absolute -left-6 top-0.5 w-4 h-4 rounded-full bg-slate-300 border-2 border-white"></span>
-                            <p class="text-xs font-bold text-slate-400">HR Review & Sign-Off</p>
-                            <p class="text-[11px] text-slate-400">Pending</p>
+                            <p class="text-xs font-bold text-slate-500">HR Notification</p>
+                            <p class="text-[11px] text-slate-500">HR is notified about the request; no HR approval is required.</p>
                         @endif
                     </div>
                 </div>
@@ -310,6 +319,18 @@
             <h3 class="text-base font-bold text-slate-900">Approve as Team Lead</h3>
             <form action="{{ route('approvals.leadApprove', $application->id) }}" method="POST" class="mt-4 space-y-3">
                 @csrf
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span></label>
+                    <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                        <option value="">Select a colleague</option>
+                        @foreach($coverCandidates as $candidate)
+                            <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
+                        @endforeach
+                    </select>
+                    @if($coverCandidates->isEmpty())
+                        <p class="mt-1 text-[11px] text-rose-600">No available colleague can cover these dates.</p>
+                    @endif
+                </div>
                 <div>
                     <label class="block text-xs font-semibold text-slate-700">Comment (Optional)</label>
                     <textarea name="comment" rows="3" placeholder="e.g. Approved. Tasks handed over." class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>

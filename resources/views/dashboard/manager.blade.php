@@ -25,6 +25,17 @@
     </div>
 
     <section class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+        <div class="px-6 py-5 border-b border-slate-100"><h2 class="font-bold text-slate-900">Your team’s annual leave balances</h2><p class="text-xs text-slate-500 mt-1">Available annual leave for {{ $year }}</p></div>
+        <div class="overflow-x-auto"><table class="min-w-full text-left text-sm"><thead class="bg-slate-50 text-xs uppercase text-slate-500"><tr><th class="px-6 py-3">Employee</th><th class="px-6 py-3">Employee number</th><th class="px-6 py-3 text-right">Remaining annual leave</th></tr></thead><tbody class="divide-y divide-slate-100">
+            @forelse($managerTeamMembers as $member)
+                <tr><td class="px-6 py-4 font-semibold text-slate-900">{{ $member->full_name }}</td><td class="px-6 py-4 text-slate-600">{{ $member->employee_number }}</td><td class="px-6 py-4 text-right font-bold text-blue-700">{{ number_format((float) ($member->balances->first()?->available_days ?? 0), 1) }} days</td></tr>
+            @empty
+                <tr><td colspan="3" class="px-6 py-8 text-center text-slate-400">No active employees are assigned to you.</td></tr>
+            @endforelse
+        </tbody></table></div>
+    </section>
+
+    <section class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between">
             <div><h2 class="font-bold text-slate-900">Staff currently on leave</h2><p class="text-xs text-slate-500 mt-1">Approved leave covering today</p></div>
             <span class="px-3 py-1 rounded-full bg-teal-600 text-white text-xs font-semibold">{{ $onLeaveToday->count() }} away</span>

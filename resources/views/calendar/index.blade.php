@@ -42,6 +42,15 @@
                     @endforeach
                 </select>
             @endif
+
+            @if(auth()->user()->isHr())
+                <select x-model="selectedEmployee" @change="fetchEvents()" class="text-xs px-3 py-2 border border-slate-300 rounded-xl" aria-label="Filter calendar by employee">
+                    <option value="">All Employees</option>
+                    @foreach($employees as $calendarEmployee)
+                        <option value="{{ $calendarEmployee->id }}">{{ $calendarEmployee->full_name }} ({{ $calendarEmployee->employee_number }})</option>
+                    @endforeach
+                </select>
+            @endif
         </div>
 
         <!-- Legend -->
@@ -102,6 +111,7 @@ function leaveCalendar() {
         currentYear: {{ $year }},
         selectedDepartment: '',
         selectedTeam: '',
+        selectedEmployee: @json((string) $selectedEmployee),
         events: [],
         calendarDays: [],
 
@@ -135,7 +145,7 @@ function leaveCalendar() {
         },
 
         fetchEvents() {
-            const url = `{{ route('calendar.events') }}?month=${this.currentMonth}&year=${this.currentYear}&department_id=${this.selectedDepartment}&team_id=${this.selectedTeam}`;
+            const url = `{{ route('calendar.events') }}?month=${this.currentMonth}&year=${this.currentYear}&department_id=${this.selectedDepartment}&team_id=${this.selectedTeam}&employee_id=${this.selectedEmployee}`;
             fetch(url)
                 .then(res => res.json())
                 .then(data => {

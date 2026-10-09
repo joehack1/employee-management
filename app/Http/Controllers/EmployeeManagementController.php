@@ -10,6 +10,7 @@ use App\Models\LeavePolicy;
 use App\Models\LeaveType;
 use App\Models\User;
 use App\Notifications\EmployeeAssignmentNotification;
+use App\Notifications\EmployeeWelcomeNotification;
 use App\Services\LeaveLedgerService;
 use Carbon\Carbon;
 use Exception;
@@ -18,6 +19,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 
 class EmployeeManagementController extends Controller
@@ -71,26 +73,29 @@ class EmployeeManagementController extends Controller
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', 'unique:users,email', 'unique:employees,email'],
             'phone' => ['nullable', 'string', 'max:50'],
+            'gender' => ['required', 'in:male,female'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'team_id' => ['nullable', 'exists:teams,id'],
             'job_title' => ['required', 'string', 'max:100'],
             'team_lead_id' => ['nullable', 'exists:users,id'],
             'manager_id' => ['nullable', 'exists:users,id'],
-            'date_employed' => ['required', 'date'],
+            'date_employed' => ['required', 'date', 'before_or_equal:today'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
             'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
             'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
-            'password' => ['required', 'string', 'min:6'],
         ]);
 
-        $employee = DB::transaction(function () use ($validated) {
+        $generatedPassword = Str::password(14);
+        $validated['annual_entitlement'] = (new Employee(['date_employed' => $validated['date_employed']]))->annualLeaveEntitlement();
+
+        $employee = DB::transaction(function () use ($validated, $generatedPassword) {
             $user = User::create([
                 'name' => "{$validated['first_name']} {$validated['last_name']}",
                 'email' => $validated['email'],
                 'role' => $validated['role'],
                 'employee_number' => $validated['employee_number'],
                 'phone' => $validated['phone'],
-                'password' => Hash::make($validated['password']),
+                'password' => Hash::make($generatedPassword),
                 'is_active' => true,
             ]);
 
@@ -101,6 +106,7 @@ class EmployeeManagementController extends Controller
                 'last_name' => $validated['last_name'],
                 'email' => $validated['email'],
                 'phone' => $validated['phone'],
+                'gender' => $validated['gender'],
                 'department_id' => $validated['department_id'],
                 'team_id' => $validated['team_id'] ?? null,
                 'job_title' => $validated['job_title'],
@@ -116,7 +122,7 @@ class EmployeeManagementController extends Controller
             $year = Carbon::now()->year;
             $leaveTypes = LeaveType::where('is_active', true)->get();
             foreach ($leaveTypes as $lt) {
-                $days = $lt->code === 'annual' ? 0 : $lt->days_allowed;
+                $days = $lt->code === 'annual' ? (float) $employee->annual_entitlement : $lt->days_allowed;
                 $balance = $this->ledgerService->getOrCreateBalance($employee, $lt, $year);
                 $balance->entitled_days = $days;
                 $balance->save();
@@ -140,6 +146,8 @@ class EmployeeManagementController extends Controller
             [$validated['manager_id'] ?? null, $validated['team_lead_id'] ?? null],
             $employee
         );
+
+        $employee->user->notify(new EmployeeWelcomeNotification($generatedPassword));
 
         return redirect()->route('employees.index')->with('success', 'Employee created successfully.');
     }
@@ -167,12 +175,13 @@ class EmployeeManagementController extends Controller
             'last_name' => ['required', 'string', 'max:100'],
             'email' => ['required', 'email', Rule::unique('users')->ignore($user->id)],
             'phone' => ['nullable', 'string', 'max:50'],
+            'gender' => ['required', 'in:male,female'],
             'department_id' => ['nullable', 'exists:departments,id'],
             'team_id' => ['nullable', 'exists:teams,id'],
             'job_title' => ['required', 'string', 'max:100'],
             'team_lead_id' => ['nullable', 'exists:users,id'],
             'manager_id' => ['nullable', 'exists:users,id'],
-            'date_employed' => ['required', 'date'],
+            'date_employed' => ['required', 'date', 'before_or_equal:today'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
             'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
             'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
@@ -190,6 +199,8 @@ class EmployeeManagementController extends Controller
             ]);
 
             $employee->update($validated);
+            $employee->annual_entitlement = $employee->annualLeaveEntitlement();
+            $employee->save();
 
             AuditLog::log('employee_updated', 'Employee', $employee->id, "Employee {$employee->full_name} updated by HR");
         });
@@ -255,18 +266,22 @@ class EmployeeManagementController extends Controller
         $employee = Employee::with(['department', 'team', 'leavePolicy', 'user'])->findOrFail($id);
         $year = Carbon::now()->year;
 
+        $allowedLeaveTypes = $employee->leaveTypesForGender(LeaveType::where('is_active', true)->get());
+        $allowedLeaveTypeIds = $allowedLeaveTypes->pluck('id');
         $balances = LeaveBalance::with('leaveType')
             ->where('employee_id', $employee->id)
+            ->whereIn('leave_type_id', $allowedLeaveTypeIds)
             ->where('year', $year)
             ->get();
 
         $transactions = $employee->transactions()
             ->with(['leaveType', 'creator'])
+            ->whereIn('leave_type_id', $allowedLeaveTypeIds)
             ->whereYear('created_at', $year)
             ->orderBy('id', 'desc')
             ->paginate(20);
 
-        $leaveTypes = LeaveType::where('is_active', true)->get();
+        $leaveTypes = $allowedLeaveTypes;
 
         return view('employees.leave_account', compact('employee', 'balances', 'transactions', 'leaveTypes', 'year'));
     }
@@ -284,6 +299,7 @@ class EmployeeManagementController extends Controller
 
         $employee = Employee::findOrFail($id);
         $leaveType = LeaveType::findOrFail($request->leave_type_id);
+        abort_unless($employee->leaveTypesForGender(collect([$leaveType]))->isNotEmpty(), 403, 'This leave type is not available for this employee.');
 
         try {
             $this->ledgerService->adjustBalance(

@@ -48,6 +48,9 @@ class DashboardController extends Controller
             ->get();
 
         $managerEmployeeIds = Employee::managerEmployeeIds($user);
+        $managerTeamMembers = Employee::with(['balances' => function ($query) use ($year) {
+            $query->where('year', $year)->whereHas('leaveType', fn ($type) => $type->where('code', 'annual'));
+        }])->whereIn('id', $managerEmployeeIds)->where('employment_status', 'active')->orderBy('first_name')->get();
         $pendingRequests = LeaveApplication::with(['employee.department', 'employee.user', 'leaveType'])
             ->whereIn('employee_id', $managerEmployeeIds)
             ->where('status', 'pending_manager')
@@ -74,7 +77,7 @@ class DashboardController extends Controller
 
         return view('dashboard.manager', compact(
             'totalEmployees', 'onLeaveToday', 'pendingRequests', 'upcomingLeave',
-            'annualDaysUsed', 'departments', 'year'
+            'annualDaysUsed', 'departments', 'year', 'managerTeamMembers'
         ));
     }
 
@@ -85,9 +88,10 @@ class DashboardController extends Controller
 
         // Ensure balances exist
         if ($employee) {
-            $leaveTypes = LeaveType::where('is_active', true)->get();
+            $leaveTypes = $employee->leaveTypesForGender(LeaveType::where('is_active', true)->get());
             $balances = LeaveBalance::with('leaveType')
                 ->where('employee_id', $employee->id)
+                ->whereIn('leave_type_id', $leaveTypes->pluck('id'))
                 ->where('year', $year)
                 ->get();
 
@@ -137,8 +141,11 @@ class DashboardController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        // Get team members assigned to this lead
-        $teamMembers = Employee::with(['user', 'department', 'team'])
+        // Get team members assigned to this lead, with this year's annual balance.
+        $year = Carbon::now()->year;
+        $teamMembers = Employee::with(['user', 'department', 'team', 'balances' => function ($query) use ($year) {
+            $query->where('year', $year)->whereHas('leaveType', fn ($type) => $type->where('code', 'annual'));
+        }])
             ->where(function ($q) use ($user, $employee) {
                 $q->where('team_lead_id', $user->id);
                 if ($employee && $employee->team_id) {
@@ -174,13 +181,17 @@ class DashboardController extends Controller
             ->take(8)
             ->get();
 
+        $coverCandidatesByApplication = $pendingRequests->mapWithKeys(fn ($application) => [
+            $application->id => Employee::coverageCandidatesFor($application, $user->id),
+        ]);
+
         return view('dashboard.team_lead', compact(
             'user',
             'employee',
             'teamMembers',
             'pendingRequests',
             'onLeaveToday',
-            'upcomingTeamLeave'
+            'upcomingTeamLeave', 'year', 'coverCandidatesByApplication'
         ));
     }
 
@@ -204,15 +215,11 @@ class DashboardController extends Controller
             ->where('end_date', $today)
             ->get();
 
-        $pendingApprovals = LeaveApplication::with(['employee.department', 'leaveType', 'approvals.approver'])
-            ->where('status', 'pending_hr')
-            ->orderBy('is_emergency', 'desc')
-            ->orderBy('created_at', 'asc')
-            ->get();
+        $pendingApprovals = collect();
 
         $emergencyRequests = LeaveApplication::with(['employee.department', 'leaveType'])
             ->where('is_emergency', true)
-            ->where('status', 'pending_hr')
+            ->whereIn('status', ['pending_team_lead', 'pending_manager'])
             ->get();
 
         // Leave days used

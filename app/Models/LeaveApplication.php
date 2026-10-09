@@ -11,6 +11,7 @@ class LeaveApplication extends Model
     protected $fillable = [
         'application_number',
         'employee_id',
+        'cover_employee_id',
         'leave_type_id',
         'start_date',
         'end_date',
@@ -49,6 +50,11 @@ class LeaveApplication extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function coverEmployee(): BelongsTo
+    {
+        return $this->belongsTo(Employee::class, 'cover_employee_id');
     }
 
     public function leaveType(): BelongsTo

@@ -47,7 +47,7 @@ class LeaveApplicationController extends Controller
         }
 
         $applications = $query->orderBy('created_at', 'desc')->paginate(15);
-        $leaveTypes = LeaveType::where('is_active', true)->get();
+        $leaveTypes = $employee->leaveTypesForGender(LeaveType::where('is_active', true)->get());
 
         return view('leave.index', compact('applications', 'leaveTypes', 'employee'));
     }
@@ -61,7 +61,7 @@ class LeaveApplicationController extends Controller
             return redirect()->route('dashboard')->with('error', 'Employee profile not found.');
         }
 
-        $leaveTypes = LeaveType::where('is_active', true)->get();
+        $leaveTypes = $employee->leaveTypesForGender(LeaveType::where('is_active', true)->get());
 
         $existingLeaveDates = [];
         $activeApplications = LeaveApplication::where('employee_id', $employee->id)
@@ -140,6 +140,7 @@ class LeaveApplicationController extends Controller
         ]);
 
         $leaveType = LeaveType::findOrFail($request->leave_type_id);
+        abort_unless($employee->leaveTypesForGender(collect([$leaveType]))->isNotEmpty(), 403, 'This leave type is not available for your gender.');
         $startDate = $request->start_date;
         $endDate = $request->end_date;
         $isHalfDay = filter_var($request->is_half_day, FILTER_VALIDATE_BOOLEAN);
@@ -187,6 +188,9 @@ class LeaveApplicationController extends Controller
         ]);
 
         $leaveType = LeaveType::findOrFail($validated['leave_type_id']);
+        if ($employee->leaveTypesForGender(collect([$leaveType]))->isEmpty()) {
+            return back()->withInput()->withErrors(['leave_type_id' => 'This leave type is not available for your gender.']);
+        }
         $reasonIsRequired = $request->boolean('is_emergency')
             || $leaveType->requires_reason
             || $leaveType->is_emergency_type;
@@ -199,6 +203,9 @@ class LeaveApplicationController extends Controller
             $validated['reason'] = $request->input('reason') ?: null;
         }
 
+        $isEmergencyApplication = $request->boolean('is_emergency')
+            || $leaveType->is_emergency_type
+            || $leaveType->code === 'emergency';
         $medicalDocumentRequired = $leaveType->isMedicalLeave();
         $maternityDocumentRequired = $leaveType->isMaternityLeave();
         $manualAttachmentExpected = !$request->hasFile('attachment')
@@ -207,7 +214,9 @@ class LeaveApplicationController extends Controller
         $daysDiff = Carbon::parse($validated['start_date'])->diffInDays(Carbon::parse($validated['end_date'])) + 1;
         $attachmentRequired = $medicalDocumentRequired
             || $maternityDocumentRequired
-            || ($leaveType->requires_attachment && $daysDiff > $leaveType->attachment_required_after_days);
+            || ($leaveType->requires_attachment
+                && $daysDiff > $leaveType->attachment_required_after_days
+                && ($leaveType->code !== 'annual' || $isEmergencyApplication));
 
         if ($attachmentRequired && !$request->hasFile('attachment') && !$manualAttachmentExpected) {
             $documentDescription = $maternityDocumentRequired
@@ -241,6 +250,7 @@ class LeaveApplicationController extends Controller
             'employee.user',
             'employee.department',
             'employee.team',
+            'coverEmployee',
             'leaveType',
             'applicationDays',
             'approvals.approver',
@@ -255,15 +265,20 @@ class LeaveApplicationController extends Controller
 
         // Authorization check: Employee can view own, Team Lead can view supervisees, HR can view all
         $isOwner = $employee && $application->employee_id === $employee->id;
+        $isCover = $employee && $application->cover_employee_id === $employee->id;
         $isTeamLead = $user->role === 'team_lead' && ($application->employee->team_lead_id === $user->id || $application->employee->team_id === $employee?->team_id);
         $isHr = $user->isHr();
         $isManager = $user->isManager();
 
-        if (!$isOwner && !$isTeamLead && !$isHr && !$isManager) {
+        if (!$isOwner && !$isCover && !$isTeamLead && !$isHr && !$isManager) {
             abort(403, 'Unauthorized access to leave application.');
         }
 
-        return view('leave.show', compact('application', 'isOwner', 'isTeamLead', 'isHr', 'isManager'));
+        $coverCandidates = $isTeamLead && $application->status === 'pending_team_lead'
+            ? Employee::coverageCandidatesFor($application, $user->id)
+            : collect();
+
+        return view('leave.show', compact('application', 'isOwner', 'isCover', 'isTeamLead', 'isHr', 'isManager', 'coverCandidates'));
     }
 
     public function requestCancellation(Request $request, $id)
@@ -307,6 +322,7 @@ class LeaveApplicationController extends Controller
 
         $transactions = $employee->transactions()
             ->with(['leaveType', 'creator'])
+            ->whereIn('leave_type_id', $employee->leaveTypesForGender(LeaveType::where('is_active', true)->get())->pluck('id'))
             ->whereYear('created_at', $year)
             ->orderBy('id', 'desc')
             ->get();
