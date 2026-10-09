@@ -30,7 +30,7 @@ class EmployeeManagementController extends Controller
 
     public function index(Request $request)
     {
-        $query = Employee::with(['user', 'department', 'team', 'teamLead', 'leavePolicy']);
+        $query = Employee::whereNull('deleted_at')->with(['user', 'department', 'team', 'teamLead', 'leavePolicy']);
 
         if ($request->filled('search')) {
             $s = $request->search;
@@ -154,7 +154,7 @@ class EmployeeManagementController extends Controller
 
     public function edit($id)
     {
-        $employee = Employee::with('user')->findOrFail($id);
+        $employee = Employee::whereNull('deleted_at')->with('user')->findOrFail($id);
         $departments = Department::where('is_active', true)->get();
         $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'administrator', 'manager'])->get();
         $policies = LeavePolicy::all();
@@ -164,7 +164,7 @@ class EmployeeManagementController extends Controller
 
     public function update(Request $request, $id)
     {
-        $employee = Employee::findOrFail($id);
+        $employee = Employee::whereNull('deleted_at')->findOrFail($id);
         $user = $employee->user;
         $previousManagerId = $employee->manager_id;
         $previousTeamLeadId = $employee->team_lead_id;
@@ -222,7 +222,7 @@ class EmployeeManagementController extends Controller
 
     public function toggleStatus($id)
     {
-        $employee = Employee::findOrFail($id);
+        $employee = Employee::whereNull('deleted_at')->findOrFail($id);
         $user = $employee->user;
 
         if ($employee->employment_status === 'active') {
@@ -246,7 +246,7 @@ class EmployeeManagementController extends Controller
     public function resetPassword(Request $request, $id)
     {
         $request->validate(['password' => 'required|string|min:6|confirmed']);
-        $employee = Employee::findOrFail($id);
+        $employee = Employee::whereNull('deleted_at')->findOrFail($id);
         $user = $employee->user;
 
         if ($user) {
@@ -263,7 +263,7 @@ class EmployeeManagementController extends Controller
      */
     public function leaveAccount($id)
     {
-        $employee = Employee::with(['department', 'team', 'leavePolicy', 'user'])->findOrFail($id);
+        $employee = Employee::whereNull('deleted_at')->with(['department', 'team', 'leavePolicy', 'user'])->findOrFail($id);
         $year = Carbon::now()->year;
 
         $allowedLeaveTypes = $employee->leaveTypesForGender(LeaveType::where('is_active', true)->get());
@@ -297,7 +297,7 @@ class EmployeeManagementController extends Controller
             'reason' => ['required', 'string', 'min:5', 'max:500'],
         ]);
 
-        $employee = Employee::findOrFail($id);
+        $employee = Employee::whereNull('deleted_at')->findOrFail($id);
         $leaveType = LeaveType::findOrFail($request->leave_type_id);
         abort_unless($employee->leaveTypesForGender(collect([$leaveType]))->isNotEmpty(), 403, 'This leave type is not available for this employee.');
 
@@ -320,6 +320,42 @@ class EmployeeManagementController extends Controller
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
         }
+    }
+
+    public function destroy($id)
+    {
+        $employee = Employee::whereNull('deleted_at')->with('user')->findOrFail($id);
+
+        abort_if((int) $employee->user_id === (int) Auth::id(), 403, 'You cannot remove your own employee account.');
+        $previousStatus = $employee->employment_status;
+
+        DB::transaction(function () use ($employee, $previousStatus) {
+            $archivedAt = now();
+            $employee->update([
+                'employment_status' => 'deactivated',
+                'deleted_at' => $archivedAt,
+            ]);
+
+            if ($employee->user) {
+                $employee->user->update(['is_active' => false]);
+            }
+
+            AuditLog::log(
+                'employee_archived',
+                'Employee',
+                $employee->id,
+                "Employee {$employee->full_name} removed from the active directory by HR; leave history retained.",
+                [
+                    'employee_number' => $employee->employee_number,
+                    'name' => $employee->full_name,
+                    'email' => $employee->email,
+                    'employment_status' => $previousStatus,
+                ],
+                ['deleted_at' => $archivedAt->toDateTimeString(), 'login_disabled' => true]
+            );
+        });
+
+        return redirect()->route('employees.index')->with('success', "{$employee->full_name} was removed from the employee directory. Their login is disabled and leave history is retained.");
     }
 
     private function notifyAssignedManagersAndTeamLeads(array $userIds, Employee $employee): void

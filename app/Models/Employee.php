@@ -26,6 +26,7 @@ class Employee extends Model
         'employment_status',
         'leave_policy_id',
         'annual_entitlement',
+        'deleted_at',
     ];
 
     protected function casts(): array
@@ -33,6 +34,7 @@ class Employee extends Model
         return [
             'date_employed' => 'date',
             'annual_entitlement' => 'decimal:2',
+            'deleted_at' => 'datetime',
         ];
     }
 

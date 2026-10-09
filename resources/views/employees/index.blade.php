@@ -113,6 +113,11 @@
                                         {{ $emp->employment_status === 'active' ? 'Deactivate' : 'Reactivate' }}
                                     </button>
                                 </form>
+                                <form action="{{ route('employees.destroy', $emp->id) }}" method="POST" class="inline" onsubmit="return confirm('Remove this employee from the directory and disable their login? Their leave history will be retained.')">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="text-xs text-rose-700 hover:text-rose-900">Delete</button>
+                                </form>
                             </td>
                         </tr>
                     @empty
