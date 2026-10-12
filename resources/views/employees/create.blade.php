@@ -107,7 +107,8 @@
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Entitlement (Days) <span class="text-rose-500">*</span></label>
-                    <input type="number" id="annual_entitlement" step="0.5" name="annual_entitlement" readonly value="{{ old('annual_entitlement', 21) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <input type="number" id="annual_entitlement" step="0.5" min="0" max="365" name="annual_entitlement" required value="{{ old('annual_entitlement', 21) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <p class="mt-1 text-[10px] text-slate-500">HR can enter the employee’s annual leave entitlement in days.</p>
                 </div>
             </div>
 
@@ -141,21 +142,3 @@
 </div>
 @endsection
 
-@push('scripts')
-<script>
-    (() => {
-        const hiredAt = document.getElementById('date_employed');
-        const entitlement = document.getElementById('annual_entitlement');
-        const refreshEntitlement = () => {
-            if (!hiredAt.value) return;
-            const [year, month, day] = hiredAt.value.split('-').map(Number);
-            const today = new Date();
-            let years = today.getFullYear() - year;
-            if (today.getMonth() + 1 < month || (today.getMonth() + 1 === month && today.getDate() < day)) years--;
-            entitlement.value = years >= 7 ? 33 : (years > 3 ? 27 : 21);
-        };
-        hiredAt.addEventListener('change', refreshEntitlement);
-        refreshEntitlement();
-    })();
-</script>
-@endpush

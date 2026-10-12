@@ -86,8 +86,6 @@ class EmployeeManagementController extends Controller
         ]);
 
         $generatedPassword = Str::password(14);
-        $validated['annual_entitlement'] = (new Employee(['date_employed' => $validated['date_employed']]))->annualLeaveEntitlement();
-
         $employee = DB::transaction(function () use ($validated, $generatedPassword) {
             $user = User::create([
                 'name' => "{$validated['first_name']} {$validated['last_name']}",
@@ -199,8 +197,27 @@ class EmployeeManagementController extends Controller
             ]);
 
             $employee->update($validated);
-            $employee->annual_entitlement = $employee->annualLeaveEntitlement();
-            $employee->save();
+
+            $annualLeaveType = LeaveType::where('code', 'annual')->first();
+            if ($annualLeaveType) {
+                $balance = $this->ledgerService->getOrCreateBalance($employee, $annualLeaveType, Carbon::now()->year);
+                $previousAnnualEntitlement = (float) $balance->entitled_days;
+                $balance->entitled_days = (float) $validated['annual_entitlement'];
+                $balance->save();
+
+                $adjustment = (float) $validated['annual_entitlement'] - $previousAnnualEntitlement;
+                if ($adjustment != 0.0) {
+                    LeaveTransaction::create([
+                        'employee_id' => $employee->id,
+                        'leave_type_id' => $annualLeaveType->id,
+                        'type' => 'hr_entitlement_update',
+                        'amount' => $adjustment,
+                        'running_balance' => $balance->available_days,
+                        'reason' => 'Annual leave entitlement updated by HR',
+                        'created_by' => Auth::id(),
+                    ]);
+                }
+            }
 
             AuditLog::log('employee_updated', 'Employee', $employee->id, "Employee {$employee->full_name} updated by HR");
         });

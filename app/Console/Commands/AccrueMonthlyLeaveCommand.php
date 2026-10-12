@@ -37,7 +37,7 @@ class AccrueMonthlyLeaveCommand extends Command
             ->chunkById(100, function ($employees) use ($date, $period, $leaveType, &$credited) {
                 foreach ($employees as $employee) {
                     $reason = "Monthly annual leave accrual {$period}";
-                    $entitlement = $employee->annualLeaveEntitlement($date);
+                    $entitlement = (float) $employee->annual_entitlement;
 
                     DB::transaction(function () use ($employee, $date, $period, $leaveType, $reason, $entitlement, &$credited) {
                         $alreadyCredited = LeaveTransaction::where('employee_id', $employee->id)

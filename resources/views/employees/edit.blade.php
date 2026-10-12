@@ -110,8 +110,9 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Days</label>
-                    <input type="number" step="0.5" name="annual_entitlement" readonly value="{{ old('annual_entitlement', $employee->annual_entitlement) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Entitlement (Days) <span class="text-rose-500">*</span></label>
+                    <input type="number" step="0.5" min="0" max="365" name="annual_entitlement" required value="{{ old('annual_entitlement', $employee->annual_entitlement) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <p class="mt-1 text-[10px] text-slate-500">Changing this updates the current year’s annual leave entitlement.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Employment Status</label>
