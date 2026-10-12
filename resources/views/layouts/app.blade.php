@@ -152,8 +152,10 @@
                                 <div class="px-4 py-3">
                                     <div class="flex items-center justify-between gap-3">
                                         <span class="text-sm font-semibold text-slate-900">Notifications</span>
-                                        <button id="enable-desktop-notifications" type="button" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                                            Enable desktop alerts
+                                        <label for="desktop-alert-toggle" class="text-xs text-slate-600">Alerts</label>
+                                        <button id="desktop-alert-toggle" type="button" role="switch" aria-checked="false" aria-label="Desktop alerts" title="Desktop alerts" class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full bg-slate-300 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                                            <span class="sr-only">Toggle desktop alerts</span>
+                                            <span id="desktop-alert-toggle-thumb" class="pointer-events-none inline-block h-5 w-5 translate-x-0.5 rounded-full bg-white shadow ring-0 transition-transform"></span>
                                         </button>
                                         @if($unreadCount > 0)
                                             <form action="{{ route('notifications.readAll') }}" method="POST">

@@ -23,12 +23,14 @@ Alpine.data('dashboardGreeting', (userId) => ({
 function setupDesktopNotifications() {
     const feedUrl = document.body.dataset.desktopNotificationFeed;
     const userId = document.body.dataset.notificationUser;
-    const button = document.getElementById('enable-desktop-notifications');
+    const toggle = document.getElementById('desktop-alert-toggle');
+    const toggleThumb = document.getElementById('desktop-alert-toggle-thumb');
     const feedback = document.getElementById('desktop-alert-feedback');
+    const enabledKey = `leaveflow-desktop-alerts-enabled-${userId}`;
 
     if (!feedUrl || !userId || !('Notification' in window)) {
-        if (button) {
-            button.hidden = true;
+        if (toggle) {
+            toggle.hidden = true;
         }
         if (feedback && !('Notification' in window)) {
             feedback.textContent = 'This browser does not support desktop notifications.';
@@ -46,13 +48,23 @@ function setupDesktopNotifications() {
 
     let after = new Date(Date.now() - 15000).toISOString();
     let polling = false;
+    let alertsEnabled = false;
+    try {
+        const preference = localStorage.getItem(enabledKey);
+        alertsEnabled = preference === null
+            ? Notification.permission === 'granted'
+            : preference === 'true';
+    } catch (_) {
+        alertsEnabled = Notification.permission === 'granted';
+    }
 
-    const updateButton = () => {
-        if (!button) return;
-        button.textContent = Notification.permission === 'granted'
-            ? 'Desktop alerts enabled'
-            : (Notification.permission === 'denied' ? 'Allow alerts in browser settings' : 'Enable desktop alerts');
-        button.disabled = Notification.permission === 'denied';
+    const updateToggle = () => {
+        if (!toggle) return;
+        toggle.setAttribute('aria-checked', alertsEnabled ? 'true' : 'false');
+        toggle.classList.toggle('bg-blue-600', alertsEnabled);
+        toggle.classList.toggle('bg-slate-300', !alertsEnabled);
+        toggleThumb?.classList.toggle('translate-x-5', alertsEnabled);
+        toggleThumb?.classList.toggle('translate-x-0.5', !alertsEnabled);
     };
 
     const showFeedback = (message, isError = false) => {
@@ -63,7 +75,7 @@ function setupDesktopNotifications() {
     };
 
     const poll = async () => {
-        if (polling || Notification.permission !== 'granted') return;
+        if (!alertsEnabled || polling || Notification.permission !== 'granted') return;
         polling = true;
 
         try {
@@ -111,37 +123,71 @@ function setupDesktopNotifications() {
     };
 
     const startPolling = () => {
-        if (Notification.permission !== 'granted' || window.leaveflowNotificationTimer) return;
+        if (!alertsEnabled || Notification.permission !== 'granted' || window.leaveflowNotificationTimer) return;
         poll();
         window.leaveflowNotificationTimer = window.setInterval(poll, 15000);
     };
 
-    updateButton();
-    if (Notification.permission === 'granted') {
-        showFeedback('Desktop alerts are enabled.');
+    const stopPolling = () => {
+        if (window.leaveflowNotificationTimer) {
+            window.clearInterval(window.leaveflowNotificationTimer);
+            window.leaveflowNotificationTimer = null;
+        }
+    };
+
+    if (Notification.permission !== 'granted') {
+        alertsEnabled = false;
+        try { localStorage.setItem(enabledKey, 'false'); } catch (_) {}
+    }
+    updateToggle();
+    if (alertsEnabled) {
+        showFeedback('');
         startPolling();
     } else if (Notification.permission === 'denied') {
         showFeedback('Desktop alerts are blocked. Allow notifications for this site in your browser settings.', true);
     }
 
-    button?.addEventListener('click', async () => {
+    toggle?.addEventListener('click', async () => {
+        if (alertsEnabled) {
+            alertsEnabled = false;
+            try { localStorage.setItem(enabledKey, 'false'); } catch (_) {}
+            stopPolling();
+            updateToggle();
+            showFeedback('Desktop alerts are off.');
+            return;
+        }
+
         if (Notification.permission === 'default') {
             try {
                 await Notification.requestPermission();
             } catch (_) {
                 showFeedback('Your browser could not request notification permission. Check its site settings.', true);
+                updateToggle();
                 return;
             }
         }
-        updateButton();
-        startPolling();
 
         if (Notification.permission === 'granted') {
-            showFeedback('Desktop alerts are enabled. Keep LeaveFlow open in a tab to receive new alerts.');
+            alertsEnabled = true;
+            try { localStorage.setItem(enabledKey, 'true'); } catch (_) {}
+            updateToggle();
+            startPolling();
+            showFeedback('');
         } else if (Notification.permission === 'denied') {
             showFeedback('Desktop alerts are blocked. Allow notifications for this site in your browser settings.', true);
         } else {
-            showFeedback('Permission was not granted. Click Enable desktop alerts and allow notifications in your browser prompt.', true);
+            showFeedback('Permission was not granted. Allow notifications in the browser prompt to turn alerts on.', true);
+        }
+    });
+
+    window.addEventListener('storage', (event) => {
+        if (event.key !== enabledKey) return;
+        alertsEnabled = event.newValue === 'true' && Notification.permission === 'granted';
+        updateToggle();
+        if (alertsEnabled) {
+            startPolling();
+        } else {
+            stopPolling();
         }
     });
 }
