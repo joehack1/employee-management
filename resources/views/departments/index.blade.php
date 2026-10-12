@@ -28,8 +28,15 @@
                         </div>
                         <p class="text-xs text-slate-500 mt-1">{{ $dept->description ?? 'No description' }}</p>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right flex flex-col items-end gap-2">
                         <span class="text-xs font-bold text-slate-700">{{ $dept->employees->count() }} staff</span>
+                        @if($dept->employees->isEmpty() && $dept->children_count === 0)
+                            <form action="{{ route('departments.destroy', $dept->id) }}" method="POST" onsubmit="return confirm('Delete {{ addslashes($dept->name) }}? This will also delete its sub-teams.');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="text-[10px] font-semibold text-red-600 hover:text-red-800">Delete department</button>
+                            </form>
+                        @endif
                     </div>
                 </div>
 

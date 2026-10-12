@@ -102,6 +102,7 @@ Route::middleware('auth')->group(function () {
         // Departments & Teams
         Route::get('/departments', [DepartmentController::class, 'index'])->name('departments.index');
         Route::post('/departments', [DepartmentController::class, 'storeDepartment'])->name('departments.store');
+        Route::delete('/departments/{id}', [DepartmentController::class, 'destroy'])->name('departments.destroy');
         Route::post('/teams', [DepartmentController::class, 'storeTeam'])->name('teams.store');
         Route::post('/departments/{id}/toggle', [DepartmentController::class, 'toggleDepartment'])->name('departments.toggle');
 

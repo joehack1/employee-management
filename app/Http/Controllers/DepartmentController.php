@@ -29,7 +29,9 @@ class DepartmentController extends Controller
 
     public function index()
     {
-        $departments = Department::with(['teams.leader', 'parent', 'employees'])->get();
+        $departments = Department::with(['teams.leader', 'parent', 'employees'])
+            ->withCount('children')
+            ->get();
         $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'administrator'])->get();
 
         return view('departments.index', compact('departments', 'teamLeads'));
@@ -74,5 +76,21 @@ class DepartmentController extends Controller
         AuditLog::log('department_toggled', 'Department', $dept->id, "Toggled status of department {$dept->name}");
 
         return back()->with('success', "Department status updated.");
+    }
+
+    public function destroy($id)
+    {
+        $department = Department::findOrFail($id);
+
+        if ($department->employees()->exists() || $department->children()->exists()) {
+            return back()->with('error', 'Departments with employees or sub-departments cannot be deleted.');
+        }
+
+        $name = $department->name;
+        $department->delete();
+
+        AuditLog::log('department_deleted', 'Department', $department->id, "Deleted department {$name}");
+
+        return back()->with('success', 'Department deleted successfully.');
     }
 }
