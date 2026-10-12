@@ -32,7 +32,10 @@
                         <option value="{{ $lt->id }}"
                                 data-code="{{ $lt->code }}"
                                 data-requires-attachment="{{ $lt->requires_attachment ? '1' : '0' }}"
+                                data-attachment-required-after-days="{{ $lt->attachment_required_after_days }}"
                                 data-has-document-rule="{{ ($lt->isMedicalLeave() || $lt->isMaternityLeave() || $lt->requires_attachment) ? '1' : '0' }}"
+                                data-is-medical-leave="{{ $lt->isMedicalLeave() ? '1' : '0' }}"
+                                data-is-maternity-leave="{{ $lt->isMaternityLeave() ? '1' : '0' }}"
                                 data-requires-reason="{{ $lt->requires_reason ? '1' : '0' }}"
                                 data-is-emergency="{{ $lt->is_emergency_type ? '1' : '0' }}"
                                 {{ old('leave_type_id', request('leave_type_id')) == $lt->id ? 'selected' : '' }}>
@@ -163,19 +166,15 @@
 
             <!-- Supporting Document Field -->
             <div x-show="!isAnnualLeave || isEmergency" x-cloak
-                 x-effect="if (isAnnualLeave && !isEmergency) { $refs.attachment.value = ''; $refs.manualAttachmentExpected.checked = false; }">
+                 x-effect="if (isAnnualLeave && !isEmergency) { $refs.attachment.value = ''; }">
                 <label for="attachment" class="block text-xs font-bold text-slate-700 uppercase tracking-wider">
-                    Supporting Attachment <span x-show="leaveTypeHasDocumentRule" class="text-rose-600 font-semibold">(Document rules apply; hand delivery is allowed)</span>
+                    Supporting Attachment <span x-show="attachmentRequired" class="text-rose-600 font-semibold">(Required)</span>
                 </label>
                 <div class="mt-1.5 flex items-center gap-3">
-                    <input x-ref="attachment" type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl p-1">
+                    <input x-ref="attachment" type="file" id="attachment" name="attachment" accept=".pdf,.jpg,.jpeg,.png,.doc,.docx" :required="attachmentRequired" class="block w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-slate-300 rounded-xl p-1">
                 </div>
-                <p class="text-[11px] text-slate-500 mt-1">Attach a supporting document here, or check below if you will deliver one to HR personally.</p>
+                <p class="text-[11px] text-slate-500 mt-1" x-text="attachmentRequired ? 'Upload the required supporting document before submitting.' : 'You may attach a supporting document if available.'"></p>
                 <p class="text-[11px] text-slate-400 mt-1">Accepted formats: PDF, JPG, PNG, DOC, DOCX (Max 10MB). Uploaded files are stored securely.</p>
-                <label class="mt-3 flex items-start gap-2 text-xs text-slate-700">
-                    <input x-ref="manualAttachmentExpected" type="checkbox" name="manual_attachment_expected" value="1" {{ old('manual_attachment_expected') ? 'checked' : '' }} class="mt-0.5 rounded border-slate-300 text-blue-600">
-                    <span>I will deliver the supporting document to HR personally.</span>
-                </label>
                 @error('attachment')<p class="mt-2 text-xs text-rose-600">{{ $message }}</p>@enderror
             </div>
 
@@ -206,6 +205,11 @@ function leaveApplicationForm() {
         isEmergency: {{ old('is_emergency') ? 'true' : 'false' }},
         isAnnualLeave: false,
         leaveTypeHasDocumentRule: false,
+        attachmentRequired: false,
+        requiresAttachment: false,
+        attachmentRequiredAfterDays: 0,
+        medicalDocumentRequired: false,
+        maternityDocumentRequired: false,
         leaveTypeRequiresReason: false,
         calcResult: null,
 
@@ -240,12 +244,29 @@ function leaveApplicationForm() {
             if (opt) {
                 this.isAnnualLeave = opt.getAttribute('data-code') === 'annual';
                 this.leaveTypeHasDocumentRule = opt.getAttribute('data-has-document-rule') === '1';
+                this.requiresAttachment = opt.getAttribute('data-requires-attachment') === '1';
+                this.attachmentRequiredAfterDays = Number(opt.getAttribute('data-attachment-required-after-days') || 0);
+                this.medicalDocumentRequired = opt.getAttribute('data-is-medical-leave') === '1';
+                this.maternityDocumentRequired = opt.getAttribute('data-is-maternity-leave') === '1';
                 this.leaveTypeRequiresReason = opt.getAttribute('data-requires-reason') === '1';
             } else {
                 this.isAnnualLeave = false;
                 this.leaveTypeHasDocumentRule = false;
+                this.requiresAttachment = false;
+                this.attachmentRequiredAfterDays = 0;
+                this.medicalDocumentRequired = false;
+                this.maternityDocumentRequired = false;
                 this.leaveTypeRequiresReason = false;
             }
+            const numberOfDays = this.startDate && this.endDate
+                ? Math.round((Date.parse(`${this.endDate}T00:00:00Z`) - Date.parse(`${this.startDate}T00:00:00Z`)) / 86400000) + 1
+                : 0;
+            const emergencyApplication = this.isEmergency || opt?.getAttribute('data-is-emergency') === '1';
+            this.attachmentRequired = this.medicalDocumentRequired
+                || this.maternityDocumentRequired
+                || (this.requiresAttachment
+                    && numberOfDays > this.attachmentRequiredAfterDays
+                    && (!this.isAnnualLeave || emergencyApplication));
         },
 
         recalculate() {

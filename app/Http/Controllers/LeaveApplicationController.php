@@ -183,7 +183,6 @@ class LeaveApplicationController extends Controller
             'half_day_type' => ['nullable', 'in:morning,afternoon'],
             'is_emergency' => ['nullable'],
             'reason' => ['nullable', 'string', 'max:2000'],
-            'manual_attachment_expected' => ['nullable', 'boolean'],
             'attachment' => ['nullable', 'file', 'max:10240', 'mimes:pdf,jpg,jpeg,png,doc,docx'],
         ]);
 
@@ -208,9 +207,7 @@ class LeaveApplicationController extends Controller
             || $leaveType->code === 'emergency';
         $medicalDocumentRequired = $leaveType->isMedicalLeave();
         $maternityDocumentRequired = $leaveType->isMaternityLeave();
-        $manualAttachmentExpected = !$request->hasFile('attachment')
-            && filter_var($request->input('manual_attachment_expected'), FILTER_VALIDATE_BOOLEAN);
-        $validated['manual_attachment_expected'] = $manualAttachmentExpected;
+        $validated['manual_attachment_expected'] = false;
         $daysDiff = Carbon::parse($validated['start_date'])->diffInDays(Carbon::parse($validated['end_date'])) + 1;
         $attachmentRequired = $medicalDocumentRequired
             || $maternityDocumentRequired
@@ -218,13 +215,13 @@ class LeaveApplicationController extends Controller
                 && $daysDiff > $leaveType->attachment_required_after_days
                 && ($leaveType->code !== 'annual' || $isEmergencyApplication));
 
-        if ($attachmentRequired && !$request->hasFile('attachment') && !$manualAttachmentExpected) {
+        if ($attachmentRequired && !$request->hasFile('attachment')) {
             $documentDescription = $maternityDocumentRequired
                 ? 'A maternity supporting document'
                 : ($medicalDocumentRequired ? 'A medical supporting document' : 'A supporting document');
 
             return back()->withInput()->withErrors([
-                'attachment' => "{$documentDescription} is required. Attach it here or check that you will deliver it manually to HR.",
+                'attachment' => "{$documentDescription} is required. Upload it before submitting your request.",
             ]);
         }
 
