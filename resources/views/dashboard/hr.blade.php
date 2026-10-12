@@ -33,7 +33,7 @@
     </div>
 
     <!-- Requirement 9: Executive Statistics Metrics Grid -->
-    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
         <!-- Metric 1: Total Employees -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
             <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Total Active Staff</p>
@@ -55,21 +55,14 @@
             <span class="text-[10px] text-emerald-600 mt-1 inline-block">resuming work</span>
         </div>
 
-        <!-- Metric 4: HR actions -->
-        <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">HR Sign-Off</p>
-            <p class="text-lg font-extrabold text-emerald-600 mt-2">Not required</p>
-            <a href="{{ route('notifications.index') }}" class="text-[10px] text-blue-600 font-bold hover:underline mt-1 inline-block">View notifications &rarr;</a>
-        </div>
-
-        <!-- Metric 5: Annual Leave Used -->
+        <!-- Metric 4: Annual Leave Used -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
             <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Annual Leave Used</p>
             <p class="text-2xl font-extrabold text-blue-700 mt-1">{{ number_format($annualDaysUsed, 1) }}</p>
             <span class="text-[10px] text-slate-400 mt-1 inline-block">days YTD</span>
         </div>
 
-        <!-- Metric 6: Sick Leave Used -->
+        <!-- Metric 5: Sick Leave Used -->
         <div class="bg-white p-5 rounded-3xl border border-slate-200 shadow-xs">
             <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Sick Leave Used</p>
             <p class="text-2xl font-extrabold text-purple-600 mt-1">{{ number_format($sickDaysUsed, 1) }}</p>
