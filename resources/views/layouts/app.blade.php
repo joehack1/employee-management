@@ -26,7 +26,7 @@
         }
     </style>
 </head>
-<body class="h-full font-sans antialiased text-slate-800">
+<body class="h-full font-sans antialiased text-slate-800" data-desktop-notification-feed="{{ route('notifications.desktop-feed') }}" data-notification-user="{{ auth()->id() }}">
     <div class="min-h-full flex flex-col">
         <!-- Top Navigation -->
         <header x-data="{ mobileOpen: false }" class="bg-white border-b border-slate-200 sticky top-0 z-30 shadow-xs">
@@ -151,6 +151,9 @@
                             <div x-show="open" x-cloak class="absolute right-0 mt-2 w-[min(24rem,calc(100vw-2rem))] sm:w-96 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-50">
                                 <div class="px-4 py-3 flex items-center justify-between">
                                     <span class="text-sm font-semibold text-slate-900">Notifications</span>
+                                    <button id="enable-desktop-notifications" type="button" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                        Enable desktop alerts
+                                    </button>
                                     @if($unreadCount > 0)
                                         <form action="{{ route('notifications.readAll') }}" method="POST">
                                             @csrf

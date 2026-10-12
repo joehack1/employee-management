@@ -7,6 +7,27 @@ use Illuminate\Support\Facades\Auth;
 
 class NotificationController extends Controller
 {
+    public function desktopFeed(Request $request)
+    {
+        $validated = $request->validate([
+            'after' => ['required', 'date'],
+        ]);
+
+        $notifications = Auth::user()->notifications()
+            ->where('created_at', '>=', $validated['after'])
+            ->orderBy('created_at')
+            ->limit(50)
+            ->get(['id', 'data', 'created_at']);
+
+        return response()->json($notifications->map(fn ($notification) => [
+            'id' => $notification->id,
+            'title' => $notification->data['title'] ?? 'LeaveFlow notification',
+            'message' => $notification->data['message'] ?? '',
+            'url' => $notification->data['url'] ?? route('notifications.index'),
+            'created_at' => $notification->created_at->toISOString(),
+        ]));
+    }
+
     public function index()
     {
         $notifications = Auth::user()->notifications()->paginate(20);
