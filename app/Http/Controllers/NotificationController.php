@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Carbon\Carbon;
 
 class NotificationController extends Controller
 {
@@ -13,8 +14,12 @@ class NotificationController extends Controller
             'after' => ['required', 'date'],
         ]);
 
+        $after = Carbon::parse($validated['after'])
+            ->setTimezone(config('app.timezone'))
+            ->format('Y-m-d H:i:s');
+
         $notifications = Auth::user()->notifications()
-            ->where('created_at', '>=', $validated['after'])
+            ->where('created_at', '>=', $after)
             ->orderBy('created_at')
             ->limit(50)
             ->get(['id', 'data', 'created_at']);

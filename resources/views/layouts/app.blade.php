@@ -149,17 +149,20 @@
 
                             <!-- Notification Dropdown -->
                             <div x-show="open" x-cloak class="absolute right-0 mt-2 w-[min(24rem,calc(100vw-2rem))] sm:w-96 rounded-2xl shadow-xl bg-white ring-1 ring-black/5 divide-y divide-slate-100 z-50">
-                                <div class="px-4 py-3 flex items-center justify-between">
-                                    <span class="text-sm font-semibold text-slate-900">Notifications</span>
-                                    <button id="enable-desktop-notifications" type="button" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
-                                        Enable desktop alerts
-                                    </button>
-                                    @if($unreadCount > 0)
-                                        <form action="{{ route('notifications.readAll') }}" method="POST">
-                                            @csrf
-                                            <button type="submit" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Mark all as read</button>
-                                        </form>
-                                    @endif
+                                <div class="px-4 py-3">
+                                    <div class="flex items-center justify-between gap-3">
+                                        <span class="text-sm font-semibold text-slate-900">Notifications</span>
+                                        <button id="enable-desktop-notifications" type="button" class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                            Enable desktop alerts
+                                        </button>
+                                        @if($unreadCount > 0)
+                                            <form action="{{ route('notifications.readAll') }}" method="POST">
+                                                @csrf
+                                                <button type="submit" class="text-xs text-blue-600 hover:text-blue-800 font-medium">Mark all as read</button>
+                                            </form>
+                                        @endif
+                                    </div>
+                                    <p id="desktop-alert-feedback" class="mt-2 text-[11px] text-slate-500" role="status" aria-live="polite"></p>
                                 </div>
                                 <div class="max-h-80 overflow-y-auto divide-y divide-slate-100">
                                     @forelse($recentNotes as $note)

@@ -24,10 +24,14 @@ function setupDesktopNotifications() {
     const feedUrl = document.body.dataset.desktopNotificationFeed;
     const userId = document.body.dataset.notificationUser;
     const button = document.getElementById('enable-desktop-notifications');
+    const feedback = document.getElementById('desktop-alert-feedback');
 
     if (!feedUrl || !userId || !('Notification' in window)) {
         if (button) {
             button.hidden = true;
+        }
+        if (feedback && !('Notification' in window)) {
+            feedback.textContent = 'This browser does not support desktop notifications.';
         }
         return;
     }
@@ -49,6 +53,13 @@ function setupDesktopNotifications() {
             ? 'Desktop alerts enabled'
             : (Notification.permission === 'denied' ? 'Allow alerts in browser settings' : 'Enable desktop alerts');
         button.disabled = Notification.permission === 'denied';
+    };
+
+    const showFeedback = (message, isError = false) => {
+        if (!feedback) return;
+        feedback.textContent = message;
+        feedback.classList.toggle('text-rose-600', isError);
+        feedback.classList.toggle('text-emerald-700', !isError);
     };
 
     const poll = async () => {
@@ -107,15 +118,31 @@ function setupDesktopNotifications() {
 
     updateButton();
     if (Notification.permission === 'granted') {
+        showFeedback('Desktop alerts are enabled.');
         startPolling();
+    } else if (Notification.permission === 'denied') {
+        showFeedback('Desktop alerts are blocked. Allow notifications for this site in your browser settings.', true);
     }
 
     button?.addEventListener('click', async () => {
         if (Notification.permission === 'default') {
-            await Notification.requestPermission();
+            try {
+                await Notification.requestPermission();
+            } catch (_) {
+                showFeedback('Your browser could not request notification permission. Check its site settings.', true);
+                return;
+            }
         }
         updateButton();
         startPolling();
+
+        if (Notification.permission === 'granted') {
+            showFeedback('Desktop alerts are enabled. Keep LeaveFlow open in a tab to receive new alerts.');
+        } else if (Notification.permission === 'denied') {
+            showFeedback('Desktop alerts are blocked. Allow notifications for this site in your browser settings.', true);
+        } else {
+            showFeedback('Permission was not granted. Click Enable desktop alerts and allow notifications in your browser prompt.', true);
+        }
     });
 }
 
