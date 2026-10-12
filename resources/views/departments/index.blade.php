@@ -71,31 +71,43 @@
         @endforeach
     </div>
 
-    <!-- Create Department Modal -->
-    <div x-show="openDeptModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
-        <div @click.outside="openDeptModal = false" class="bg-white rounded-3xl max-w-md w-full p-6 text-left shadow-2xl">
-            <h3 class="text-base font-bold text-slate-900">Add New Department</h3>
-            <form action="{{ route('departments.store') }}" method="POST" class="mt-4 space-y-3">
-                @csrf
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700">Department Name</label>
-                    <input type="text" name="name" required placeholder="e.g. Operations" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700">Code (e.g. OPS, ICT, FIN)</label>
-                    <input type="text" name="code" required placeholder="OPS" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs uppercase">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-700">Description</label>
-                    <textarea name="description" rows="2" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>
-                </div>
-                <div class="flex justify-end gap-2 pt-2">
-                    <button type="button" @click="openDeptModal = false" class="px-4 py-2 rounded-xl text-xs text-slate-600">Cancel</button>
-                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white">Save Department</button>
-                </div>
-            </form>
+    @if($departments->isEmpty())
+        <div class="rounded-3xl border border-dashed border-slate-300 bg-white px-6 py-12 text-center">
+            <h2 class="text-base font-bold text-slate-900">No departments yet</h2>
+            <p class="mt-1 text-sm text-slate-500">Create your first department to start organizing teams and employees.</p>
+            <button type="button" @click="openDeptModal = true" class="mt-4 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-xs">
+                + Create Department
+            </button>
         </div>
-    </div>
+    @endif
+
+    <!-- Create Department Modal -->
+    <template x-teleport="body">
+        <div x-show="openDeptModal" x-cloak x-transition.opacity class="fixed inset-0 z-[60] flex items-center justify-center overflow-y-auto bg-slate-900/50 p-4" @keydown.escape.window="openDeptModal = false">
+            <div @click.outside="openDeptModal = false" role="dialog" aria-modal="true" aria-labelledby="create-department-title" class="my-auto max-h-[calc(100dvh-2rem)] w-full max-w-md overflow-y-auto rounded-3xl bg-white p-6 text-left shadow-2xl">
+                <h3 id="create-department-title" class="text-base font-bold text-slate-900">Add New Department</h3>
+                <form action="{{ route('departments.store') }}" method="POST" class="mt-4 space-y-3">
+                    @csrf
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700">Department Name</label>
+                        <input type="text" name="name" required placeholder="e.g. Operations" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700">Code (e.g. OPS, ICT, FIN)</label>
+                        <input type="text" name="code" required placeholder="OPS" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs uppercase">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700">Description</label>
+                        <textarea name="description" rows="2" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>
+                    </div>
+                    <div class="flex justify-end gap-2 pt-2">
+                        <button type="button" @click="openDeptModal = false" class="px-4 py-2 rounded-xl text-xs text-slate-600">Cancel</button>
+                        <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-700 text-white">Save Department</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </template>
 
     <!-- Create Team Modal -->
     <div x-show="openTeamModal" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
