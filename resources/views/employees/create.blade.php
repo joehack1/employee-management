@@ -106,9 +106,14 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Entitlement (Days) <span class="text-rose-500">*</span></label>
-                    <input type="number" id="annual_entitlement" step="0.5" min="0" max="365" name="annual_entitlement" required value="{{ old('annual_entitlement', 21) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
-                    <p class="mt-1 text-[10px] text-slate-500">HR can enter the employee’s annual leave entitlement in days.</p>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Entitlement</label>
+                    <p id="annual_entitlement_display" class="mt-1 px-3.5 py-2.5 border border-slate-300 rounded-xl bg-white text-sm font-bold text-blue-700">21 days per year</p>
+                    <p class="mt-1 text-[10px] text-slate-500">Based on completed years since the date joined.</p>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Initial Earned Leave Balance (Days) <span class="text-rose-500">*</span></label>
+                    <input type="number" step="0.01" min="0" max="365" name="annual_initial_balance" required value="{{ old('annual_initial_balance', 0) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <p class="mt-1 text-[10px] text-slate-500">Enter the opening annual leave balance provided by HR.</p>
                 </div>
             </div>
 
@@ -140,5 +145,24 @@
         </form>
     </div>
 </div>
+<script>
+    const joinDateInput = document.getElementById('date_employed');
+    const entitlementDisplay = document.getElementById('annual_entitlement_display');
+
+    function updateAnnualEntitlement() {
+        if (!joinDateInput.value) return;
+
+        const joined = new Date(`${joinDateInput.value}T00:00:00`);
+        const today = new Date();
+        let years = today.getFullYear() - joined.getFullYear();
+        if (today.getMonth() < joined.getMonth() || (today.getMonth() === joined.getMonth() && today.getDate() < joined.getDate())) years--;
+
+        const entitlement = years >= 7 ? 33 : (years >= 3 ? 27 : 21);
+        entitlementDisplay.textContent = `${entitlement} days per year`;
+    }
+
+    joinDateInput.addEventListener('change', updateAnnualEntitlement);
+    updateAnnualEntitlement();
+</script>
 @endsection
 

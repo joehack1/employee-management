@@ -81,7 +81,7 @@ class EmployeeManagementController extends Controller
             'manager_id' => ['nullable', 'exists:users,id'],
             'date_employed' => ['required', 'date', 'before_or_equal:today'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
-            'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
+            'annual_initial_balance' => ['required', 'numeric', 'min:0', 'max:365'],
             'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
         ]);
 
@@ -113,14 +113,16 @@ class EmployeeManagementController extends Controller
                 'date_employed' => $validated['date_employed'],
                 'employment_status' => 'active',
                 'leave_policy_id' => $validated['leave_policy_id'],
-                'annual_entitlement' => $validated['annual_entitlement'],
+                'annual_entitlement' => 21,
             ]);
+            $employee->annual_entitlement = $employee->annualLeaveAccrualAllowance();
+            $employee->save();
 
             // Initialize balances
             $year = Carbon::now()->year;
             $leaveTypes = LeaveType::where('is_active', true)->get();
             foreach ($leaveTypes as $lt) {
-                $days = $lt->code === 'annual' ? (float) $employee->annual_entitlement : $lt->days_allowed;
+                $days = $lt->code === 'annual' ? (float) $validated['annual_initial_balance'] : $lt->days_allowed;
                 $balance = $this->ledgerService->getOrCreateBalance($employee, $lt, $year);
                 $balance->entitled_days = $days;
                 $balance->save();
@@ -156,8 +158,16 @@ class EmployeeManagementController extends Controller
         $departments = Department::where('is_active', true)->get();
         $teamLeads = User::whereIn('role', ['team_lead', 'hr', 'administrator', 'manager'])->get();
         $policies = LeavePolicy::all();
+        $annualLeaveType = LeaveType::where('code', 'annual')->first();
+        $annualBalance = $annualLeaveType
+            ? LeaveBalance::where('employee_id', $employee->id)
+                ->where('leave_type_id', $annualLeaveType->id)
+                ->where('year', Carbon::now()->year)
+                ->first()
+            : null;
+        $annualLeaveBalance = $annualBalance?->available_days ?? 0;
 
-        return view('employees.edit', compact('employee', 'departments', 'teamLeads', 'policies'));
+        return view('employees.edit', compact('employee', 'departments', 'teamLeads', 'policies', 'annualLeaveBalance'));
     }
 
     public function update(Request $request, $id)
@@ -181,12 +191,15 @@ class EmployeeManagementController extends Controller
             'manager_id' => ['nullable', 'exists:users,id'],
             'date_employed' => ['required', 'date', 'before_or_equal:today'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
-            'annual_entitlement' => ['required', 'numeric', 'min:0', 'max:365'],
+            'annual_leave_balance' => ['required', 'numeric', 'min:0', 'max:365'],
             'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
             'employment_status' => ['required', 'in:active,probation,deactivated'],
         ]);
 
-        DB::transaction(function () use ($employee, $user, $validated) {
+        $annualLeaveBalance = (float) $validated['annual_leave_balance'];
+        unset($validated['annual_leave_balance']);
+
+        DB::transaction(function () use ($employee, $user, $validated, $annualLeaveBalance) {
             $user->update([
                 'name' => "{$validated['first_name']} {$validated['last_name']}",
                 'email' => $validated['email'],
@@ -198,24 +211,22 @@ class EmployeeManagementController extends Controller
 
             $employee->update($validated);
 
+            $employee->annual_entitlement = $employee->annualLeaveAccrualAllowance();
+            $employee->save();
+
             $annualLeaveType = LeaveType::where('code', 'annual')->first();
             if ($annualLeaveType) {
                 $balance = $this->ledgerService->getOrCreateBalance($employee, $annualLeaveType, Carbon::now()->year);
-                $previousAnnualEntitlement = (float) $balance->entitled_days;
-                $balance->entitled_days = (float) $validated['annual_entitlement'];
-                $balance->save();
+                $adjustment = $annualLeaveBalance - $balance->available_days;
 
-                $adjustment = (float) $validated['annual_entitlement'] - $previousAnnualEntitlement;
                 if ($adjustment != 0.0) {
-                    LeaveTransaction::create([
-                        'employee_id' => $employee->id,
-                        'leave_type_id' => $annualLeaveType->id,
-                        'type' => 'hr_entitlement_update',
-                        'amount' => $adjustment,
-                        'running_balance' => $balance->available_days,
-                        'reason' => 'Annual leave entitlement updated by HR',
-                        'created_by' => Auth::id(),
-                    ]);
+                    $this->ledgerService->adjustBalance(
+                        employee: $employee,
+                        leaveType: $annualLeaveType,
+                        adjustmentAmount: $adjustment,
+                        reason: 'Available annual leave balance set to '.number_format($annualLeaveBalance, 2).' days while editing employee record',
+                        hrUserId: Auth::id()
+                    );
                 }
             }
 

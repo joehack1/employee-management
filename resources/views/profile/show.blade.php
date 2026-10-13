@@ -60,7 +60,7 @@
             </div>
             <div class="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200">
                 <span class="text-blue-600 font-semibold block uppercase text-[10px]">Annual Leave Entitlement</span>
-                <span class="text-base font-extrabold text-blue-700">{{ $employee ? $employee->annual_entitlement : 21 }} days/year</span>
+                <span class="text-base font-extrabold text-blue-700">{{ number_format($employee ? $employee->annualLeaveAccrualAllowance() : 21, 0) }} days/year</span>
             </div>
         </div>
 

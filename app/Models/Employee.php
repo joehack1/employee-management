@@ -43,11 +43,11 @@ class Employee extends Model
         return "{$this->first_name} {$this->last_name}";
     }
 
-    public function annualLeaveEntitlement(?Carbon $asOf = null): float
+    public function annualLeaveAccrualAllowance(?Carbon $asOf = null): float
     {
         $years = $this->date_employed?->diffInYears($asOf ?? Carbon::today()) ?? 0;
 
-        return $years >= 7 ? 33.0 : ($years > 3 ? 27.0 : 21.0);
+        return $years >= 7 ? 33.0 : ($years >= 3 ? 27.0 : 21.0);
     }
 
     public function leaveTypesForGender($leaveTypes)

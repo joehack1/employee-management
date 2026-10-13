@@ -117,10 +117,10 @@ class ReportController extends Controller
         $isBalances = $type === 'balances';
         $title = $isBalances ? 'Leave Balances' : 'Leave Applications';
         $headers = $isBalances
-            ? ['Employee No.', 'Employee Name', 'Department', 'Leave Type', 'Entitled Days', 'Carry Forward', 'Adjustments', 'Used Days', 'Pending Days', 'Available Days']
+            ? ['Employee No.', 'Employee Name', 'Department', 'Leave Type', 'Entitlement', 'Carry Forward', 'Adjustments', 'Used Days', 'Pending Days', 'Available Days']
             : ['Application No.', 'Employee Name', 'Department', 'Leave Type', 'Start Date', 'End Date', 'Working Days', 'Half Day', 'Emergency', 'Status', 'Submitted At', 'Reason'];
         $widths = $isBalances
-            ? [16, 27, 24, 19, 16, 16, 16, 14, 15, 17]
+            ? [16, 27, 24, 19, 30, 16, 16, 14, 15, 17]
             : [18, 27, 24, 18, 16, 16, 16, 18, 14, 19, 22, 48];
         $lastColumn = Coordinate::stringFromColumnIndex(count($headers));
 
@@ -176,13 +176,15 @@ class ReportController extends Controller
                     $balance->employee->full_name ?? '',
                     $balance->employee->department->name ?? 'N/A',
                     $balance->leaveType->name ?? '',
-                    $balance->entitled_days,
+                    $leaveType->code === 'annual'
+                        ? number_format($balance->employee->annualLeaveAccrualAllowance(), 0).' days/year'
+                        : $balance->entitled_days,
                     $balance->carried_forward_days,
                     $balance->manual_adjustment_days,
                     $balance->used_days,
                     $balance->pending_days,
                     $balance->available_days,
-                ], $rowNumber, [4, 5, 6, 7, 8, 9]);
+                ], $rowNumber, [5, 6, 7, 8, 9]);
                 if ($rowNumber % 2 === 0) {
                     $sheet->getStyle("A{$rowNumber}:{$lastColumn}{$rowNumber}")->getFill()
                         ->setFillType(Fill::FILL_SOLID)->getStartColor()->setRGB('F2F8F8');
@@ -322,7 +324,7 @@ class ReportController extends Controller
             $handle = fopen('php://output', 'w');
 
             if ($type === 'balances') {
-                fputcsv($handle, ['Employee Number', 'Employee Name', 'Department', 'Leave Type', 'Year', 'Entitled', 'Carried Forward', 'Adjustments', 'Used', 'Pending', 'Available Balance']);
+                fputcsv($handle, ['Employee Number', 'Employee Name', 'Department', 'Leave Type', 'Year', 'Entitlement', 'Carried Forward', 'Adjustments', 'Used', 'Pending', 'Available Balance']);
 
                 $query = LeaveBalance::with(['employee.department', 'leaveType'])
                     ->where('year', $year);
@@ -340,7 +342,9 @@ class ReportController extends Controller
                         $b->employee->department->name ?? 'N/A',
                         $b->leaveType->name ?? '',
                         $b->year,
-                        $b->entitled_days,
+                        $b->leaveType->code === 'annual'
+                            ? number_format($b->employee->annualLeaveAccrualAllowance(), 0).' days/year'
+                            : $b->entitled_days,
                         $b->carried_forward_days,
                         $b->manual_adjustment_days,
                         $b->used_days,

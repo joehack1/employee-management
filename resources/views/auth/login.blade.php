@@ -117,10 +117,9 @@
     <aside class="hidden lg:flex lg:w-1/2 xl:w-[55%] relative overflow-hidden text-white flex-col justify-between p-12 xl:p-16">
         <div class="relative slide-in" style="--d:0">
             <div class="flex items-center gap-3">
-                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center ring-1 ring-white/25 p-1">
-                    <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="w-full h-full object-contain">
+                <div class="w-16">
+                    <img src="{{ asset('build/IRES-logo.webp') }}" alt="IRES logo" class="w-full h-auto object-contain">
                 </div>
-                <span class="text-lg font-bold tracking-tight">LeaveFlow</span>
             </div>
         </div>
 
@@ -179,8 +178,8 @@
 
             {{-- Mobile / tablet brand --}}
             <div class="text-center lg:text-left mb-8">
-                <div class="rise lg:hidden mx-auto w-16 h-16 rounded-2xl bg-white flex items-center justify-center p-1.5 shadow-lg" style="--d:0">
-                    <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="w-full h-full object-contain">
+                <div class="rise lg:hidden mx-auto w-fit" style="--d:0">
+                    <img src="{{ asset('build/IRES-logo.webp') }}" alt="IRES logo" class="w-16 h-auto object-contain">
                 </div>
                 <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">{{ now()->hour < 12 ? 'Good morning' : (now()->hour < 17 ? 'Good afternoon' : 'Good evening') }}!</h2>
                 

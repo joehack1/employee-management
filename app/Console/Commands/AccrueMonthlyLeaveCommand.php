@@ -6,6 +6,7 @@ use App\Models\Employee;
 use App\Models\LeaveBalance;
 use App\Models\LeaveTransaction;
 use App\Models\LeaveType;
+use App\Services\LeaveLedgerService;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -14,7 +15,7 @@ class AccrueMonthlyLeaveCommand extends Command
 {
     protected $signature = 'leave:accrue-monthly {--date= : Accrual date for an administrative run (YYYY-MM-DD)}';
 
-    protected $description = 'Synchronize annual leave entitlement with employee tenure';
+    protected $description = 'Accrue monthly annual leave based on employee tenure';
 
     public function handle(): int
     {
@@ -36,10 +37,19 @@ class AccrueMonthlyLeaveCommand extends Command
             ->orderBy('id')
             ->chunkById(100, function ($employees) use ($date, $period, $leaveType, &$credited) {
                 foreach ($employees as $employee) {
-                    $reason = "Monthly annual leave accrual {$period}";
-                    $entitlement = (float) $employee->annual_entitlement;
+                    if ($date->month === 1) {
+                        app(LeaveLedgerService::class)->applyCarryForward(
+                            $employee,
+                            $leaveType,
+                            $date->year - 1,
+                            $date->year
+                        );
+                    }
 
-                    DB::transaction(function () use ($employee, $date, $period, $leaveType, $reason, $entitlement, &$credited) {
+                    $reason = "Monthly annual leave earned {$period}";
+                    $monthlyAccrual = $employee->annualLeaveAccrualAllowance($date) / 12;
+
+                    DB::transaction(function () use ($employee, $date, $leaveType, $reason, $monthlyAccrual, &$credited) {
                         $alreadyCredited = LeaveTransaction::where('employee_id', $employee->id)
                             ->where('leave_type_id', $leaveType->id)
                             ->where('type', 'accrual')
@@ -56,28 +66,27 @@ class AccrueMonthlyLeaveCommand extends Command
                         );
 
                         $balance = LeaveBalance::whereKey($balance->id)->lockForUpdate()->first();
-                        $adjustment = $entitlement - (float) $balance->entitled_days;
-                        $balance->entitled_days = $entitlement;
+                        $employee->annual_entitlement = $monthlyAccrual * 12;
+                        $employee->save();
+                        $balance->entitled_days = (float) $balance->entitled_days + $monthlyAccrual;
                         $balance->save();
 
-                        if ($adjustment != 0.0) {
-                            LeaveTransaction::create([
-                                'employee_id' => $employee->id,
-                                'leave_type_id' => $leaveType->id,
-                                'type' => 'accrual',
-                                'amount' => $adjustment,
-                                'running_balance' => $balance->available_days,
-                                'reason' => $reason,
-                                'created_by' => null,
-                            ]);
-                        }
+                        LeaveTransaction::create([
+                            'employee_id' => $employee->id,
+                            'leave_type_id' => $leaveType->id,
+                            'type' => 'accrual',
+                            'amount' => $monthlyAccrual,
+                            'running_balance' => $balance->available_days,
+                            'reason' => $reason,
+                            'created_by' => null,
+                        ]);
 
                         $credited++;
                     });
                 }
             });
 
-        $this->info("Synchronized annual leave entitlements for {$credited} employee(s) in {$period}.");
+        $this->info("Accrued annual leave for {$credited} employee(s) in {$period}.");
         return self::SUCCESS;
     }
 }

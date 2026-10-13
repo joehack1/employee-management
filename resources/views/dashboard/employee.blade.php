@@ -63,7 +63,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-lg font-bold text-slate-900">Leave Entitlement & Balances ({{ date('Y') }})</h2>
-                <p class="text-xs text-slate-500">Live ledger balance accounting for approved usage and pending reservations</p>
+                <p class="text-xs text-slate-500">Annual entitlement depends on completed service; earned leave and available balance are also shown.</p>
             </div>
             <span class="text-xs text-slate-400 font-medium">Policy: {{ $employee->leavePolicy->name ?? 'Standard' }}</span>
         </div>
@@ -75,11 +75,11 @@
                     <thead class="bg-slate-50/80 text-xs font-bold text-slate-600 uppercase tracking-wider">
                         <tr>
                             <th class="px-6 py-4">Leave Type</th>
-                            <th class="px-6 py-4 text-center">Entitled</th>
+                            <th class="px-6 py-4 text-center">Entitlement</th>
                             <th class="px-6 py-4 text-center text-slate-500">Adjustments</th>
                             <th class="px-6 py-4 text-center text-rose-600">Used (Approved)</th>
                             <th class="px-6 py-4 text-center text-amber-600">Pending</th>
-                            <th class="px-6 py-4 text-center font-extrabold text-blue-700">Available</th>
+                            <th class="px-6 py-4 text-center font-extrabold text-blue-700">Earned Leave Balance</th>
                             <th class="px-6 py-4 text-right">Action</th>
                         </tr>
                     </thead>
@@ -94,7 +94,11 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 text-center font-semibold text-slate-800">
-                                    {{ number_format($bal->entitled_days, 1) }}
+                                    @if($bal->leaveType->code === 'annual')
+                                        {{ number_format($employee->annualLeaveAccrualAllowance(), 0) }} days/year
+                                    @else
+                                        {{ number_format($bal->entitled_days, 1) }}
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 text-center text-slate-500 text-xs">
                                     @if($bal->manual_adjustment_days != 0)

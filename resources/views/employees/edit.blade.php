@@ -99,7 +99,7 @@
             <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-200">
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Date Joined</label>
-                    <input type="date" name="date_employed" required value="{{ old('date_employed', $employee->date_employed->format('Y-m-d')) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
+                    <input type="date" id="date_employed" name="date_employed" required value="{{ old('date_employed', $employee->date_employed->format('Y-m-d')) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm">
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Leave Policy</label>
@@ -110,9 +110,9 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Entitlement (Days) <span class="text-rose-500">*</span></label>
-                    <input type="number" step="0.5" min="0" max="365" name="annual_entitlement" required value="{{ old('annual_entitlement', $employee->annual_entitlement) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
-                    <p class="mt-1 text-[10px] text-slate-500">Changing this updates the current year’s annual leave entitlement.</p>
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Annual Entitlement</label>
+                    <p id="annual_entitlement_display" class="mt-1 px-3.5 py-2.5 border border-slate-300 rounded-xl bg-white text-sm font-bold text-blue-700">{{ number_format($employee->annualLeaveAccrualAllowance(), 0) }} days per year</p>
+                    <p class="mt-1 text-[10px] text-slate-500">Based on completed years since the date joined.</p>
                 </div>
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Employment Status</label>
@@ -121,6 +121,11 @@
                         <option value="probation" {{ $employee->employment_status === 'probation' ? 'selected' : '' }}>Probation</option>
                         <option value="deactivated" {{ $employee->employment_status === 'deactivated' ? 'selected' : '' }}>Deactivated</option>
                     </select>
+                </div>
+                <div class="sm:col-span-2">
+                    <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Available Annual Leave Balance (Days) <span class="text-rose-500">*</span></label>
+                    <input type="number" step="0.01" min="0" max="365" name="annual_leave_balance" required value="{{ old('annual_leave_balance', 0) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <p class="mt-1 text-[10px] text-slate-500">Enter the balance HR wants available now. Any change is recorded in the leave ledger.</p>
                 </div>
             </div>
 
@@ -170,4 +175,24 @@
         </div>
     </div>
 </div>
+
+<script>
+    const joinDateInput = document.getElementById('date_employed');
+    const entitlementDisplay = document.getElementById('annual_entitlement_display');
+
+    function updateAnnualEntitlement() {
+        if (!joinDateInput.value) return;
+
+        const joined = new Date(`${joinDateInput.value}T00:00:00`);
+        const today = new Date();
+        let years = today.getFullYear() - joined.getFullYear();
+        if (today.getMonth() < joined.getMonth() || (today.getMonth() === joined.getMonth() && today.getDate() < joined.getDate())) years--;
+
+        const entitlement = years >= 7 ? 33 : (years >= 3 ? 27 : 21);
+        entitlementDisplay.textContent = `${entitlement} days per year`;
+    }
+
+    joinDateInput.addEventListener('change', updateAnnualEntitlement);
+    updateAnnualEntitlement();
+</script>
 @endsection

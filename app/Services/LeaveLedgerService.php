@@ -180,6 +180,19 @@ class LeaveLedgerService
      */
     public function applyCarryForward(Employee $employee, LeaveType $leaveType, int $fromYear, int $toYear): void
     {
+        $alreadyProcessed = LeaveTransaction::where('employee_id', $employee->id)
+            ->where('leave_type_id', $leaveType->id)
+            ->whereIn('type', ['carry_forward', 'expired'])
+            ->where(function ($query) use ($fromYear, $toYear) {
+                $query->where('reason', 'like', "Carry forward from {$fromYear} to {$toYear}%")
+                    ->orWhere('reason', 'like', "Expired unused leave from {$fromYear}%");
+            })
+            ->exists();
+
+        if ($alreadyProcessed) {
+            return;
+        }
+
         $oldBalance = $this->getOrCreateBalance($employee, $leaveType, $fromYear);
         $newBalance = $this->getOrCreateBalance($employee, $leaveType, $toYear);
 

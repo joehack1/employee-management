@@ -34,15 +34,9 @@
                 <div class="flex justify-between h-16 gap-2 sm:gap-4">
                     <div class="flex min-w-0">
                         <div class="flex-shrink-0 flex items-center gap-2 sm:gap-3 min-w-0">
-                            <a href="{{ route('dashboard') }}" class="w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0 flex items-center justify-center" aria-label="LeaveFlow dashboard">
-                                <img src="{{ asset('logonobg.png') }}" alt="LeaveFlow logo" class="max-w-full max-h-full object-contain">
+                            <a href="{{ route('dashboard') }}" class="w-20 h-14 flex-shrink-0 flex items-center justify-center" aria-label="Leave management dashboard">
+                                <img src="{{ asset('build/IRES-logo.webp') }}" alt="IRES logo" class="w-full h-full object-contain">
                             </a>
-                            <div class="min-w-0">
-                                <a href="{{ route('dashboard') }}" class="text-[15px] sm:text-lg font-bold text-slate-900 tracking-tight flex items-center gap-2 truncate">
-                                    LeaveFlow
-                                </a>
-                                <p class="hidden sm:block text-xs text-slate-500 truncate">Employee Leave Management</p>
-                            </div>
                         </div>
 
                         <!-- Main Navigation Links -->
@@ -370,7 +364,7 @@
         <!-- Footer -->
         <footer class="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-500">
             <div class="max-w-[1920px] mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-                <p>&copy; {{ date('Y') }} LeaveFlow System. Designed for Enterprise Leave Management.</p>
+                <p>&copy; {{ date('Y') }} Employee Leave Management System.</p>
                 <div class="flex items-center gap-4 text-slate-400">
                     <span>Working Calendar: Mon-Fri</span>
                     <span>•</span>

@@ -29,7 +29,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-base font-bold text-slate-900">Current Year Leave Balances ({{ $year }})</h2>
-                <p class="text-xs text-slate-500">Separately showing Entitlement, Approved Used, Pending Reservations, and Available Days</p>
+                <p class="text-xs text-slate-500">Annual entitlement depends on completed service; earned balance, carry-forward, usage, and availability are shown separately.</p>
             </div>
         </div>
 
@@ -38,12 +38,12 @@
                 <thead class="bg-slate-50 text-xs font-bold text-slate-600 uppercase">
                     <tr>
                         <th class="px-4 py-3">Leave Type</th>
-                        <th class="px-4 py-3 text-center">Entitled</th>
+                        <th class="px-4 py-3 text-center">Entitlement</th>
                         <th class="px-4 py-3 text-center">Carry Forward</th>
                         <th class="px-4 py-3 text-center">HR Adjustments</th>
                         <th class="px-4 py-3 text-center text-rose-600">Used</th>
                         <th class="px-4 py-3 text-center text-amber-600">Pending</th>
-                        <th class="px-4 py-3 text-center font-extrabold text-blue-700">Available Balance</th>
+                        <th class="px-4 py-3 text-center font-extrabold text-blue-700">Earned Leave Balance</th>
                         <th class="px-4 py-3 text-right">Quick Action</th>
                     </tr>
                 </thead>
@@ -54,7 +54,13 @@
                                 <span class="w-2.5 h-2.5 rounded-full ring-1 ring-black/10" style="background-color: {{ $bal->leaveType->display_color }}"></span>
                                 <span class="font-bold text-slate-900">{{ $bal->leaveType->name }}</span>
                             </td>
-                            <td class="px-4 py-3.5 text-center font-semibold">{{ $bal->entitled_days }}</td>
+                            <td class="px-4 py-3.5 text-center font-semibold">
+                                @if($bal->leaveType->code === 'annual')
+                                    {{ number_format($employee->annualLeaveAccrualAllowance(), 0) }} days/year
+                                @else
+                                    {{ number_format((float) $bal->entitled_days, 2) }}
+                                @endif
+                            </td>
                             <td class="px-4 py-3.5 text-center text-slate-500">{{ $bal->carried_forward_days }}</td>
                             <td class="px-4 py-3.5 text-center font-bold">
                                 @if($bal->manual_adjustment_days != 0)
