@@ -118,7 +118,7 @@
         <div class="relative slide-in" style="--d:0">
             <div class="flex items-center gap-3">
                 <div class="w-16">
-                    <img src="{{ asset('build/IRES-logo.webp') }}" alt="IRES logo" class="w-full h-auto object-contain">
+                    <img src="{{ asset('IRES-logo.webp') }}" alt="IRES logo" class="w-full h-auto object-contain">
                 </div>
             </div>
         </div>
@@ -179,7 +179,7 @@
             {{-- Mobile / tablet brand --}}
             <div class="text-center lg:text-left mb-8">
                 <div class="rise lg:hidden mx-auto w-fit" style="--d:0">
-                    <img src="{{ asset('build/IRES-logo.webp') }}" alt="IRES logo" class="w-16 h-auto object-contain">
+                    <img src="{{ asset('IRES-logo.webp') }}" alt="IRES logo" class="w-16 h-auto object-contain">
                 </div>
                 <h2 class="rise mt-4 lg:mt-0 text-3xl font-extrabold text-white tracking-tight" style="--d:1">{{ now()->hour < 12 ? 'Good morning' : (now()->hour < 17 ? 'Good afternoon' : 'Good evening') }}!</h2>
                 

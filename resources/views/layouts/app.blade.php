@@ -35,7 +35,7 @@
                     <div class="flex min-w-0">
                         <div class="flex-shrink-0 flex items-center gap-2 sm:gap-3 min-w-0">
                             <a href="{{ route('dashboard') }}" class="w-20 h-14 flex-shrink-0 flex items-center justify-center" aria-label="Leave management dashboard">
-                                <img src="{{ asset('build/IRES-logo.webp') }}" alt="IRES logo" class="w-full h-full object-contain">
+                                <img src="{{ asset('IRES-logo.webp') }}" alt="IRES logo" class="w-full h-full object-contain">
                             </a>
                         </div>
 
