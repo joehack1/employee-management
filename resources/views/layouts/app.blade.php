@@ -5,11 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Employee Leave Management System')</title>
-    <link rel="icon" type="image/x-icon" href="{{ asset('favicon_io 2/favicon.ico') }}">
-    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon_io 2/favicon-16x16.png') }}">
-    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicon_io 2/favicon-32x32.png') }}">
-    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicon_io 2/apple-touch-icon.png') }}">
-    <link rel="manifest" href="{{ asset('favicon_io 2/site.webmanifest') }}">
+    <link rel="icon" type="image/x-icon" href="{{ asset('favicoi/favicon.ico') }}">
+    <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicoi/favicon-16x16.png') }}">
+    <link rel="icon" type="image/png" sizes="32x32" href="{{ asset('favicoi/favicon-32x32.png') }}">
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('favicoi/apple-touch-icon.png') }}">
+    <link rel="manifest" href="{{ asset('favicoi/site.webmanifest') }}">
     @include('partials.theme')
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
