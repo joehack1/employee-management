@@ -81,7 +81,7 @@ class EmployeeManagementController extends Controller
             'manager_id' => ['nullable', 'exists:users,id'],
             'date_employed' => ['required', 'date', 'before_or_equal:today'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
-            'annual_initial_balance' => ['required', 'numeric', 'min:0', 'max:365'],
+            'annual_initial_balance' => ['required', 'numeric', 'min:-365', 'max:365'],
             'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
         ]);
 
@@ -191,7 +191,7 @@ class EmployeeManagementController extends Controller
             'manager_id' => ['nullable', 'exists:users,id'],
             'date_employed' => ['required', 'date', 'before_or_equal:today'],
             'leave_policy_id' => ['nullable', 'exists:leave_policies,id'],
-            'annual_leave_balance' => ['required', 'numeric', 'min:0', 'max:365'],
+            'annual_leave_balance' => ['required', 'numeric', 'min:-365', 'max:365'],
             'role' => ['required', 'in:employee,team_lead,hr,manager,administrator'],
             'employment_status' => ['required', 'in:active,probation,deactivated'],
         ]);

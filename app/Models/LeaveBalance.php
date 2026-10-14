@@ -54,7 +54,7 @@ class LeaveBalance extends Model
     public function getAvailableDaysAttribute(): float
     {
         $avail = $this->total_entitled - (float) $this->used_days - (float) $this->pending_days;
-        return max(0, $avail);
+        return $avail;
     }
 
     /**
@@ -63,6 +63,6 @@ class LeaveBalance extends Model
     public function getRemainingDaysAttribute(): float
     {
         $rem = $this->total_entitled - (float) $this->used_days;
-        return max(0, $rem);
+        return $rem;
     }
 }

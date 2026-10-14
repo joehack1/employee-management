@@ -124,8 +124,8 @@
                 </div>
                 <div class="sm:col-span-2">
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Available Annual Leave Balance (Days) <span class="text-rose-500">*</span></label>
-                    <input type="number" step="0.01" min="0" max="365" name="annual_leave_balance" required value="{{ old('annual_leave_balance', 0) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
-                    <p class="mt-1 text-[10px] text-slate-500">Enter the balance HR wants available now. Any change is recorded in the leave ledger.</p>
+                    <input type="number" step="0.01" min="-365" max="365" name="annual_leave_balance" required value="{{ old('annual_leave_balance', $annualLeaveBalance) }}" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-xs sm:text-sm font-bold text-blue-700">
+                    <p class="mt-1 text-[10px] text-slate-500">Enter the balance HR wants available now, including a negative balance. Any change is recorded in the leave ledger.</p>
                 </div>
             </div>
 
