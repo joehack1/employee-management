@@ -209,4 +209,7 @@
     /* Form controls inherit dark color-scheme (native pickers, scrollbars) */
     .dark input, .dark textarea, .dark select { background-color: #161616; color: #e5e5e5; }
     .dark input::placeholder, .dark textarea::placeholder { color: #737373; }
+
+    /* Keep employee directory row text legible against its hover surface. */
+    .dark .employee-directory-row:hover > td { background-color: #1f1f1f !important; }
 </style>

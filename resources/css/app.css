@@ -81,6 +81,10 @@ main :where(section, article):hover {
     background-color: white;
 }
 
+.dark .employee-directory-row:hover > td {
+    background-color: #1f1f1f;
+}
+
 
 @media (prefers-reduced-motion: reduce) {
     *,
