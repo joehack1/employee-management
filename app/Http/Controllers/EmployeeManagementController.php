@@ -321,7 +321,7 @@ class EmployeeManagementController extends Controller
     {
         $request->validate([
             'leave_type_id' => ['required', 'exists:leave_types,id'],
-            'adjustment_amount' => ['required', 'numeric', 'not_in:0'], // +2 or -1
+            'adjustment_amount' => ['required', 'numeric', 'decimal:0,2', 'not_in:0'], // +2.00 or -1.00
             'reason' => ['required', 'string', 'min:5', 'max:500'],
         ]);
 

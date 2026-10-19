@@ -172,8 +172,8 @@
 
                 <div>
                     <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider">Adjustment Amount (Days) <span class="text-rose-500">*</span></label>
-                    <p class="text-[11px] text-slate-400">Use positive numbers to add days (e.g. +2) or negative to deduct (e.g. -1).</p>
-                    <input type="number" step="0.5" name="adjustment_amount" required x-model="adjustmentAmount" placeholder="+2 or -1" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-bold text-blue-700">
+                    <p class="text-[11px] text-slate-400">Use positive numbers to add days or negative numbers to deduct. Amounts can include up to two decimal places (e.g. 0.01).</p>
+                    <input type="number" step="0.01" name="adjustment_amount" required x-model="adjustmentAmount" placeholder="e.g. 0.01 or -0.01" class="mt-1 block w-full px-3.5 py-2.5 border border-slate-300 rounded-xl text-sm font-bold text-blue-700">
                 </div>
 
                 <div>
