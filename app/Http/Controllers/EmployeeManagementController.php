@@ -296,6 +296,21 @@ class EmployeeManagementController extends Controller
 
         $allowedLeaveTypes = $employee->leaveTypesForGender(LeaveType::where('is_active', true)->get());
         $allowedLeaveTypeIds = $allowedLeaveTypes->pluck('id');
+
+        // Leave type entitlements are the policy source of truth. Existing balance
+        // rows were initialized with a snapshot, so bring this year's non-annual
+        // balances in line when the ledger is viewed after a policy change.
+        foreach ($allowedLeaveTypes as $leaveType) {
+            if ($leaveType->code === 'annual') {
+                continue;
+            }
+
+            LeaveBalance::where('leave_type_id', $leaveType->id)
+                ->where('year', $year)
+                ->where('entitled_days', '!=', $leaveType->days_allowed)
+                ->update(['entitled_days' => $leaveType->days_allowed]);
+        }
+
         $balances = LeaveBalance::with('leaveType')
             ->where('employee_id', $employee->id)
             ->whereIn('leave_type_id', $allowedLeaveTypeIds)
