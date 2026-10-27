@@ -21,10 +21,14 @@ class ResetPassword extends BaseResetPassword
 
         return (new MailMessage)
             ->subject('Reset Your Password - LeaveFlow')
-            ->greeting('Hello!')
-            ->line('You are receiving this email because we received a password reset request for your account.')
-            ->action('Reset Password', $url)
-            ->line('This password reset link will expire in '.$expire.' minutes.')
-            ->line('If you did not request a password reset, no further action is required.');
+            ->view('emails.notification', [
+                'greeting' => 'Hello!',
+                'lines' => [
+                    'You are receiving this email because we received a password reset request for your account.',
+                    'This password reset link will expire in ' . $expire . ' minutes.',
+                    'If you did not request a password reset, no further action is required.',
+                ],
+                'action' => ['label' => 'Reset Password', 'url' => $url],
+            ]);
     }
 }

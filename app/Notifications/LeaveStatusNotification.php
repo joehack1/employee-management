@@ -58,18 +58,17 @@ class LeaveStatusNotification extends Notification
                 ->first()
             : null;
 
-        $mail = (new MailMessage)
-            ->subject($this->title)
-            ->greeting("Hello {$recipientName},")
-            ->line($this->message)
-            ->line($isApplicant ? 'Your leave summary' : 'Applicant: ' . ($employee?->full_name ?? 'Employee'))
-            ->line('Leave type: ' . ($leaveType?->name ?? 'Leave'))
-            ->line(sprintf(
+        $lines = [
+            $this->message,
+            $isApplicant ? 'Your leave summary' : 'Applicant: ' . ($employee?->full_name ?? 'Employee'),
+            'Leave type: ' . ($leaveType?->name ?? 'Leave'),
+            sprintf(
                 'Dates: %s to %s (%s working days)',
                 $this->application->start_date->format('d M Y'),
                 $this->application->end_date->format('d M Y'),
                 $this->formatDays((float) $this->application->total_days)
-            ));
+            ),
+        ];
 
         if ($isApplicant) {
             $leaveTypeMessage = match ($leaveType?->code) {
@@ -84,7 +83,7 @@ class LeaveStatusNotification extends Notification
                 default => 'Please contact HR if you need any support or have questions about your leave.',
             };
 
-            $mail->line($leaveTypeMessage);
+            $lines[] = $leaveTypeMessage;
         }
 
         if (
@@ -93,18 +92,18 @@ class LeaveStatusNotification extends Notification
             && ($notifiable->id ?? null) === $employee->user_id
         ) {
             $documentDescription = $leaveType?->isMedicalLeave() ? 'medical documents' : 'supporting documents';
-            $mail->line("You indicated that you will deliver your {$documentDescription} to HR personally. Please bring them with you when you return to work.");
+            $lines[] = "You indicated that you will deliver your {$documentDescription} to HR personally. Please bring them with you when you return to work.";
         }
 
         if ($isApplicant) {
             if ($balance) {
-                $mail->line(sprintf(
+                $lines[] = sprintf(
                     'Your available %s balance after this request is %s days.',
                     $leaveType->name,
                     $this->formatDays($balance->available_days)
-                ));
+                );
             } else {
-                $mail->line('Your leave balance is not currently available in the system. Please contact HR if you need help confirming it.');
+                $lines[] = 'Your leave balance is not currently available in the system. Please contact HR if you need help confirming it.';
             }
         }
 
@@ -113,12 +112,17 @@ class LeaveStatusNotification extends Notification
             $returnLabel = $isApplicant
                 ? ($this->application->status === 'approved' ? 'Expected back at work' : 'Expected back at work if approved')
                 : ($this->application->status === 'approved' ? 'Applicant expected back at work' : 'Applicant expected back at work if approved');
-            $mail->line($returnLabel . ': ' . $returnDate->format('l, d M Y') . '.');
+            $lines[] = $returnLabel . ': ' . $returnDate->format('l, d M Y') . '.';
         }
 
-        return $mail
-            ->action('View Leave Application', route('leave.show', $this->application->id))
-            ->salutation('Regards, HR');
+        return (new MailMessage)
+            ->subject($this->title)
+            ->view('emails.notification', [
+                'greeting' => "Hello {$recipientName},",
+                'lines' => $lines,
+                'action' => ['label' => 'View Leave Application', 'url' => route('leave.show', $this->application->id)],
+                'salutation' => 'Regards, HR',
+            ]);
     }
 
     private function expectedReturnDate(): Carbon

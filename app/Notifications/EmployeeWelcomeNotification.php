@@ -21,11 +21,15 @@ class EmployeeWelcomeNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Your LeaveFlow account is ready')
-            ->greeting('Hello ' . $notifiable->name . ',')
-            ->line('Your employee account has been created.')
-            ->line('Login email: ' . $notifiable->email)
-            ->line('Temporary password: ' . $this->password)
-            ->line('Please sign in and change your password immediately.')
-            ->action('Sign in to LeaveFlow', route('login'));
+            ->view('emails.notification', [
+                'greeting' => 'Hello ' . $notifiable->name . ',',
+                'lines' => [
+                    'Your employee account has been created.',
+                    'Login email: ' . $notifiable->email,
+                    'Temporary password: ' . $this->password,
+                    'Please sign in and change your password immediately.',
+                ],
+                'action' => ['label' => 'Sign in to LeaveFlow', 'url' => route('login')],
+            ]);
     }
 }

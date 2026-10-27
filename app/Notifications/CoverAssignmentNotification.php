@@ -38,9 +38,13 @@ class CoverAssignmentNotification extends Notification
     {
         return (new MailMessage)
             ->subject('Leave cover assignment - LeaveFlow')
-            ->greeting('Hello ' . $notifiable->name . ',')
-            ->line($this->toArray($notifiable)['message'])
-            ->line('Please coordinate the handover with your colleague and team lead.')
-            ->action('View leave details', route('leave.show', $this->application->id));
+            ->view('emails.notification', [
+                'greeting' => 'Hello ' . $notifiable->name . ',',
+                'lines' => [
+                    $this->toArray($notifiable)['message'],
+                    'Please coordinate the handover with your colleague and team lead.',
+                ],
+                'action' => ['label' => 'View leave details', 'url' => route('leave.show', $this->application->id)],
+            ]);
     }
 }

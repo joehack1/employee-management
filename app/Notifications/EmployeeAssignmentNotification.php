@@ -35,13 +35,17 @@ class EmployeeAssignmentNotification extends Notification
 
         return (new MailMessage)
             ->subject('Employee assigned to you - LeaveFlow')
-            ->greeting('Hello ' . ($notifiable->name ?? 'there') . ',')
-            ->line("{$this->employee->full_name} has been assigned to you.")
-            ->line('Employee ID: ' . $this->employee->employee_number)
-            ->line('Position: ' . ($this->employee->job_title ?: 'Not specified'))
-            ->line('Department: ' . ($this->employee->department?->name ?? 'Not specified'))
-            ->line('Team: ' . ($this->employee->team?->name ?? 'Not specified'))
-            ->action('Open LeaveFlow', route('dashboard'))
-            ->salutation('Regards, LeaveFlow');
+            ->view('emails.notification', [
+                'greeting' => 'Hello ' . ($notifiable->name ?? 'there') . ',',
+                'lines' => [
+                    "{$this->employee->full_name} has been assigned to you.",
+                    'Employee ID: ' . $this->employee->employee_number,
+                    'Position: ' . ($this->employee->job_title ?: 'Not specified'),
+                    'Department: ' . ($this->employee->department?->name ?? 'Not specified'),
+                    'Team: ' . ($this->employee->team?->name ?? 'Not specified'),
+                ],
+                'action' => ['label' => 'Open LeaveFlow', 'url' => route('dashboard')],
+                'salutation' => 'Regards, LeaveFlow',
+            ]);
     }
 }
