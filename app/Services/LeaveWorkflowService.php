@@ -111,10 +111,30 @@ class LeaveWorkflowService
                 $approvalLevel = 'manager';
             }
 
-            // Generate application number
+            // Allocate numbers through a year-specific row so submissions by
+            // different employees cannot select the same number concurrently.
             $year = Carbon::now()->year;
-            $count = LeaveApplication::whereYear('created_at', $year)->count() + 1;
-            $appNumber = sprintf('LA-%s-%04d', $year, $count);
+            $existingMax = LeaveApplication::where('application_number', 'like', sprintf('LA-%d-%%', $year))
+                ->pluck('application_number')
+                ->map(fn (string $number) => (int) substr($number, strrpos($number, '-') + 1))
+                ->max() ?? 0;
+
+            DB::table('leave_application_sequences')->insertOrIgnore([
+                'year' => $year,
+                'last_number' => $existingMax,
+            ]);
+
+            $sequence = DB::table('leave_application_sequences')
+                ->where('year', $year)
+                ->lockForUpdate()
+                ->first();
+            $nextNumber = max((int) $sequence->last_number, $existingMax) + 1;
+
+            DB::table('leave_application_sequences')
+                ->where('year', $year)
+                ->update(['last_number' => $nextNumber]);
+
+            $appNumber = sprintf('LA-%s-%04d', $year, $nextNumber);
 
             // Create application
             $application = LeaveApplication::create([

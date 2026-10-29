@@ -25,14 +25,37 @@ class ProfileController extends Controller
 
         $request->validate([
             'phone' => ['nullable', 'string', 'max:50'],
-            'avatar' => ['nullable', 'image', 'max:2048'],
+            'avatar' => ['nullable', 'file', 'max:2048', 'extensions:jpg,jpeg,png,gif,webp'],
         ]);
 
         $user->phone = $request->phone;
         $oldAvatar = $user->avatar;
 
         if ($request->hasFile('avatar')) {
-            $user->avatar = $request->file('avatar')->store('profile-photos', 'public');
+            $file = $request->file('avatar');
+            $extension = strtolower($file->getClientOriginalExtension());
+            $allowedImageTypes = [
+                'jpg' => IMAGETYPE_JPEG,
+                'jpeg' => IMAGETYPE_JPEG,
+                'png' => IMAGETYPE_PNG,
+                'gif' => IMAGETYPE_GIF,
+                'webp' => IMAGETYPE_WEBP,
+            ];
+            $imageInfo = @getimagesize($file->getPathname());
+
+            if (!$imageInfo || ($allowedImageTypes[$extension] ?? null) !== $imageInfo[2]) {
+                return back()->withErrors(['avatar' => 'Upload a valid JPG, PNG, GIF, or WebP image.']);
+            }
+
+            $directory = storage_path('app/public/profile-photos');
+
+            if (!is_dir($directory) && !mkdir($directory, 0755, true) && !is_dir($directory)) {
+                return back()->withErrors(['avatar' => 'The profile photo could not be saved. Please contact support.']);
+            }
+
+            $filename = bin2hex(random_bytes(16)) . '.' . $extension;
+            $file->move($directory, $filename);
+            $user->avatar = 'profile-photos/' . $filename;
         }
 
         $user->save();
