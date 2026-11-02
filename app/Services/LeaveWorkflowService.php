@@ -598,7 +598,7 @@ class LeaveWorkflowService
         $hrUsers = User::whereIn('role', ['hr', 'administrator'])->get();
         Notification::send($hrUsers, new LeaveStatusNotification(
             application: $application,
-            title: 'Leave application received — no action required',
+            title: 'Leave application received',
             message: sprintf(
                 '%s submitted %s from %s to %s. The request is awaiting its assigned approver; HR sign-off is not required.',
                 $application->employee->full_name,
