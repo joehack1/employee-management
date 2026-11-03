@@ -20,7 +20,7 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <div class="bg-white p-5 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500">Active employees</p><p class="mt-2 text-3xl font-bold text-slate-900">{{ $totalEmployees }}</p></div>
         <div class="bg-white p-5 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500">On leave today</p><p class="mt-2 text-3xl font-bold text-teal-700">{{ $onLeaveToday->count() }}</p></div>
-        <div class="bg-white p-5 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500">Awaiting manager review</p><p class="mt-2 text-3xl font-bold text-rose-700">{{ $pendingRequests->count() }}</p></div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500">Awaiting your review</p><p class="mt-2 text-3xl font-bold text-rose-700">{{ $pendingRequests->count() }}</p></div>
         <div class="bg-white p-5 rounded-2xl border border-slate-200"><p class="text-xs text-slate-500">Annual leave used in {{ $year }}</p><p class="mt-2 text-3xl font-bold text-slate-900">{{ number_format($annualDaysUsed, 1) }} <span class="text-base font-medium text-slate-500">days</span></p></div>
     </div>
 
@@ -57,8 +57,8 @@
     <section class="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
         <div class="px-6 py-5 border-b border-slate-100 flex items-center justify-between gap-4">
             <div>
-                <h2 class="font-bold text-slate-900">Pending Manager Leave Requests</h2>
-                <p class="text-xs text-slate-500 mt-1">Review requests assigned to you and record your decision.</p>
+                <h2 class="font-bold text-slate-900">Pending Leave Requests Assigned to You</h2>
+                <p class="text-xs text-slate-500 mt-1">Review requests assigned to you as manager or team lead.</p>
             </div>
             <a href="{{ route('approvals.pending') }}" class="shrink-0 text-xs font-semibold text-teal-700 hover:text-teal-900">Open approval queue</a>
         </div>
@@ -105,9 +105,21 @@
                                     <div @click.outside="openApproveModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-slate-900">Approve Leave Request</h3>
                                         <p class="text-xs text-slate-500 mt-1">Approving {{ $leave->employee->full_name }}’s {{ $leave->leaveType->name }} for {{ $leave->total_days }} days.</p>
-                                        <form action="{{ route('approvals.managerApprove', $leave->id) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ route($leave->status === 'pending_team_lead' ? 'approvals.leadApprove' : 'approvals.managerApprove', $leave->id) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <input type="hidden" name="return_to" value="dashboard">
+                                            @if($leave->status === 'pending_team_lead')
+                                                @php($coverCandidates = $coverCandidatesByApplication->get($leave->id, collect()))
+                                                <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span>
+                                                    <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                                                        <option value="">Select a colleague</option>
+                                                        @foreach($coverCandidates as $candidate)
+                                                            <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
+                                                        @endforeach
+                                                    </select>
+                                                </label>
+                                                @if($coverCandidates->isEmpty())<p class="text-[11px] text-rose-600">No available team colleague can cover these dates.</p>@endif
+                                            @endif
                                             <label class="block text-xs font-semibold text-slate-700">Approval Comment (Optional)</label>
                                             <textarea name="comment" rows="3" placeholder="Add an optional comment" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>
                                             <div class="flex justify-end gap-2 pt-2">
@@ -124,7 +136,7 @@
                                     <div @click.outside="openRejectModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-rose-600">Reject Leave Request</h3>
                                         <p class="text-xs text-slate-500 mt-1">A clear reason will be sent to the employee and HR.</p>
-                                        <form action="{{ route('approvals.managerReject', $leave->id) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ route($leave->status === 'pending_team_lead' ? 'approvals.leadReject' : 'approvals.managerReject', $leave->id) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <input type="hidden" name="return_to" value="dashboard">
                                             <label class="block text-xs font-semibold text-slate-700">Reason for Rejection <span class="text-rose-500">*</span></label>

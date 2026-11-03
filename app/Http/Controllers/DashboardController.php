@@ -48,15 +48,22 @@ class DashboardController extends Controller
             ->get();
 
         $managerEmployeeIds = Employee::managerEmployeeIds($user);
+        $teamLeadEmployeeIds = Employee::where('team_lead_id', $user->id)->pluck('id')->all();
+        $assignedEmployeeIds = array_values(array_unique(array_merge($managerEmployeeIds, $teamLeadEmployeeIds)));
         $managerTeamMembers = Employee::with(['balances' => function ($query) use ($year) {
             $query->where('year', $year)->whereHas('leaveType', fn ($type) => $type->where('code', 'annual'));
-        }])->whereIn('id', $managerEmployeeIds)->where('employment_status', 'active')->orderBy('first_name')->get();
+        }])->whereIn('id', $assignedEmployeeIds)->where('employment_status', 'active')->orderBy('first_name')->get();
         $pendingRequests = LeaveApplication::with(['employee.department', 'employee.user', 'leaveType'])
-            ->whereIn('employee_id', $managerEmployeeIds)
-            ->where('status', 'pending_manager')
+            ->where(function ($query) use ($managerEmployeeIds, $teamLeadEmployeeIds) {
+                $query->where(fn ($manager) => $manager->whereIn('employee_id', $managerEmployeeIds)->where('status', 'pending_manager'))
+                    ->orWhere(fn ($lead) => $lead->whereIn('employee_id', $teamLeadEmployeeIds)->where('status', 'pending_team_lead'));
+            })
             ->orderBy('is_emergency', 'desc')
             ->orderBy('created_at')
             ->get();
+        $coverCandidatesByApplication = $pendingRequests->where('status', 'pending_team_lead')->mapWithKeys(fn ($application) => [
+            $application->id => Employee::coverageCandidatesFor($application, $user->id),
+        ]);
 
         $upcomingLeave = LeaveApplication::with(['employee.department', 'leaveType'])
             ->where('status', 'approved')
@@ -77,7 +84,7 @@ class DashboardController extends Controller
 
         return view('dashboard.manager', compact(
             'totalEmployees', 'onLeaveToday', 'pendingRequests', 'upcomingLeave',
-            'annualDaysUsed', 'departments', 'year', 'managerTeamMembers'
+            'annualDaysUsed', 'departments', 'year', 'managerTeamMembers', 'coverCandidatesByApplication'
         ));
     }
 

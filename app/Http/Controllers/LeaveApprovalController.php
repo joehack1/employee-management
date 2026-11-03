@@ -35,9 +35,12 @@ class LeaveApprovalController extends Controller
             $isHrView = false;
         } elseif ($user->isManager()) {
             $managerEmployeeIds = Employee::managerEmployeeIds($user);
+            $teamLeadEmployeeIds = Employee::where('team_lead_id', $user->id)->pluck('id');
             $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
-                ->whereIn('employee_id', $managerEmployeeIds)
-                ->where('status', 'pending_manager')
+                ->where(function ($query) use ($managerEmployeeIds, $teamLeadEmployeeIds) {
+                    $query->where(fn ($manager) => $manager->whereIn('employee_id', $managerEmployeeIds)->where('status', 'pending_manager'))
+                        ->orWhere(fn ($lead) => $lead->whereIn('employee_id', $teamLeadEmployeeIds)->where('status', 'pending_team_lead'));
+                })
                 ->orderBy('is_emergency', 'desc')
                 ->orderBy('created_at', 'asc')
                 ->paginate(15);
@@ -47,15 +50,13 @@ class LeaveApprovalController extends Controller
         } elseif ($user->isHr()) {
             return redirect()->route('notifications.index')
                 ->with('success', 'HR receives notifications about leave requests and decisions. HR sign-off is not required.');
-        } elseif ($user->role === 'team_lead') {
+        } elseif ($user->role === 'team_lead' || $user->isManager()) {
             // Team lead sees supervisees with pending_team_lead
-            $teamMemberIds = Employee::where('team_lead_id', $user->id)
-                ->orWhere(function ($q) use ($employee) {
-                    if ($employee && $employee->team_id) {
-                        $q->where('team_id', $employee->team_id);
-                    }
-                })
-                ->pluck('id');
+            $teamQuery = Employee::where('team_lead_id', $user->id);
+            if ($user->role === 'team_lead' && $employee?->team_id) {
+                $teamQuery->orWhere('team_id', $employee->team_id);
+            }
+            $teamMemberIds = $teamQuery->pluck('id');
 
             $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType'])
                 ->whereIn('employee_id', $teamMemberIds)
@@ -66,13 +67,13 @@ class LeaveApprovalController extends Controller
 
             $viewTitle = 'Team Lead Approvals Queue';
             $isHrView = false;
-            $approvalLevel = 'team_lead';
+            $approvalLevel = $user->isManager() ? 'manager' : 'team_lead';
         } else {
             abort(403, 'Unauthorized');
         }
 
         $coverCandidatesByApplication = collect();
-        if (in_array($approvalLevel, ['team_lead', 'administrator'], true)) {
+        if (in_array($approvalLevel, ['team_lead', 'manager', 'administrator'], true)) {
             foreach ($applications as $application) {
                 if ($application->status === 'pending_team_lead') {
                     $coverCandidatesByApplication[$application->id] = Employee::coverageCandidatesFor($application, $user->id);
@@ -86,12 +87,14 @@ class LeaveApprovalController extends Controller
     public function teamLeadApprove(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role !== 'team_lead' && !$user->isSuperAdmin()) {
+        if ($user->role !== 'team_lead' && !$user->isManager() && !$user->isSuperAdmin()) {
             abort(403);
         }
 
         $query = LeaveApplication::with('employee')->where('status', 'pending_team_lead');
-        if (!$user->isSuperAdmin()) {
+        if ($user->isManager()) {
+            $query->whereHas('employee', fn ($employees) => $employees->where('team_lead_id', $user->id));
+        } elseif ($user->role === 'team_lead') {
             $teamId = $user->employee?->team_id;
             $query->whereHas('employee', function ($employees) use ($user, $teamId) {
                 $employees->where('team_lead_id', $user->id);
@@ -123,7 +126,7 @@ class LeaveApprovalController extends Controller
     public function teamLeadReject(Request $request, $id)
     {
         $user = Auth::user();
-        if ($user->role !== 'team_lead' && !$user->isSuperAdmin()) {
+        if ($user->role !== 'team_lead' && !$user->isManager() && !$user->isSuperAdmin()) {
             abort(403);
         }
 
@@ -131,7 +134,19 @@ class LeaveApprovalController extends Controller
             'rejection_reason' => ['required', 'string', 'min:5', 'max:500'],
         ]);
 
-        $application = LeaveApplication::where('status', 'pending_team_lead')->findOrFail($id);
+        $query = LeaveApplication::where('status', 'pending_team_lead');
+        if ($user->isManager()) {
+            $query->whereHas('employee', fn ($employees) => $employees->where('team_lead_id', $user->id));
+        } elseif ($user->role === 'team_lead') {
+            $teamId = $user->employee?->team_id;
+            $query->whereHas('employee', function ($employees) use ($user, $teamId) {
+                $employees->where('team_lead_id', $user->id);
+                if ($teamId) {
+                    $employees->orWhere('team_id', $teamId);
+                }
+            });
+        }
+        $application = $query->findOrFail($id);
 
         try {
             $this->workflowService->rejectByTeamLead($application, $user->id, $request->rejection_reason);
