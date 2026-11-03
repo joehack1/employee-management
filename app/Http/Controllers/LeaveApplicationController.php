@@ -266,16 +266,21 @@ class LeaveApplicationController extends Controller
         $isTeamLead = $user->role === 'team_lead' && ($application->employee->team_lead_id === $user->id || $application->employee->team_id === $employee?->team_id);
         $isHr = $user->isHr();
         $isManager = $user->isManager();
+        $isAssignedManager = $isManager && (
+            (in_array($application->status, ['pending_manager', 'pending_team_lead'], true) && in_array((int) $application->employee_id, array_map('intval', Employee::managerEmployeeIds($user)), true))
+            || ($application->status === 'pending_team_lead' && (int) $application->employee->team_lead_id === (int) $user->id)
+        );
 
         if (!$isOwner && !$isCover && !$isTeamLead && !$isHr && !$isManager) {
             abort(403, 'Unauthorized access to leave application.');
         }
 
-        $coverCandidates = $isTeamLead && $application->status === 'pending_team_lead'
+        $isAssignedTeamLead = $isTeamLead || ($isManager && $application->status === 'pending_team_lead' && (int) $application->employee->team_lead_id === (int) $user->id);
+        $coverCandidates = $isAssignedTeamLead && $application->status === 'pending_team_lead'
             ? Employee::coverageCandidatesFor($application, $user->id)
             : collect();
 
-        return view('leave.show', compact('application', 'isOwner', 'isCover', 'isTeamLead', 'isHr', 'isManager', 'coverCandidates'));
+        return view('leave.show', compact('application', 'isOwner', 'isCover', 'isTeamLead', 'isHr', 'isManager', 'isAssignedManager', 'coverCandidates'));
     }
 
     public function requestCancellation(Request $request, $id)

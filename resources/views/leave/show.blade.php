@@ -3,7 +3,7 @@
 @section('title', 'Leave Application ' . $application->application_number . ' - LeaveFlow')
 
 @section('content')
-<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" x-data="{ openCancelModal: false, openHrApprove: false, openHrReject: false, openLeadApprove: false, openLeadReject: false }">
+<div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8" x-data="{ openCancelModal: false, openHrApprove: false, openHrReject: false, openLeadApprove: false, openLeadReject: false, openManagerApprove: false, openManagerReject: false }">
     <!-- Breadcrumb & Status Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -32,13 +32,18 @@
         <!-- Action Buttons depending on role -->
         <div class="flex flex-wrap items-center gap-2">
             <!-- Team Lead Actions -->
-            @if($isTeamLead && $application->status === 'pending_team_lead')
+            @if(($isTeamLead || ($isManager && (int) $application->employee->team_lead_id === (int) auth()->id())) && $application->status === 'pending_team_lead')
                 <button @click="openLeadApprove = true" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs">
-                    Approve (Team Lead)
+                    Approve
                 </button>
                 <button @click="openLeadReject = true" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs">
                     Reject
                 </button>
+            @endif
+
+            @if($isAssignedManager && ($application->status === 'pending_manager' || ($application->status === 'pending_team_lead' && (int) $application->employee->team_lead_id !== (int) auth()->id())))
+                <button @click="openManagerApprove = true" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs">Approve</button>
+                <button @click="openManagerReject = true" class="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold shadow-xs">Reject</button>
             @endif
 
             <!-- HR Actions -->
@@ -312,7 +317,7 @@
         </div>
     </div>
 
-    <!-- Modals for Team Lead & HR Actions -->
+    <!-- Modals for Team Lead, Manager & HR Actions -->
     <!-- Team Lead Approve Modal -->
     <div x-show="openLeadApprove" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
         <div @click.outside="openLeadApprove = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
@@ -320,15 +325,16 @@
             <form action="{{ route('approvals.leadApprove', $application->id) }}" method="POST" class="mt-4 space-y-3">
                 @csrf
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span></label>
-                    <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
-                        <option value="">Select a colleague</option>
-                        @foreach($coverCandidates as $candidate)
-                            <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
-                        @endforeach
-                    </select>
-                    @if($coverCandidates->isEmpty())
-                        <p class="mt-1 text-[11px] text-rose-600">No available colleague can cover these dates.</p>
+                    @if($coverCandidates->isNotEmpty())
+                        <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span></label>
+                        <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                            <option value="">Select a colleague</option>
+                            @foreach($coverCandidates as $candidate)
+                                <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
+                            @endforeach
+                        </select>
+                    @else
+                        <p class="text-[11px] text-slate-500">No available cover employee; you can still approve this request.</p>
                     @endif
                 </div>
                 <div>
@@ -338,6 +344,36 @@
                 <div class="flex justify-end gap-2 pt-2">
                     <button type="button" @click="openLeadApprove = false" class="px-4 py-2 rounded-xl text-xs text-slate-600">Cancel</button>
                     <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white">Approve & Forward to HR</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="openManagerApprove" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
+        <div @click.outside="openManagerApprove = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
+            <h3 class="text-base font-bold text-slate-900">Approve as Manager</h3>
+                    <form action="{{ route('approvals.managerApprove', $application->id) }}" method="POST" class="mt-4 space-y-3">
+                @csrf
+                <label class="block text-xs font-semibold text-slate-700">Comment (Optional)</label>
+                <textarea name="comment" rows="3" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" @click="openManagerApprove = false" class="px-4 py-2 rounded-xl text-xs text-slate-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-emerald-600 text-white">Confirm Approval</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div x-show="openManagerReject" x-cloak class="fixed inset-0 z-50 overflow-y-auto flex items-center justify-center bg-slate-900/50 p-4">
+        <div @click.outside="openManagerReject = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
+            <h3 class="text-base font-bold text-rose-600">Reject as Manager</h3>
+            <form action="{{ route('approvals.managerReject', $application->id) }}" method="POST" class="mt-4 space-y-3">
+                @csrf
+                <label class="block text-xs font-semibold text-slate-700">Reason for Rejection <span class="text-rose-500">*</span></label>
+                <textarea name="rejection_reason" required minlength="5" maxlength="500" rows="3" class="mt-1 block w-full px-3 py-2 border border-rose-300 rounded-xl text-xs"></textarea>
+                <div class="flex justify-end gap-2 pt-2">
+                    <button type="button" @click="openManagerReject = false" class="px-4 py-2 rounded-xl text-xs text-slate-600">Cancel</button>
+                    <button type="submit" class="px-4 py-2 rounded-xl text-xs font-semibold bg-rose-600 text-white">Reject Request</button>
                 </div>
             </form>
         </div>

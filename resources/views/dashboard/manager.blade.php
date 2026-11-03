@@ -105,20 +105,23 @@
                                     <div @click.outside="openApproveModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-slate-900">Approve Leave Request</h3>
                                         <p class="text-xs text-slate-500 mt-1">Approving {{ $leave->employee->full_name }}’s {{ $leave->leaveType->name }} for {{ $leave->total_days }} days.</p>
-                                        <form action="{{ route($leave->status === 'pending_team_lead' ? 'approvals.leadApprove' : 'approvals.managerApprove', $leave->id) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ route($leave->status === 'pending_team_lead' && (int) $leave->employee->team_lead_id === (int) auth()->id() ? 'approvals.leadApprove' : 'approvals.managerApprove', $leave->id) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <input type="hidden" name="return_to" value="dashboard">
-                                            @if($leave->status === 'pending_team_lead')
+                                            @if($leave->status === 'pending_team_lead' && (int) $leave->employee->team_lead_id === (int) auth()->id())
                                                 @php($coverCandidates = $coverCandidatesByApplication->get($leave->id, collect()))
-                                                <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span>
-                                                    <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
-                                                        <option value="">Select a colleague</option>
-                                                        @foreach($coverCandidates as $candidate)
-                                                            <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
-                                                        @endforeach
-                                                    </select>
-                                                </label>
-                                                @if($coverCandidates->isEmpty())<p class="text-[11px] text-rose-600">No available team colleague can cover these dates.</p>@endif
+                                                @if($coverCandidates->isNotEmpty())
+                                                    <label class="block text-xs font-semibold text-slate-700">Assign cover employee <span class="text-rose-500">*</span>
+                                                        <select name="cover_employee_id" required class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs">
+                                                            <option value="">Select a colleague</option>
+                                                            @foreach($coverCandidates as $candidate)
+                                                                <option value="{{ $candidate->id }}">{{ $candidate->full_name }} ({{ $candidate->employee_number }})</option>
+                                                            @endforeach
+                                                        </select>
+                                                    </label>
+                                                @else
+                                                    <p class="text-[11px] text-slate-500">No available cover employee; you can still approve this request.</p>
+                                                @endif
                                             @endif
                                             <label class="block text-xs font-semibold text-slate-700">Approval Comment (Optional)</label>
                                             <textarea name="comment" rows="3" placeholder="Add an optional comment" class="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-xl text-xs"></textarea>
@@ -136,7 +139,7 @@
                                     <div @click.outside="openRejectModal = false" class="bg-white rounded-2xl max-w-md w-full p-6 text-left shadow-2xl">
                                         <h3 class="text-base font-bold text-rose-600">Reject Leave Request</h3>
                                         <p class="text-xs text-slate-500 mt-1">A clear reason will be sent to the employee and HR.</p>
-                                        <form action="{{ route($leave->status === 'pending_team_lead' ? 'approvals.leadReject' : 'approvals.managerReject', $leave->id) }}" method="POST" class="mt-4 space-y-3">
+                                        <form action="{{ route($leave->status === 'pending_team_lead' && (int) $leave->employee->team_lead_id === (int) auth()->id() ? 'approvals.leadReject' : 'approvals.managerReject', $leave->id) }}" method="POST" class="mt-4 space-y-3">
                                             @csrf
                                             <input type="hidden" name="return_to" value="dashboard">
                                             <label class="block text-xs font-semibold text-slate-700">Reason for Rejection <span class="text-rose-500">*</span></label>

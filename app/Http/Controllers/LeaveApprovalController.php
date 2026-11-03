@@ -35,11 +35,11 @@ class LeaveApprovalController extends Controller
             $isHrView = false;
         } elseif ($user->isManager()) {
             $managerEmployeeIds = Employee::managerEmployeeIds($user);
-            $teamLeadEmployeeIds = Employee::where('team_lead_id', $user->id)->pluck('id');
+            $teamLeadEmployeeIds = Employee::where('team_lead_id', $user->id)->pluck('id')->all();
             $applications = LeaveApplication::with(['employee.department', 'employee.team', 'leaveType', 'approvals.approver'])
                 ->where(function ($query) use ($managerEmployeeIds, $teamLeadEmployeeIds) {
                     $query->where(fn ($manager) => $manager->whereIn('employee_id', $managerEmployeeIds)->where('status', 'pending_manager'))
-                        ->orWhere(fn ($lead) => $lead->whereIn('employee_id', $teamLeadEmployeeIds)->where('status', 'pending_team_lead'));
+                        ->orWhere(fn ($lead) => $lead->whereIn('employee_id', array_values(array_unique(array_merge($managerEmployeeIds, $teamLeadEmployeeIds))))->where('status', 'pending_team_lead'));
                 })
                 ->orderBy('is_emergency', 'desc')
                 ->orderBy('created_at', 'asc')
@@ -106,17 +106,19 @@ class LeaveApprovalController extends Controller
         $application = $query->findOrFail($id);
         $coverCandidates = Employee::coverageCandidatesFor($application, $user->id);
         $validated = $request->validate([
-            'cover_employee_id' => ['required', 'integer', Rule::in($coverCandidates->pluck('id')->all())],
+            'cover_employee_id' => [Rule::requiredIf($coverCandidates->isNotEmpty()), 'nullable', 'integer', Rule::in($coverCandidates->pluck('id')->all())],
             'comment' => ['nullable', 'string', 'max:1000'],
         ]);
         $comment = $request->input('comment');
 
         try {
             $this->workflowService->approveByTeamLead($application, $user->id, $comment);
-            $coverEmployee = $coverCandidates->firstWhere('id', (int) $validated['cover_employee_id']);
-            $application->cover_employee_id = $coverEmployee->id;
-            $application->save();
-            $coverEmployee->user->notify(new CoverAssignmentNotification($application->load(['employee', 'leaveType'])));
+            if (!empty($validated['cover_employee_id'])) {
+                $coverEmployee = $coverCandidates->firstWhere('id', (int) $validated['cover_employee_id']);
+                $application->cover_employee_id = $coverEmployee->id;
+                $application->save();
+                $coverEmployee->user?->notify(new CoverAssignmentNotification($application->load(['employee', 'leaveType'])));
+            }
             return back()->with('success', "Application {$application->application_number} approved. HR has been notified.");
         } catch (Exception $e) {
             return back()->with('error', $e->getMessage());
@@ -163,7 +165,7 @@ class LeaveApprovalController extends Controller
             abort(403, 'Unauthorized');
         }
 
-        $query = LeaveApplication::where('status', 'pending_manager');
+        $query = LeaveApplication::whereIn('status', ['pending_manager', 'pending_team_lead']);
         if (!$user->isSuperAdmin()) {
             $query->whereIn('employee_id', Employee::managerEmployeeIds($user));
         }
@@ -184,7 +186,7 @@ class LeaveApprovalController extends Controller
         }
 
         $request->validate(['rejection_reason' => ['required', 'string', 'min:5', 'max:500']]);
-        $query = LeaveApplication::where('status', 'pending_manager');
+        $query = LeaveApplication::whereIn('status', ['pending_manager', 'pending_team_lead']);
         if (!$user->isSuperAdmin()) {
             $query->whereIn('employee_id', Employee::managerEmployeeIds($user));
         }

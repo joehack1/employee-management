@@ -56,7 +56,7 @@ class DashboardController extends Controller
         $pendingRequests = LeaveApplication::with(['employee.department', 'employee.user', 'leaveType'])
             ->where(function ($query) use ($managerEmployeeIds, $teamLeadEmployeeIds) {
                 $query->where(fn ($manager) => $manager->whereIn('employee_id', $managerEmployeeIds)->where('status', 'pending_manager'))
-                    ->orWhere(fn ($lead) => $lead->whereIn('employee_id', $teamLeadEmployeeIds)->where('status', 'pending_team_lead'));
+                    ->orWhere(fn ($lead) => $lead->whereIn('employee_id', array_values(array_unique(array_merge($managerEmployeeIds, $teamLeadEmployeeIds))))->where('status', 'pending_team_lead'));
             })
             ->orderBy('is_emergency', 'desc')
             ->orderBy('created_at')
